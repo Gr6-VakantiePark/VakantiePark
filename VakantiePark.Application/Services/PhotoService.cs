@@ -1,20 +1,20 @@
 using VakantiePark.Application.Interfaces;
-using VakantiePark.Shared.DTOs.Afbeeldingen;
+using VakantiePark.Shared.DTOs.Photos;
 
 namespace VakantiePark.Application.Services
 {
-    public class AfbeeldingService(IAfbeeldingRepository repository) : IAfbeeldingService
+    public class PhotoService(IPhotoRepository repository) : IPhotoService
     {
-        public async Task<AfbeeldingBestandDto> GetBestandAsync(int id)
+        public async Task<PhotoFileDto> GetFileAsync(int id)
         {
-            var afbeelding = await repository.GetMetBestandAsync(id)
+            var photo = await repository.GetWithFileAsync(id)
                 ?? throw new KeyNotFoundException($"Afbeelding met id {id} is niet gevonden.");
 
-            return new AfbeeldingBestandDto
+            return new PhotoFileDto
             {
-                Bestandsnaam = afbeelding.Bestandsnaam,
-                ContentType = afbeelding.ContentType,
-                Data = afbeelding.Bestand.Data,
+                FileName = photo.FileName,
+                ContentType = photo.ContentType,
+                Data = photo.File.Data,
             };
         }
     }

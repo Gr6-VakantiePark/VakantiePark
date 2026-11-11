@@ -14,8 +14,8 @@ namespace VakantiePark.Infrastructure
         public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services, IConfiguration configuration, string root)
         {
             services.RegisterDatabaseServices(configuration, root);
-            services.AddScoped<IAccommodatieRepository, AccommodatieRepository>();
-            services.AddScoped<IAfbeeldingRepository, AfbeeldingRepository>();
+            services.AddScoped<IAccommodationRepository, AccommodationRepository>();
+            services.AddScoped<IPhotoRepository, PhotoRepository>();
 
 
             return services;

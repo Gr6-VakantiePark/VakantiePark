@@ -1,195 +1,231 @@
-@using VakantiePark.Shared.DTOs.Accommodaties
+@using VakantiePark.Shared.DTOs.Accommodations
+@using VakantiePark.UI.Services
 @inject NavigationManager Navigation
 
-<EditForm Model="formulier" OnSubmit="Zoeken" FormName="zoeken" class="card mb-4" id="zoekformulier">
-    <div class="card-body">
-        <h2 class="h5 card-title mb-3">Zoek een verblijf</h2>
+<div class="search-form" id="search-form">
+    <h2 id="heading-search">Zoek een verblijf</h2>
 
-        <div class="row g-3">
-            <div class="col-sm-6 col-lg-3">
-                <label for="aankomst" class="form-label">Aankomst</label>
-                <InputDate id="aankomst" class="form-control" @bind-Value="formulier.Aankomst" min="@Iso(vandaag)" />
+    <EditForm class="form" Model="_form" OnSubmit="Search" FormName="search">
+        <div class="form__row">
+            <div class="field">
+                <label for="arrival">Aankomst</label>
+                <InputDate id="arrival" @ref="_arrivalInput" @bind-Value="_form.Arrival" min="@ToIso(_today)" />
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <label for="vertrek" class="form-label">Vertrek</label>
-                <InputDate id="vertrek" class="form-control" @bind-Value="formulier.Vertrek"
-                           min="@Iso((formulier.Aankomst ?? vandaag).AddDays(1))" />
+            <div class="field">
+                <label for="departure">Vertrek</label>
+                <InputDate id="departure" @bind-Value="_form.Departure" min="@ToIso((_form.Arrival ?? _today).AddDays(1))" />
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <label for="personen" class="form-label">Personen</label>
-                <InputNumber id="personen" class="form-control" @bind-Value="formulier.Personen" min="1" max="@Opties.MaxPersonen" />
+            <div class="field">
+                <label for="persons">Personen</label>
+                <InputNumber id="persons" @bind-Value="_form.Persons" min="1" max="@Options.MaxPersons" />
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <label for="huisdieren" class="form-label">Huisdieren</label>
-                <InputNumber id="huisdieren" class="form-control" @bind-Value="formulier.Huisdieren" min="0" max="@Opties.MaxHuisdieren" />
+            <div class="field">
+                <label for="pets">Huisdieren</label>
+                <InputNumber id="pets" @bind-Value="_form.Pets" min="0" max="@Options.MaxPets" />
             </div>
+        </div>
 
-            <div class="col-sm-6">
-                <label for="categorie" class="form-label">Soort verblijf</label>
-                <InputSelect id="categorie" class="form-select" @bind-Value="formulier.Categorie" @bind-Value:after="CategorieGewijzigd">
+        <div class="form__row">
+            <div class="field">
+                <label for="category">Soort verblijf</label>
+                <InputSelect id="category" @bind-Value="_form.Category" @bind-Value:after="OnCategoryChanged">
                     <option value="">Alles</option>
-                    @foreach (var categorie in Opties.Categorieen)
+                    @foreach (var category in Options.Categories)
                     {
-                        <option value="@categorie">@categorie</option>
+                        <option value="@category">@AccommodationCategoryLabels.Label(category)</option>
                     }
                 </InputSelect>
             </div>
-            <div class="col-sm-6">
-                <label for="type" class="form-label">Type</label>
-                <InputSelect id="type" class="form-select" @bind-Value="formulier.Type">
+            <div class="field">
+                <label for="type">Type</label>
+                <InputSelect id="type" @bind-Value="_form.Type">
                     <option value="">Alle types</option>
-                    @foreach (var type in ZichtbareTypes)
+                    @foreach (var type in VisibleTypes)
                     {
-                        <option value="@type.Slug">@type.Naam</option>
+                        <option value="@type.Slug">@type.Name</option>
                     }
                 </InputSelect>
             </div>
         </div>
 
-        @if (ZichtbareVoorzieningen.Any())
+        @if (VisibleAmenities.Any())
         {
-            <fieldset class="mt-3">
-                <legend class="form-label fs-6">Voorzieningen</legend>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-1">
-                    @foreach (var vz in ZichtbareVoorzieningen)
+            <fieldset class="field">
+                <legend>Voorzieningen</legend>
+                <ul class="form__checks">
+                    @foreach (var amenity in VisibleAmenities)
                     {
-                        <div class="col">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="vz-@vz.Code"
-                                       checked="@gekozenVoorzieningen.Contains(vz.Code)"
-                                       @onchange="e => ZetVoorziening(vz.Code, e.Value is true)" />
-                                <label class="form-check-label" for="vz-@vz.Code">@vz.Naam</label>
-                            </div>
-                        </div>
+                        <li @key="amenity.Code">
+                            <input type="checkbox" id="amenity-@amenity.Code"
+                                   checked="@_selectedAmenities.Contains(amenity.Code)"
+                                   @onchange="e => SetAmenity(amenity.Code, e.Value is true)" />
+                            <label for="amenity-@amenity.Code">@amenity.Name</label>
+                        </li>
                     }
-                </div>
+                </ul>
             </fieldset>
         }
 
-        @if (fouten.Count > 0)
+        @if (_errors.Count > 0)
         {
-            <div class="alert alert-warning mt-3 mb-0" role="alert">
-                <ul class="mb-0">
-                    @foreach (var fout in fouten)
-                    {
-                        <li>@fout</li>
-                    }
-                </ul>
-            </div>
+            <ul class="form__errors" role="alert">
+                @foreach (var error in _errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
         }
 
-        <div class="mt-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Zoeken</button>
-            <button type="button" class="btn btn-outline-secondary" @onclick="Wissen">Filters wissen</button>
+        <div class="form__actions">
+            <button class="button" type="submit"><i class="bi bi-search" aria-hidden="true"></i> Zoeken</button>
+            <button class="button button--outline" type="button" @onclick="ClearFilters">Filters wissen</button>
         </div>
-    </div>
-</EditForm>
+    </EditForm>
+</div>
 
 @code {
-    [Parameter, EditorRequired] public ZoekOptiesDto Opties { get; set; } = new();
+    [Parameter, EditorRequired]
+    public SearchOptionsDto Options { get; set; } = new();
 
-    [Parameter] public AccommodatieZoekCriteria? Huidig { get; set; }
+    [Parameter]
+    public AccommodationSearchCriteria? Current { get; set; }
 
-    private class Formulier
+    [Parameter]
+    public string? InitialType { get; set; }
+
+    private sealed class SearchFormModel
     {
-        public DateOnly? Aankomst { get; set; }
-        public DateOnly? Vertrek { get; set; }
-        public int Personen { get; set; } = 1;
-        public int Huisdieren { get; set; }
-        public string Categorie { get; set; } = string.Empty;
+        public DateOnly? Arrival { get; set; }
+        public DateOnly? Departure { get; set; }
+        public int Persons { get; set; } = 1;
+        public int Pets { get; set; }
+        public string Category { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
     }
 
-    private readonly DateOnly vandaag = DateOnly.FromDateTime(DateTime.Today);
-    private Formulier formulier = new();
-    private HashSet<string> gekozenVoorzieningen = new(StringComparer.OrdinalIgnoreCase);
-    private readonly List<string> fouten = new();
-    private AccommodatieZoekCriteria? vorigeHuidig;
+    private readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private readonly List<string> _errors = new();
+    private SearchFormModel _form = new();
+    private HashSet<string> _selectedAmenities = new(StringComparer.OrdinalIgnoreCase);
+    private InputDate<DateOnly?>? _arrivalInput;
+    private AccommodationSearchCriteria? _previousCurrent;
+    private bool _initialised;
 
-    private IEnumerable<AccommodatieTypeDto> ZichtbareTypes =>
-        Opties.Types.Where(t => formulier.Categorie == "" || t.Categorie == formulier.Categorie);
+    public async Task FocusAsync()
+    {
+        if (_arrivalInput?.Element is { } element)
+            await element.FocusAsync();
+    }
 
-    private IEnumerable<VoorzieningOptieDto> ZichtbareVoorzieningen =>
-        Opties.Voorzieningen.Where(v => formulier.Categorie == "" || v.Categorieen.Contains(formulier.Categorie));
+    private IEnumerable<AccommodationTypeDto> VisibleTypes =>
+        Options.Types.Where(type => _form.Category == string.Empty || type.Category == _form.Category);
+
+    private IEnumerable<AmenityOptionDto> VisibleAmenities =>
+        Options.Amenities.Where(amenity => _form.Category == string.Empty || amenity.Categories.Contains(_form.Category));
 
     protected override void OnParametersSet()
     {
-        if (ReferenceEquals(Huidig, vorigeHuidig))
-            return;
-        vorigeHuidig = Huidig;
-
-        formulier = Huidig is null
-            ? new Formulier()
-            : new Formulier
-            {
-                Aankomst = Huidig.Aankomst == default ? null : Huidig.Aankomst,
-                Vertrek = Huidig.Vertrek == default ? null : Huidig.Vertrek,
-                Personen = Math.Max(1, Huidig.Personen),
-                Huisdieren = Huidig.Huisdieren,
-                Categorie = Huidig.Categorie ?? string.Empty,
-                Type = Huidig.Type ?? string.Empty,
-            };
-        gekozenVoorzieningen = new(Huidig?.VoorzieningCodes ?? [], StringComparer.OrdinalIgnoreCase);
-        fouten.Clear();
-    }
-
-    private void CategorieGewijzigd()
-    {
-        if (!ZichtbareTypes.Any(t => t.Slug == formulier.Type))
-            formulier.Type = string.Empty;
-
-        var zichtbaar = ZichtbareVoorzieningen.Select(v => v.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        gekozenVoorzieningen.RemoveWhere(code => !zichtbaar.Contains(code));
-    }
-
-    private void ZetVoorziening(string code, bool aan)
-    {
-        if (aan) gekozenVoorzieningen.Add(code);
-        else gekozenVoorzieningen.Remove(code);
-    }
-
-    private void Wissen()
-    {
-        formulier = new Formulier { Aankomst = formulier.Aankomst, Vertrek = formulier.Vertrek, Personen = formulier.Personen };
-        gekozenVoorzieningen.Clear();
-        fouten.Clear();
-    }
-
-    private void Zoeken()
-    {
-        fouten.Clear();
-
-        if (formulier.Aankomst is null) fouten.Add("Kies een aankomstdatum.");
-        else if (formulier.Aankomst < vandaag) fouten.Add("De aankomstdatum mag niet in het verleden liggen.");
-
-        if (formulier.Vertrek is null) fouten.Add("Kies een vertrekdatum.");
-        else if (formulier.Aankomst is not null && formulier.Vertrek <= formulier.Aankomst)
-            fouten.Add("De vertrekdatum moet na de aankomstdatum liggen.");
-
-        if (formulier.Personen < 1) fouten.Add("Kies minimaal 1 persoon.");
-        else if (formulier.Personen > Opties.MaxPersonen)
-            fouten.Add($"Het grootste verblijf is voor {Opties.MaxPersonen} personen.");
-
-        if (formulier.Huisdieren < 0) fouten.Add("Het aantal huisdieren kan niet negatief zijn.");
-        else if (formulier.Huisdieren > Opties.MaxHuisdieren)
-            fouten.Add($"Er zijn maximaal {Opties.MaxHuisdieren} huisdieren toegestaan.");
-
-        if (fouten.Count > 0)
+        if (_initialised && ReferenceEquals(Current, _previousCurrent))
             return;
 
-        var criteria = new AccommodatieZoekCriteria
+        _initialised = true;
+        _previousCurrent = Current;
+        _errors.Clear();
+
+        if (Current is null)
         {
-            Aankomst = formulier.Aankomst!.Value,
-            Vertrek = formulier.Vertrek!.Value,
-            Personen = formulier.Personen,
-            Huisdieren = formulier.Huisdieren,
-            Categorie = formulier.Categorie == "" ? null : formulier.Categorie,
-            Type = formulier.Type == "" ? null : formulier.Type,
-            Voorzieningen = gekozenVoorzieningen.Count == 0 ? null : string.Join(",", gekozenVoorzieningen),
+            var type = Options.Types.FirstOrDefault(t => t.Slug.Equals(InitialType, StringComparison.OrdinalIgnoreCase));
+            _form = new SearchFormModel
+            {
+                Type = type?.Slug ?? string.Empty,
+                Category = type?.Category ?? string.Empty,
+            };
+            _selectedAmenities = new(StringComparer.OrdinalIgnoreCase);
+            return;
+        }
+
+        _form = new SearchFormModel
+        {
+            Arrival = Current.Arrival == default ? null : Current.Arrival,
+            Departure = Current.Departure == default ? null : Current.Departure,
+            Persons = Math.Max(1, Current.Persons),
+            Pets = Current.Pets,
+            Category = Current.Category ?? string.Empty,
+            Type = Current.Type ?? string.Empty,
+        };
+        _selectedAmenities = new(Current.AmenityCodes, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnCategoryChanged()
+    {
+        if (!VisibleTypes.Any(type => type.Slug == _form.Type))
+            _form.Type = string.Empty;
+
+        var visible = VisibleAmenities.Select(amenity => amenity.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _selectedAmenities.RemoveWhere(code => !visible.Contains(code));
+    }
+
+    private void SetAmenity(string code, bool selected)
+    {
+        if (selected)
+            _selectedAmenities.Add(code);
+        else
+            _selectedAmenities.Remove(code);
+    }
+
+    private void ClearFilters()
+    {
+        _form = new SearchFormModel { Arrival = _form.Arrival, Departure = _form.Departure, Persons = _form.Persons };
+        _selectedAmenities.Clear();
+        _errors.Clear();
+    }
+
+    private void Search()
+    {
+        _errors.Clear();
+
+        if (_form.Arrival is null)
+            _errors.Add("Kies een aankomstdatum.");
+        else if (_form.Arrival < _today)
+            _errors.Add("De aankomstdatum mag niet in het verleden liggen.");
+
+        if (_form.Departure is null)
+            _errors.Add("Kies een vertrekdatum.");
+        else if (_form.Arrival is not null && _form.Departure <= _form.Arrival)
+            _errors.Add("De vertrekdatum moet na de aankomstdatum liggen.");
+
+        if (_form.Persons < 1)
+            _errors.Add("Kies minimaal 1 persoon.");
+        else if (_form.Persons > Options.MaxPersons)
+            _errors.Add($"Het grootste verblijf is voor {Options.MaxPersons} personen.");
+
+        if (_form.Pets < 0)
+            _errors.Add("Het aantal huisdieren kan niet negatief zijn.");
+        else if (_form.Pets > Options.MaxPets)
+            _errors.Add($"Er zijn maximaal {Options.MaxPets} huisdieren toegestaan.");
+
+        if (_errors.Count > 0)
+            return;
+
+        var criteria = new AccommodationSearchCriteria
+        {
+            Arrival = _form.Arrival!.Value,
+            Departure = _form.Departure!.Value,
+            Persons = _form.Persons,
+            Pets = _form.Pets,
+            Category = _form.Category == string.Empty ? null : _form.Category,
+            Type = _form.Type == string.Empty ? null : _form.Type,
+            Amenities = _selectedAmenities.Count == 0 ? null : string.Join(",", _selectedAmenities),
         };
 
-        Navigation.NavigateTo($"zoekresultaten?{criteria.ToQueryString()}");
+        if (Current is not null)
+        {
+            criteria.OrderBy = Current.OrderBy;
+            criteria.OrderType = Current.OrderType;
+        }
+
+        Navigation.NavigateTo(SearchUrl.For(criteria));
     }
 
-    private static string Iso(DateOnly d) => d.ToString("yyyy-MM-dd");
+    private static string ToIso(DateOnly date) => date.ToString("yyyy-MM-dd");
 }

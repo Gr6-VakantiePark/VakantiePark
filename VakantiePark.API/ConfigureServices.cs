@@ -11,12 +11,12 @@ namespace VakantiePark.API
             {
                 options.InvalidModelStateResponseFactory = context =>
                 {
-                    string? fout = context.ModelState
+                    string? error = context.ModelState
                         .Where(e => e.Value?.Errors.Count > 0)
                         .Select(e => $"Ongeldige waarde voor '{e.Key}'.")
                         .FirstOrDefault();
 
-                    return new BadRequestObjectResult(ApiResponse<object>.Fail(fout ?? ApiMessages.InvalidRequest));
+                    return new BadRequestObjectResult(ApiResponse<object>.Fail(error ?? ApiMessages.InvalidRequest));
                 };
             });
 

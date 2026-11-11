@@ -1,8 +1,8 @@
 namespace VakantiePark.Domain.Enums
 {
-    public enum AccommodatieCategorie
+    public enum AccommodationCategory
     {
-        Huisje = 1,
-        Campingplaats = 2
+        HolidayHome = 1,
+        CampingPitch = 2
     }
 }

@@ -1,12 +1,12 @@
 using VakantiePark.Shared.Common;
-using VakantiePark.Shared.DTOs.Accommodaties;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.UI.Interfaces
 {
-    public interface IZoekService
+    public interface ISearchService
     {
-        Task<ApiResponse<ZoekOptiesDto>> GetZoekOptiesAsync();
+        Task<ApiResponse<SearchOptionsDto>> GetSearchOptionsAsync();
 
-        Task<ApiResponse<PaginatedResult<AccommodatieDetailDto>>> ZoekAsync(AccommodatieZoekCriteria criteria);
+        Task<ApiResponse<PaginatedResult<AccommodationDetailDto>>> SearchAsync(AccommodationSearchCriteria criteria);
     }
 }

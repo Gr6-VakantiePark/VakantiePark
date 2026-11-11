@@ -2,8 +2,8 @@ using VakantiePark.Domain.Entities;
 
 namespace VakantiePark.Application.Interfaces
 {
-    public interface IAfbeeldingRepository
+    public interface IPhotoRepository
     {
-        Task<Afbeelding?> GetMetBestandAsync(int id);
+        Task<Photo?> GetWithFileAsync(int id);
     }
 }

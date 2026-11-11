@@ -1,50 +1,71 @@
-@if (AantalPaginas > 1)
+@if (TotalPages > 1)
 {
-    <nav aria-label="Pagina's met zoekresultaten">
-        <ul class="pagination justify-content-center flex-wrap mt-4">
-            <li class="page-item @(Huidig <= 1 ? "disabled" : null)">
-                <a class="page-link" href="@(Huidig <= 1 ? null : Url(Huidig - 1))" aria-label="Vorige pagina">&laquo; Vorige</a>
-            </li>
-
-            @foreach (int? nummer in Nummers())
-            {
-                if (nummer is null)
+    <nav class="pager" aria-label="Pagina’s met zoekresultaten">
+        <ul>
+            <li>
+                @if (Current > 1)
                 {
-                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
-                }
-                else if (nummer == Huidig)
-                {
-                    <li class="page-item active" aria-current="page"><span class="page-link">@nummer</span></li>
+                    <a class="pager__step" href="@Url(Current - 1)"><i class="bi bi-chevron-left" aria-hidden="true"></i> Vorige</a>
                 }
                 else
                 {
-                    <li class="page-item"><a class="page-link" href="@Url(nummer.Value)">@nummer</a></li>
+                    <span class="pager__step pager__step--disabled"><i class="bi bi-chevron-left" aria-hidden="true"></i> Vorige</span>
                 }
+            </li>
+
+            @foreach (int? number in Numbers())
+            {
+                <li>
+                    @if (number is null)
+                    {
+                        <span class="pager__gap" aria-hidden="true">…</span>
+                    }
+                    else if (number == Current)
+                    {
+                        <span class="pager__page pager__page--current" aria-current="page">@number</span>
+                    }
+                    else
+                    {
+                        <a class="pager__page" href="@Url(number.Value)" aria-label="Pagina @number">@number</a>
+                    }
+                </li>
             }
 
-            <li class="page-item @(Huidig >= AantalPaginas ? "disabled" : null)">
-                <a class="page-link" href="@(Huidig >= AantalPaginas ? null : Url(Huidig + 1))" aria-label="Volgende pagina">Volgende &raquo;</a>
+            <li>
+                @if (Current < TotalPages)
+                {
+                    <a class="pager__step" href="@Url(Current + 1)">Volgende <i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+                }
+                else
+                {
+                    <span class="pager__step pager__step--disabled">Volgende <i class="bi bi-chevron-right" aria-hidden="true"></i></span>
+                }
             </li>
         </ul>
     </nav>
 }
 
 @code {
-    [Parameter, EditorRequired] public int Huidig { get; set; }
-    [Parameter, EditorRequired] public int AantalPaginas { get; set; }
-    [Parameter, EditorRequired] public Func<int, string> Url { get; set; } = _ => "";
+    private const int Neighbours = 2;
 
-    private const int Buren = 2;
+    [Parameter, EditorRequired]
+    public int Current { get; set; }
 
-    private IEnumerable<int?> Nummers()
+    [Parameter, EditorRequired]
+    public int TotalPages { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<int, string> Url { get; set; } = _ => string.Empty;
+
+    private IEnumerable<int?> Numbers()
     {
-        int van = Math.Max(2, Huidig - Buren);
-        int tot = Math.Min(AantalPaginas - 1, Huidig + Buren);
+        int from = Math.Max(2, Current - Neighbours);
+        int to = Math.Min(TotalPages - 1, Current + Neighbours);
 
         yield return 1;
-        if (van > 2) yield return null;
-        for (int i = van; i <= tot; i++) yield return i;
-        if (tot < AantalPaginas - 1) yield return null;
-        yield return AantalPaginas;
+        if (from > 2) yield return null;
+        for (int page = from; page <= to; page++) yield return page;
+        if (to < TotalPages - 1) yield return null;
+        yield return TotalPages;
     }
 }

@@ -1,9 +1,9 @@
-using VakantiePark.Shared.DTOs.Afbeeldingen;
+using VakantiePark.Shared.DTOs.Photos;
 
 namespace VakantiePark.Application.Interfaces
 {
-    public interface IAfbeeldingService
+    public interface IPhotoService
     {
-        Task<AfbeeldingBestandDto> GetBestandAsync(int id);
+        Task<PhotoFileDto> GetFileAsync(int id);
     }
 }

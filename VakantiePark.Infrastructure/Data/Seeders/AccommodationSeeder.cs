@@ -5,30 +5,30 @@ using VakantiePark.Domain.Enums;
 
 namespace VakantiePark.Infrastructure.Data.Seeders
 {
-    public static class AccommodatieSeeder
+    public static class AccommodationSeeder
     {
         private static readonly string SeedFolder = Path.Combine(AppContext.BaseDirectory, "Data", "Seed");
 
-        public static void UseAccommodatieSeeder(this DbContext context)
+        public static void UseAccommodationSeeder(this DbContext context)
         {
-            if (!context.Set<Accommodatie>().Any())
+            if (!context.Set<Accommodation>().Any())
             {
                 var types = SeedTypes(context);
-                var voorzieningen = SeedVoorzieningen(context, Lees<Dictionary<string, string>>("voorzieningen.json"));
-                SeedAccommodaties(context, types, voorzieningen, Lees<Dictionary<string, string>>("waarden.json"));
+                var amenities = SeedAmenities(context, Read<Dictionary<string, string>>("amenities.json"));
+                SeedAccommodations(context, types, amenities, Read<Dictionary<string, string>>("value-labels.json"));
             }
 
-            if (!context.Set<Afbeelding>().Any())
-                SeedAfbeeldingen(context, Lees<Dictionary<string, List<string>>>("afbeeldingen.json"));
+            if (!context.Set<Photo>().Any())
+                SeedPhotos(context, Read<Dictionary<string, List<string>>>("photos.json"));
         }
 
-        private static T Lees<T>(string bestand) =>
-            JsonSerializer.Deserialize<T>(File.ReadAllText(Path.Combine(SeedFolder, bestand)))
-            ?? throw new InvalidOperationException($"{bestand} is leeg of ongeldig.");
+        private static T Read<T>(string fileName) =>
+            JsonSerializer.Deserialize<T>(File.ReadAllText(Path.Combine(SeedFolder, fileName)))
+            ?? throw new InvalidOperationException($"{fileName} is leeg of ongeldig.");
 
-        private static Dictionary<string, AccommodatieType> SeedTypes(DbContext context)
+        private static Dictionary<string, AccommodationType> SeedTypes(DbContext context)
         {
-            var types = context.Set<AccommodatieType>().ToDictionary(t => t.Naam);
+            var types = context.Set<AccommodationType>().ToDictionary(t => t.Name);
 
             using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(SeedFolder, "types.json")));
             foreach (var type in doc.RootElement.EnumerateObject())
@@ -37,121 +37,121 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                     continue;
 
                 string slug = type.Value.GetProperty("slug").GetString()!;
-                var nieuw = new AccommodatieType
+                var created = new AccommodationType
                 {
-                    Naam = type.Name,
+                    Name = type.Name,
                     Slug = slug,
-                    Categorie = ParseCategorie(type.Value.GetProperty("category").GetString()),
-                    PrijsPerNacht = 0m,
+                    Category = ParseCategory(type.Value.GetProperty("category").GetString()),
+                    PricePerNight = 0m,
                 };
-                context.Add(nieuw);
-                types[nieuw.Naam] = nieuw;
+                context.Add(created);
+                types[created.Name] = created;
             }
 
             return types;
         }
 
-        private static Dictionary<string, Voorziening> SeedVoorzieningen(
+        private static Dictionary<string, Amenity> SeedAmenities(
             DbContext context,
-            Dictionary<string, string> namen)
+            Dictionary<string, string> names)
         {
-            var voorzieningen = context.Set<Voorziening>().ToDictionary(v => v.Code);
+            var amenities = context.Set<Amenity>().ToDictionary(v => v.Code);
 
-            foreach (var (code, naam) in namen)
+            foreach (var (code, name) in names)
             {
-                if (voorzieningen.ContainsKey(code))
+                if (amenities.ContainsKey(code))
                     continue;
 
-                var nieuw = new Voorziening { Code = code, Naam = naam };
-                context.Add(nieuw);
-                voorzieningen[code] = nieuw;
+                var created = new Amenity { Code = code, Name = name };
+                context.Add(created);
+                amenities[code] = created;
             }
 
-            return voorzieningen;
+            return amenities;
         }
 
-        private static void SeedAccommodaties(
+        private static void SeedAccommodations(
             DbContext context,
-            Dictionary<string, AccommodatieType> types,
-            Dictionary<string, Voorziening> voorzieningen,
-            Dictionary<string, string> waarden)
+            Dictionary<string, AccommodationType> types,
+            Dictionary<string, Amenity> amenities,
+            Dictionary<string, string> valueLabels)
         {
-            string? Vertaal(JsonElement e) =>
-                e.GetString() is { } w ? waarden.GetValueOrDefault(w, w) : null;
+            string? Translate(JsonElement e) =>
+                e.GetString() is { } w ? valueLabels.GetValueOrDefault(w, w) : null;
 
-            using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(SeedFolder, "accommodaties.json")));
+            using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(SeedFolder, "accommodations.json")));
 
             foreach (var item in doc.RootElement.GetProperty("accommodations").EnumerateArray())
             {
-                string typeNaam = item.GetProperty("type").GetString()!;
-                if (!types.TryGetValue(typeNaam, out var type))
-                    throw new InvalidOperationException($"Onbekend accommodatietype '{typeNaam}' in accommodaties.json.");
+                string typeName = item.GetProperty("type").GetString()!;
+                if (!types.TryGetValue(typeName, out var type))
+                    throw new InvalidOperationException($"Onbekend accommodatietype '{typeName}' in accommodations.json.");
 
-                var accommodatie = new Accommodatie
+                var accommodation = new Accommodation
                 {
                     Code = item.GetProperty("code").GetString()!,
-                    Naam = item.GetProperty("name").GetString()!,
-                    MaxPersonen = item.GetProperty("maxPersons").GetInt32(),
+                    Name = item.GetProperty("name").GetString()!,
+                    MaxPersons = item.GetProperty("maxPersons").GetInt32(),
                     Zone = item.GetProperty("zone").GetString()!,
-                    AccommodatieType = type,
+                    AccommodationType = type,
                 };
 
                 foreach (var prop in item.GetProperty("properties").EnumerateObject())
                 {
                     switch (prop.Name)
                     {
-                        case "maxPets": accommodatie.MaxHuisdieren = prop.Value.GetInt32(); break;
-                        case "bedrooms": accommodatie.Slaapkamers = prop.Value.GetInt32(); break;
-                        case "bathrooms": accommodatie.Badkamers = prop.Value.GetInt32(); break;
-                        case "beds": accommodatie.Bedden = prop.Value.GetInt32(); break;
-                        case "electricityAmps": accommodatie.ElektriciteitAmpere = prop.Value.GetInt32(); break;
-                        case "maxVehicleLengthMeters": accommodatie.MaxVoertuigLengteMeters = prop.Value.GetDecimal(); break;
-                        case "maxCaravanLengthMeters": accommodatie.MaxCaravanLengteMeters = prop.Value.GetDecimal(); break;
-                        case "surface": accommodatie.Ondergrond = Vertaal(prop.Value); break;
-                        case "shade": accommodatie.Schaduw = Vertaal(prop.Value); break;
-                        case "wifiCoverage": accommodatie.WifiDekking = Vertaal(prop.Value); break;
+                        case "maxPets": accommodation.MaxPets = prop.Value.GetInt32(); break;
+                        case "bedrooms": accommodation.Bedrooms = prop.Value.GetInt32(); break;
+                        case "bathrooms": accommodation.Bathrooms = prop.Value.GetInt32(); break;
+                        case "beds": accommodation.Beds = prop.Value.GetInt32(); break;
+                        case "electricityAmps": accommodation.ElectricityAmps = prop.Value.GetInt32(); break;
+                        case "maxVehicleLengthMeters": accommodation.MaxVehicleLengthMeters = prop.Value.GetDecimal(); break;
+                        case "maxCaravanLengthMeters": accommodation.MaxCaravanLengthMeters = prop.Value.GetDecimal(); break;
+                        case "surface": accommodation.Surface = Translate(prop.Value); break;
+                        case "shade": accommodation.Shade = Translate(prop.Value); break;
+                        case "wifiCoverage": accommodation.WifiCoverage = Translate(prop.Value); break;
 
                         default:
                             if (prop.Value.ValueKind == JsonValueKind.True)
                             {
-                                if (!voorzieningen.TryGetValue(prop.Name, out var voorziening))
+                                if (!amenities.TryGetValue(prop.Name, out var amenity))
                                     throw new InvalidOperationException(
-                                        $"Onbekende voorziening '{prop.Name}' in accommodaties.json. Voeg hem toe aan voorzieningen.json.");
-                                accommodatie.Voorzieningen.Add(voorziening);
+                                        $"Onbekende voorziening '{prop.Name}' in accommodations.json. Voeg hem toe aan amenities.json.");
+                                accommodation.Amenities.Add(amenity);
                             }
                             break;
                     }
                 }
 
-                context.Add(accommodatie);
+                context.Add(accommodation);
             }
 
             context.SaveChanges();
         }
 
-        private static void SeedAfbeeldingen(DbContext context, Dictionary<string, List<string>> afbeeldingenPerType)
+        private static void SeedPhotos(DbContext context, Dictionary<string, List<string>> photosPerType)
         {
-            var types = context.Set<AccommodatieType>().ToDictionary(t => t.Slug);
-            string map = Path.Combine(SeedFolder, "afbeeldingen");
+            var types = context.Set<AccommodationType>().ToDictionary(t => t.Slug);
+            string folder = Path.Combine(SeedFolder, "photos");
 
-            foreach (var (slug, bestanden) in afbeeldingenPerType)
+            foreach (var (slug, files) in photosPerType)
             {
                 if (!types.TryGetValue(slug, out var type))
-                    throw new InvalidOperationException($"Onbekend type '{slug}' in afbeeldingen.json.");
+                    throw new InvalidOperationException($"Onbekend type '{slug}' in photos.json.");
 
-                for (int i = 0; i < bestanden.Count; i++)
+                for (int i = 0; i < files.Count; i++)
                 {
-                    string pad = Path.Combine(map, bestanden[i]);
-                    if (!File.Exists(pad))
-                        throw new InvalidOperationException($"Foto '{bestanden[i]}' uit afbeeldingen.json staat niet in Data/Seed/afbeeldingen.");
+                    string path = Path.Combine(folder, files[i]);
+                    if (!File.Exists(path))
+                        throw new InvalidOperationException($"Foto '{files[i]}' uit photos.json staat niet in Data/Seed/photos.");
 
-                    context.Add(new Afbeelding
+                    context.Add(new Photo
                     {
-                        Bestandsnaam = bestanden[i],
-                        ContentType = ContentType(pad),
-                        Volgorde = i,
-                        AccommodatieType = type,
-                        Bestand = new AfbeeldingBestand { Data = File.ReadAllBytes(pad) },
+                        FileName = files[i],
+                        ContentType = GetContentType(path),
+                        SortOrder = i,
+                        AccommodationType = type,
+                        File = new PhotoFile { Data = File.ReadAllBytes(path) },
                     });
                 }
             }
@@ -159,18 +159,18 @@ namespace VakantiePark.Infrastructure.Data.Seeders
             context.SaveChanges();
         }
 
-        private static string ContentType(string pad) => Path.GetExtension(pad).ToLowerInvariant() switch
+        private static string GetContentType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
         {
             ".jpg" or ".jpeg" => "image/jpeg",
             ".png" => "image/png",
             ".webp" => "image/webp",
-            _ => throw new InvalidOperationException($"Onbekend afbeeldingsformaat: {Path.GetFileName(pad)}"),
+            _ => throw new InvalidOperationException($"Onbekend afbeeldingsformaat: {Path.GetFileName(path)}"),
         };
 
-        private static AccommodatieCategorie ParseCategorie(string? category) => category switch
+        private static AccommodationCategory ParseCategory(string? category) => category switch
         {
-            "holiday_home" => AccommodatieCategorie.Huisje,
-            "camping_pitch" => AccommodatieCategorie.Campingplaats,
+            "holiday_home" => AccommodationCategory.HolidayHome,
+            "camping_pitch" => AccommodationCategory.CampingPitch,
             _ => throw new InvalidOperationException($"Onbekende categorie '{category}' in types.json."),
         };
     }

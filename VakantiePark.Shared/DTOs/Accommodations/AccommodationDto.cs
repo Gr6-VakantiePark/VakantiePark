@@ -1,19 +1,19 @@
-namespace VakantiePark.Shared.DTOs.Accommodaties
+namespace VakantiePark.Shared.DTOs.Accommodations
 {
-    public class AccommodatieDto
+    public class AccommodationDto
     {
         public int Id { get; set; }
         public string Code { get; set; } = string.Empty;
-        public string Naam { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public string TypeSlug { get; set; } = string.Empty;
 
-        public string Categorie { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
 
-        public int MaxPersonen { get; set; }
+        public int MaxPersons { get; set; }
         public string Zone { get; set; } = string.Empty;
-        public decimal PrijsPerNacht { get; set; }
+        public decimal PricePerNight { get; set; }
 
-        public string? Hoofdafbeelding { get; set; }
+        public string? MainPhoto { get; set; }
     }
 }

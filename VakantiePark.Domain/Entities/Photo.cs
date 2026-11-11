@@ -1,18 +1,18 @@
 namespace VakantiePark.Domain.Entities
 {
-    public class Afbeelding
+    public class Photo
     {
         public int Id { get; set; }
 
-        public string Bestandsnaam { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
 
         public string ContentType { get; set; } = string.Empty;
 
-        public int Volgorde { get; set; }
+        public int SortOrder { get; set; }
 
-        public int AccommodatieTypeId { get; set; }
-        public AccommodatieType AccommodatieType { get; set; } = null!;
+        public int AccommodationTypeId { get; set; }
+        public AccommodationType AccommodationType { get; set; } = null!;
 
-        public AfbeeldingBestand Bestand { get; set; } = null!;
+        public PhotoFile File { get; set; } = null!;
     }
 }

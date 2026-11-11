@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VakantiePark.Shared.Common
 {
-    public enum AccommodatieOrderBy
+    public enum AccommodationOrderBy
     {
         [Display(Name = "Capaciteit")]
-        MaxPersonen,
+        MaxPersons,
 
         [Display(Name = "Naam")]
-        Naam,
+        Name,
 
         [Display(Name = "Type")]
         Type,

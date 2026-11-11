@@ -1,59 +1,59 @@
 using VakantiePark.Domain.Entities;
-using VakantiePark.Shared.DTOs.Accommodaties;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.Application.Extensions
 {
-    public static class AccommodatieMappings
+    public static class AccommodationMappings
     {
-        public static AccommodatieDto ToDto(this Accommodatie a) => new()
+        public static AccommodationDto ToDto(this Accommodation a) => new()
         {
             Id = a.Id,
             Code = a.Code,
-            Naam = a.Naam,
-            Type = a.AccommodatieType.Naam,
-            TypeSlug = a.AccommodatieType.Slug,
-            Categorie = a.AccommodatieType.Categorie.ToString(),
-            MaxPersonen = a.MaxPersonen,
+            Name = a.Name,
+            Type = a.AccommodationType.Name,
+            TypeSlug = a.AccommodationType.Slug,
+            Category = a.AccommodationType.Category.ToString(),
+            MaxPersons = a.MaxPersons,
             Zone = a.Zone,
-            PrijsPerNacht = a.AccommodatieType.PrijsPerNacht,
-            Hoofdafbeelding = AfbeeldingUrls(a.AccommodatieType).FirstOrDefault(),
+            PricePerNight = a.AccommodationType.PricePerNight,
+            MainPhoto = PhotoUrls(a.AccommodationType).FirstOrDefault(),
         };
 
-        public static AccommodatieDetailDto ToDetailDto(this Accommodatie a) => new()
+        public static AccommodationDetailDto ToDetailDto(this Accommodation a) => new()
         {
             Id = a.Id,
             Code = a.Code,
-            Naam = a.Naam,
-            Type = a.AccommodatieType.Naam,
-            TypeSlug = a.AccommodatieType.Slug,
-            Categorie = a.AccommodatieType.Categorie.ToString(),
-            MaxPersonen = a.MaxPersonen,
+            Name = a.Name,
+            Type = a.AccommodationType.Name,
+            TypeSlug = a.AccommodationType.Slug,
+            Category = a.AccommodationType.Category.ToString(),
+            MaxPersons = a.MaxPersons,
             Zone = a.Zone,
-            PrijsPerNacht = a.AccommodatieType.PrijsPerNacht,
-            Hoofdafbeelding = AfbeeldingUrls(a.AccommodatieType).FirstOrDefault(),
+            PricePerNight = a.AccommodationType.PricePerNight,
+            MainPhoto = PhotoUrls(a.AccommodationType).FirstOrDefault(),
 
-            Omschrijving = a.AccommodatieType.Omschrijving,
-            MaxHuisdieren = a.MaxHuisdieren,
-            Slaapkamers = a.Slaapkamers,
-            Badkamers = a.Badkamers,
-            Bedden = a.Bedden,
-            ElektriciteitAmpere = a.ElektriciteitAmpere,
-            MaxVoertuigLengteMeters = a.MaxVoertuigLengteMeters,
-            MaxCaravanLengteMeters = a.MaxCaravanLengteMeters,
-            Ondergrond = a.Ondergrond,
-            Schaduw = a.Schaduw,
-            WifiDekking = a.WifiDekking,
-            Afbeeldingen = AfbeeldingUrls(a.AccommodatieType),
-            Voorzieningen = a.Voorzieningen
-                .OrderBy(v => v.Naam)
-                .Select(v => new VoorzieningDto { Id = v.Id, Code = v.Code, Naam = v.Naam })
+            Description = a.AccommodationType.Description,
+            MaxPets = a.MaxPets,
+            Bedrooms = a.Bedrooms,
+            Bathrooms = a.Bathrooms,
+            Beds = a.Beds,
+            ElectricityAmps = a.ElectricityAmps,
+            MaxVehicleLengthMeters = a.MaxVehicleLengthMeters,
+            MaxCaravanLengthMeters = a.MaxCaravanLengthMeters,
+            Surface = a.Surface,
+            Shade = a.Shade,
+            WifiCoverage = a.WifiCoverage,
+            Photos = PhotoUrls(a.AccommodationType),
+            Amenities = a.Amenities
+                .OrderBy(v => v.Name)
+                .Select(v => new AmenityDto { Id = v.Id, Code = v.Code, Name = v.Name })
                 .ToList(),
         };
 
-        private static List<string> AfbeeldingUrls(AccommodatieType type) =>
-            type.Afbeeldingen
-                .OrderBy(f => f.Volgorde)
-                .Select(f => $"afbeeldingen/{f.Id}")
+        private static List<string> PhotoUrls(AccommodationType type) =>
+            type.Photos
+                .OrderBy(f => f.SortOrder)
+                .Select(f => $"photos/{f.Id}")
                 .ToList();
     }
 }

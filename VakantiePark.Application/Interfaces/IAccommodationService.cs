@@ -1,16 +1,16 @@
 using VakantiePark.Shared.Common;
-using VakantiePark.Shared.DTOs.Accommodaties;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.Application.Interfaces
 {
-    public interface IAccommodatieService
+    public interface IAccommodationService
     {
-        Task<List<AccommodatieDto>> GetAllAsync();
+        Task<List<AccommodationDto>> GetAllAsync();
 
-        Task<AccommodatieDetailDto> GetByIdAsync(int id);
+        Task<AccommodationDetailDto> GetByIdAsync(int id);
 
-        Task<ZoekOptiesDto> GetZoekOptiesAsync();
+        Task<SearchOptionsDto> GetSearchOptionsAsync();
 
-        Task<PaginatedResult<AccommodatieDetailDto>> ZoekAsync(AccommodatieZoekCriteria criteria);
+        Task<PaginatedResult<AccommodationDetailDto>> SearchAsync(AccommodationSearchCriteria criteria);
     }
 }

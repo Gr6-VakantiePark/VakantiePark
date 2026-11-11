@@ -1,23 +1,23 @@
 using VakantiePark.Domain.Entities;
 using VakantiePark.Domain.Enums;
-using VakantiePark.Shared.DTOs.Accommodaties;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.Application.Interfaces
 {
-    public interface IAccommodatieRepository
+    public interface IAccommodationRepository
     {
-        Task<List<Accommodatie>> GetAllAsync();
+        Task<List<Accommodation>> GetAllAsync();
 
-        Task<Accommodatie?> GetByIdAsync(int id);
+        Task<Accommodation?> GetByIdAsync(int id);
 
-        Task<List<AccommodatieType>> GetTypesAsync();
+        Task<List<AccommodationType>> GetTypesAsync();
 
-        Task<List<Voorziening>> GetVoorzieningenAsync();
+        Task<List<Amenity>> GetAmenitiesAsync();
 
-        Task<Dictionary<int, List<AccommodatieCategorie>>> GetVoorzieningCategorieenAsync();
+        Task<Dictionary<int, List<AccommodationCategory>>> GetAmenityCategoriesAsync();
 
-        Task<(int MaxPersonen, int MaxHuisdieren)> GetMaximaAsync();
+        Task<(int MaxPersons, int MaxPets)> GetMaximumsAsync();
 
-        Task<(List<Accommodatie> Items, int TotalCount)> ZoekAsync(AccommodatieZoekCriteria pagination);
+        Task<(List<Accommodation> Items, int TotalCount)> SearchAsync(AccommodationSearchCriteria pagination);
     }
 }

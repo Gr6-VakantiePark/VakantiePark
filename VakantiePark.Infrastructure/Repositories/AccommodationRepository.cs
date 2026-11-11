@@ -5,98 +5,98 @@ using VakantiePark.Domain.Entities;
 using VakantiePark.Domain.Enums;
 using VakantiePark.Infrastructure.Data;
 using VakantiePark.Shared.Common;
-using VakantiePark.Shared.DTOs.Accommodaties;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.Infrastructure.Repositories
 {
-    public class AccommodatieRepository(ApplicationDBContext context) : IAccommodatieRepository
+    public class AccommodationRepository(ApplicationDBContext context) : IAccommodationRepository
     {
-        public Task<List<Accommodatie>> GetAllAsync() =>
-            context.Accommodaties
+        public Task<List<Accommodation>> GetAllAsync() =>
+            context.Accommodations
                 .AsNoTracking()
-                .Include(a => a.AccommodatieType).ThenInclude(t => t.Afbeeldingen)
+                .Include(a => a.AccommodationType).ThenInclude(t => t.Photos)
                 .OrderBy(a => a.Code)
                 .ToListAsync();
 
-        public Task<Accommodatie?> GetByIdAsync(int id) =>
-            context.Accommodaties
+        public Task<Accommodation?> GetByIdAsync(int id) =>
+            context.Accommodations
                 .AsNoTracking()
-                .Include(a => a.AccommodatieType).ThenInclude(t => t.Afbeeldingen)
-                .Include(a => a.Voorzieningen)
+                .Include(a => a.AccommodationType).ThenInclude(t => t.Photos)
+                .Include(a => a.Amenities)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
-        public Task<List<AccommodatieType>> GetTypesAsync() =>
-            context.AccommodatieTypes
+        public Task<List<AccommodationType>> GetTypesAsync() =>
+            context.AccommodationTypes
                 .AsNoTracking()
-                .OrderBy(t => t.Categorie)
-                .ThenBy(t => t.Naam)
+                .OrderBy(t => t.Category)
+                .ThenBy(t => t.Name)
                 .ToListAsync();
 
-        public Task<List<Voorziening>> GetVoorzieningenAsync() =>
-            context.Voorzieningen
+        public Task<List<Amenity>> GetAmenitiesAsync() =>
+            context.Amenities
                 .AsNoTracking()
-                .OrderBy(v => v.Naam)
+                .OrderBy(v => v.Name)
                 .ToListAsync();
 
-        public async Task<Dictionary<int, List<AccommodatieCategorie>>> GetVoorzieningCategorieenAsync()
+        public async Task<Dictionary<int, List<AccommodationCategory>>> GetAmenityCategoriesAsync()
         {
-            var perAccommodatie = await context.Accommodaties
+            var perAccommodation = await context.Accommodations
                 .Select(a => new
                 {
-                    a.AccommodatieType.Categorie,
-                    VoorzieningIds = a.Voorzieningen.Select(v => v.Id).ToList(),
+                    a.AccommodationType.Category,
+                    AmenityIds = a.Amenities.Select(v => v.Id).ToList(),
                 })
                 .ToListAsync();
 
-            return perAccommodatie
-                .SelectMany(a => a.VoorzieningIds.Select(id => (Id: id, a.Categorie)))
+            return perAccommodation
+                .SelectMany(a => a.AmenityIds.Select(id => (Id: id, a.Category)))
                 .GroupBy(p => p.Id)
-                .ToDictionary(g => g.Key, g => g.Select(p => p.Categorie).Distinct().OrderBy(c => c).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(p => p.Category).Distinct().OrderBy(c => c).ToList());
         }
 
-        public async Task<(int MaxPersonen, int MaxHuisdieren)> GetMaximaAsync()
+        public async Task<(int MaxPersons, int MaxPets)> GetMaximumsAsync()
         {
-            if (!await context.Accommodaties.AnyAsync())
+            if (!await context.Accommodations.AnyAsync())
                 return (0, 0);
 
-            return (await context.Accommodaties.MaxAsync(a => a.MaxPersonen),
-                    await context.Accommodaties.MaxAsync(a => a.MaxHuisdieren));
+            return (await context.Accommodations.MaxAsync(a => a.MaxPersons),
+                    await context.Accommodations.MaxAsync(a => a.MaxPets));
         }
 
-        public async Task<(List<Accommodatie> Items, int TotalCount)> ZoekAsync(AccommodatieZoekCriteria pagination)
+        public async Task<(List<Accommodation> Items, int TotalCount)> SearchAsync(AccommodationSearchCriteria pagination)
         {
-            var query = context.Accommodaties
+            var query = context.Accommodations
                 .AsNoTracking()
-                .Where(a => a.MaxPersonen >= pagination.Personen && a.MaxHuisdieren >= pagination.Huisdieren);
+                .Where(a => a.MaxPersons >= pagination.Persons && a.MaxPets >= pagination.Pets);
 
-            if (Enum.TryParse<AccommodatieCategorie>(pagination.Categorie, ignoreCase: true, out var categorie))
-                query = query.Where(a => a.AccommodatieType.Categorie == categorie);
+            if (Enum.TryParse<AccommodationCategory>(pagination.Category, ignoreCase: true, out var category))
+                query = query.Where(a => a.AccommodationType.Category == category);
 
             if (!string.IsNullOrWhiteSpace(pagination.Type))
             {
                 string slug = pagination.Type.Trim().ToLowerInvariant();
-                query = query.Where(a => a.AccommodatieType.Slug == slug);
+                query = query.Where(a => a.AccommodationType.Slug == slug);
             }
 
-            foreach (string code in pagination.VoorzieningCodes)
-                query = query.Where(a => a.Voorzieningen.Any(v => v.Code == code));
+            foreach (string code in pagination.AmenityCodes)
+                query = query.Where(a => a.Amenities.Any(v => v.Code == code));
 
             int totalCount = await query.CountAsync();
 
-            var gesorteerd = pagination.OrderBy switch
+            var sorted = pagination.OrderBy switch
             {
-                AccommodatieOrderBy.Naam => Sort(query, a => a.Naam, pagination.OrderType),
-                AccommodatieOrderBy.Type => Sort(query, a => a.AccommodatieType.Naam, pagination.OrderType).ThenBy(a => a.Naam),
-                AccommodatieOrderBy.Zone => Sort(query, a => a.Zone, pagination.OrderType).ThenBy(a => a.Naam),
-                _ => Sort(query, a => a.MaxPersonen, pagination.OrderType).ThenBy(a => a.Naam),
+                AccommodationOrderBy.Name => Sort(query, a => a.Name, pagination.OrderType),
+                AccommodationOrderBy.Type => Sort(query, a => a.AccommodationType.Name, pagination.OrderType).ThenBy(a => a.Name),
+                AccommodationOrderBy.Zone => Sort(query, a => a.Zone, pagination.OrderType).ThenBy(a => a.Name),
+                _ => Sort(query, a => a.MaxPersons, pagination.OrderType).ThenBy(a => a.Name),
             };
 
-            var items = await gesorteerd
+            var items = await sorted
                 .ThenBy(a => a.Id)
                 .Skip((pagination.PageNumber - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .Include(a => a.AccommodatieType).ThenInclude(t => t.Afbeeldingen)
-                .Include(a => a.Voorzieningen)
+                .Include(a => a.AccommodationType).ThenInclude(t => t.Photos)
+                .Include(a => a.Amenities)
                 .AsSplitQuery()
                 .ToListAsync();
 

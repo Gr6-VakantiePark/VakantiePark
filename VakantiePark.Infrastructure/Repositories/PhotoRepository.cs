@@ -5,12 +5,12 @@ using VakantiePark.Infrastructure.Data;
 
 namespace VakantiePark.Infrastructure.Repositories
 {
-    public class AfbeeldingRepository(ApplicationDBContext context) : IAfbeeldingRepository
+    public class PhotoRepository(ApplicationDBContext context) : IPhotoRepository
     {
-        public Task<Afbeelding?> GetMetBestandAsync(int id) =>
-            context.Afbeeldingen
+        public Task<Photo?> GetWithFileAsync(int id) =>
+            context.Photos
                 .AsNoTracking()
-                .Include(a => a.Bestand)
+                .Include(a => a.File)
                 .FirstOrDefaultAsync(a => a.Id == id);
     }
 }

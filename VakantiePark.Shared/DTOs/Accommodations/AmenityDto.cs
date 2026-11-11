@@ -1,9 +1,9 @@
-namespace VakantiePark.Shared.DTOs.Accommodaties
+namespace VakantiePark.Shared.DTOs.Accommodations
 {
-    public class VoorzieningDto
+    public class AmenityDto
     {
         public int Id { get; set; }
         public string Code { get; set; } = string.Empty;
-        public string Naam { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
 }

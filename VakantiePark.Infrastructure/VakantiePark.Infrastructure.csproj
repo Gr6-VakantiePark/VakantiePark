@@ -20,7 +20,7 @@
 		<None Update="Data\Seed\*.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="Data\Seed\afbeeldingen\*.jpg">
+		<None Update="Data\Seed\photos\*.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

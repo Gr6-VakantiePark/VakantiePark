@@ -2,84 +2,84 @@ using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Enums;
 using VakantiePark.Shared.Common;
-using VakantiePark.Shared.DTOs.Accommodaties;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.Application.Services
 {
-    public class AccommodatieService(IAccommodatieRepository repository) : IAccommodatieService
+    public class AccommodationService(IAccommodationRepository repository) : IAccommodationService
     {
-        public async Task<List<AccommodatieDto>> GetAllAsync()
+        public async Task<List<AccommodationDto>> GetAllAsync()
         {
-            var accommodaties = await repository.GetAllAsync();
-            return accommodaties.Select(a => a.ToDto()).ToList();
+            var accommodations = await repository.GetAllAsync();
+            return accommodations.Select(a => a.ToDto()).ToList();
         }
 
-        public async Task<AccommodatieDetailDto> GetByIdAsync(int id)
+        public async Task<AccommodationDetailDto> GetByIdAsync(int id)
         {
-            var accommodatie = await repository.GetByIdAsync(id)
+            var accommodation = await repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Accommodatie met id {id} is niet gevonden.");
 
-            return accommodatie.ToDetailDto();
+            return accommodation.ToDetailDto();
         }
 
-        public async Task<ZoekOptiesDto> GetZoekOptiesAsync()
+        public async Task<SearchOptionsDto> GetSearchOptionsAsync()
         {
             var types = await repository.GetTypesAsync();
-            var voorzieningen = await repository.GetVoorzieningenAsync();
-            var categorieenPerVoorziening = await repository.GetVoorzieningCategorieenAsync();
-            var (maxPersonen, maxHuisdieren) = await repository.GetMaximaAsync();
+            var amenities = await repository.GetAmenitiesAsync();
+            var categoriesPerAmenity = await repository.GetAmenityCategoriesAsync();
+            var (maxPersons, maxPets) = await repository.GetMaximumsAsync();
 
-            return new ZoekOptiesDto
+            return new SearchOptionsDto
             {
-                Categorieen = types.Select(t => t.Categorie).Distinct().Order().Select(c => c.ToString()).ToList(),
+                Categories = types.Select(t => t.Category).Distinct().Order().Select(c => c.ToString()).ToList(),
                 Types = types
-                    .Select(t => new AccommodatieTypeDto { Naam = t.Naam, Slug = t.Slug, Categorie = t.Categorie.ToString() })
+                    .Select(t => new AccommodationTypeDto { Name = t.Name, Slug = t.Slug, Category = t.Category.ToString() })
                     .ToList(),
-                Voorzieningen = voorzieningen
-                    .Where(v => categorieenPerVoorziening.ContainsKey(v.Id))
-                    .Select(v => new VoorzieningOptieDto
+                Amenities = amenities
+                    .Where(v => categoriesPerAmenity.ContainsKey(v.Id))
+                    .Select(v => new AmenityOptionDto
                     {
                         Id = v.Id,
                         Code = v.Code,
-                        Naam = v.Naam,
-                        Categorieen = categorieenPerVoorziening[v.Id].Select(c => c.ToString()).ToList(),
+                        Name = v.Name,
+                        Categories = categoriesPerAmenity[v.Id].Select(c => c.ToString()).ToList(),
                     })
                     .ToList(),
-                MaxPersonen = maxPersonen,
-                MaxHuisdieren = maxHuisdieren,
+                MaxPersons = maxPersons,
+                MaxPets = maxPets,
             };
         }
 
-        public async Task<PaginatedResult<AccommodatieDetailDto>> ZoekAsync(AccommodatieZoekCriteria criteria)
+        public async Task<PaginatedResult<AccommodationDetailDto>> SearchAsync(AccommodationSearchCriteria criteria)
         {
-            Valideer(criteria);
+            Validate(criteria);
 
-            var (accommodaties, totalCount) = await repository.ZoekAsync(criteria);
+            var (accommodations, totalCount) = await repository.SearchAsync(criteria);
 
-            return new PaginatedResult<AccommodatieDetailDto>
+            return new PaginatedResult<AccommodationDetailDto>
             {
-                Items = accommodaties.Select(a => a.ToDetailDto()).ToList(),
+                Items = accommodations.Select(a => a.ToDetailDto()).ToList(),
                 TotalCount = totalCount,
                 PageNumber = criteria.PageNumber,
                 PageSize = criteria.PageSize,
             };
         }
 
-        private static void Valideer(AccommodatieZoekCriteria c)
+        private static void Validate(AccommodationSearchCriteria c)
         {
-            if (c.Aankomst == default || c.Vertrek == default)
+            if (c.Arrival == default || c.Departure == default)
                 throw new ArgumentException("Vul een aankomst- en vertrekdatum in.");
 
-            if (c.Aankomst < DateOnly.FromDateTime(DateTime.Today))
+            if (c.Arrival < DateOnly.FromDateTime(DateTime.Today))
                 throw new ArgumentException("De aankomstdatum mag niet in het verleden liggen.");
 
-            if (c.Vertrek <= c.Aankomst)
+            if (c.Departure <= c.Arrival)
                 throw new ArgumentException("De vertrekdatum moet na de aankomstdatum liggen.");
 
-            if (c.Personen < 1)
+            if (c.Persons < 1)
                 throw new ArgumentException("Het aantal personen moet minimaal 1 zijn.");
 
-            if (c.Huisdieren < 0)
+            if (c.Pets < 0)
                 throw new ArgumentException("Het aantal huisdieren kan niet negatief zijn.");
 
             if (c.PageNumber < 1)
@@ -94,9 +94,9 @@ namespace VakantiePark.Application.Services
             if (!Enum.IsDefined(c.OrderType))
                 throw new ArgumentException($"Onbekende sorteerrichting '{c.OrderType}'.");
 
-            if (!string.IsNullOrWhiteSpace(c.Categorie)
-                && (!Enum.TryParse<AccommodatieCategorie>(c.Categorie, ignoreCase: true, out var categorie) || !Enum.IsDefined(categorie)))
-                throw new ArgumentException($"Onbekende categorie '{c.Categorie}'. Kies Huisje of Campingplaats.");
+            if (!string.IsNullOrWhiteSpace(c.Category)
+                && (!Enum.TryParse<AccommodationCategory>(c.Category, ignoreCase: true, out var category) || !Enum.IsDefined(category)))
+                throw new ArgumentException($"Onbekende soort verblijf '{c.Category}'.");
         }
     }
 }

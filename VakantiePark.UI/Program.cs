@@ -22,7 +22,7 @@ namespace StockFlow.ManagementApp
             builder.Services.AddScoped<AuthStateProvider>();
             builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
             builder.Services.AddScoped<IHttpService, HttpService>();
-            builder.Services.AddScoped<IZoekService, ApiZoekService>();
+            builder.Services.AddScoped<ISearchService, ApiSearchService>();
             builder.Services.AddTransient<AuthHandler>();
 
             string apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7037/";

@@ -1,11 +1,11 @@
 namespace VakantiePark.Domain.Entities
 {
-    public class AfbeeldingBestand
+    public class PhotoFile
     {
-        public int AfbeeldingId { get; set; }
+        public int PhotoId { get; set; }
 
         public byte[] Data { get; set; } = [];
 
-        public Afbeelding Afbeelding { get; set; } = null!;
+        public Photo Photo { get; set; } = null!;
     }
 }

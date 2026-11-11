@@ -5,8 +5,8 @@ using VakantiePark.Shared.Common;
 namespace VakantiePark.API.Controllers
 {
     [ApiController]
-    [Route("afbeeldingen")]
-    public class AfbeeldingenController(IAfbeeldingService service) : ControllerBase
+    [Route("photos")]
+    public class PhotosController(IPhotoService service) : ControllerBase
     {
         [HttpGet("{id:int}")]
         [ResponseCache(Duration = 86400)]
@@ -16,8 +16,8 @@ namespace VakantiePark.API.Controllers
         {
             try
             {
-                var afbeelding = await service.GetBestandAsync(id);
-                return File(afbeelding.Data, afbeelding.ContentType);
+                var photo = await service.GetFileAsync(id);
+                return File(photo.Data, photo.ContentType);
             }
             catch (KeyNotFoundException exception)
             {

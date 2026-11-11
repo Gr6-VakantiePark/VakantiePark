@@ -4,36 +4,36 @@ using VakantiePark.Domain.Entities;
 
 namespace VakantiePark.Infrastructure.Data.Configurations
 {
-    public class AfbeeldingConfiguration : IEntityTypeConfiguration<Afbeelding>
+    public class PhotoConfiguration : IEntityTypeConfiguration<Photo>
     {
-        public void Configure(EntityTypeBuilder<Afbeelding> builder)
+        public void Configure(EntityTypeBuilder<Photo> builder)
         {
-            builder.ToTable("Afbeeldingen");
+            builder.ToTable("Photos");
             builder.HasKey(a => a.Id);
 
-            builder.Property(a => a.Bestandsnaam).IsRequired().HasMaxLength(200);
+            builder.Property(a => a.FileName).IsRequired().HasMaxLength(200);
             builder.Property(a => a.ContentType).IsRequired().HasMaxLength(50);
 
-            builder.HasIndex(a => new { a.AccommodatieTypeId, a.Volgorde });
+            builder.HasIndex(a => new { a.AccommodationTypeId, a.SortOrder });
 
-            builder.HasOne(a => a.AccommodatieType)
-                .WithMany(t => t.Afbeeldingen)
-                .HasForeignKey(a => a.AccommodatieTypeId)
+            builder.HasOne(a => a.AccommodationType)
+                .WithMany(t => t.Photos)
+                .HasForeignKey(a => a.AccommodationTypeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(a => a.Bestand)
-                .WithOne(b => b.Afbeelding)
-                .HasForeignKey<AfbeeldingBestand>(b => b.AfbeeldingId)
+            builder.HasOne(a => a.File)
+                .WithOne(b => b.Photo)
+                .HasForeignKey<PhotoFile>(b => b.PhotoId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
 
-    public class AfbeeldingBestandConfiguration : IEntityTypeConfiguration<AfbeeldingBestand>
+    public class PhotoFileConfiguration : IEntityTypeConfiguration<PhotoFile>
     {
-        public void Configure(EntityTypeBuilder<AfbeeldingBestand> builder)
+        public void Configure(EntityTypeBuilder<PhotoFile> builder)
         {
-            builder.ToTable("AfbeeldingBestanden");
-            builder.HasKey(b => b.AfbeeldingId);
+            builder.ToTable("PhotoFiles");
+            builder.HasKey(b => b.PhotoId);
             builder.Property(b => b.Data).IsRequired();
         }
     }

@@ -6,11 +6,11 @@ namespace VakantiePark.Infrastructure.Data
 {
     public class ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : DbContext(options)
     {
-        public DbSet<Accommodatie> Accommodaties => Set<Accommodatie>();
-        public DbSet<AccommodatieType> AccommodatieTypes => Set<AccommodatieType>();
-        public DbSet<Voorziening> Voorzieningen => Set<Voorziening>();
-        public DbSet<Afbeelding> Afbeeldingen => Set<Afbeelding>();
-        public DbSet<AfbeeldingBestand> AfbeeldingBestanden => Set<AfbeeldingBestand>();
+        public DbSet<Accommodation> Accommodations => Set<Accommodation>();
+        public DbSet<AccommodationType> AccommodationTypes => Set<AccommodationType>();
+        public DbSet<Amenity> Amenities => Set<Amenity>();
+        public DbSet<Photo> Photos => Set<Photo>();
+        public DbSet<PhotoFile> PhotoFiles => Set<PhotoFile>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -23,12 +23,12 @@ namespace VakantiePark.Infrastructure.Data
         {
             optionsBuilder.UseSeeding((context, _) =>
             {
-                context.UseAccommodatieSeeder();
+                context.UseAccommodationSeeder();
             });
 
             optionsBuilder.UseAsyncSeeding((context, _, _) =>
             {
-                context.UseAccommodatieSeeder();
+                context.UseAccommodationSeeder();
                 return Task.CompletedTask;
             });
 
