@@ -3,7 +3,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VakantiePark.Application.Interfaces;
 using VakantiePark.Infrastructure.Data;
+using VakantiePark.Infrastructure.Repositories;
 
 namespace VakantiePark.Infrastructure
 {
@@ -12,6 +14,7 @@ namespace VakantiePark.Infrastructure
         public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services, IConfiguration configuration, string root)
         {
             services.RegisterDatabaseServices(configuration, root);
+            services.AddScoped<IAccommodatieRepository, AccommodatieRepository>();
 
 
             return services;
