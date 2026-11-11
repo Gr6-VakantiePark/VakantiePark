@@ -1,0 +1,86 @@
+@using System.Globalization
+@using VakantiePark.Shared.DTOs.Accommodations
+
+<li>
+    <article class="result-card" aria-labelledby="result-@Accommodation.Id">
+        @if (PhotoUrl is not null)
+        {
+            <img src="@PhotoUrl" alt="" width="1200" height="800" loading="lazy">
+        }
+        <h3 class="result-card__name" id="result-@Accommodation.Id">@Accommodation.Name</h3>
+        <p class="result-card__meta">
+            @AccommodationCategoryLabels.Label(Accommodation.Category) · @Accommodation.Type · @Accommodation.Zone
+        </p>
+
+        <dl class="result-card__facts">
+            @foreach (var (label, value) in Facts())
+            {
+                <div @key="label"><dt>@label</dt><dd>@value</dd></div>
+            }
+        </dl>
+
+        @if (Accommodation.Amenities.Count > 0)
+        {
+            <ul class="result-card__amenities" aria-label="Voorzieningen">
+                @foreach (var amenity in Accommodation.Amenities)
+                {
+                    <li @key="amenity.Code" class="tag">@amenity.Name</li>
+                }
+            </ul>
+        }
+
+        <div class="result-card__footer">
+            <p class="result-card__price">
+                @if (Accommodation.PricePerNight > 0)
+                {
+                    <strong>@((Accommodation.PricePerNight * Nights).ToString("C", Dutch))</strong>
+                    <span class="note">voor @Nights @(Nights == 1 ? "nacht" : "nachten")</span>
+                }
+                else
+                {
+                    <span class="note">Prijs volgt</span>
+                }
+            </p>
+            <a class="button button--outline" href="accommodaties/@Accommodation.TypeSlug">Over de @Accommodation.Type</a>
+        </div>
+    </article>
+</li>
+
+@code {
+    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
+
+    [Parameter, EditorRequired]
+    public AccommodationDetailDto Accommodation { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public int Nights { get; set; }
+
+    [Parameter]
+    public string? PhotoUrl { get; set; }
+
+    private IEnumerable<(string Label, string Value)> Facts()
+    {
+        yield return ("Personen", Accommodation.MaxPersons.ToString(Dutch));
+
+        if (Accommodation.Bedrooms is not null)
+        {
+            yield return ("Slaapkamers", Accommodation.Bedrooms.Value.ToString(Dutch));
+            yield return ("Badkamers", (Accommodation.Bathrooms ?? 0).ToString(Dutch));
+            yield return ("Bedden", (Accommodation.Beds ?? 0).ToString(Dutch));
+        }
+        else
+        {
+            if (Accommodation.Surface is not null)
+                yield return ("Ondergrond", Accommodation.Surface);
+            yield return ("Stroom", Accommodation.ElectricityAmps > 0 ? $"{Accommodation.ElectricityAmps} A" : "Geen");
+            if ((Accommodation.MaxVehicleLengthMeters ?? Accommodation.MaxCaravanLengthMeters) is decimal length)
+                yield return ("Max. lengte", $"{length.ToString("0.#", Dutch)} m");
+            if (Accommodation.Shade is not null)
+                yield return ("Schaduw", Accommodation.Shade);
+            if (Accommodation.WifiCoverage is not null)
+                yield return ("Wifi", Accommodation.WifiCoverage);
+        }
+
+        yield return ("Huisdieren", Accommodation.MaxPets > 0 ? $"max. {Accommodation.MaxPets}" : "Niet toegestaan");
+    }
+}

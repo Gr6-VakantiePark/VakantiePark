@@ -32,6 +32,11 @@
   border-bottom-right-radius: var(--radius-lg);
 }
 
+.gallery .gallery__plan {
+  object-fit: contain;
+  background: var(--mist);
+}
+
 .gallery--three {
   grid-template-columns: 2fr 1fr;
 }

@@ -1,0 +1,231 @@
+@using VakantiePark.Shared.DTOs.Accommodations
+@using VakantiePark.UI.Services
+@inject NavigationManager Navigation
+
+<div class="search-form" id="search-form">
+    <h2 id="heading-search">Zoek een verblijf</h2>
+
+    <EditForm class="form" Model="_form" OnSubmit="Search" FormName="search">
+        <div class="form__row">
+            <div class="field">
+                <label for="arrival">Aankomst</label>
+                <InputDate id="arrival" @ref="_arrivalInput" @bind-Value="_form.Arrival" min="@ToIso(_today)" />
+            </div>
+            <div class="field">
+                <label for="departure">Vertrek</label>
+                <InputDate id="departure" @bind-Value="_form.Departure" min="@ToIso((_form.Arrival ?? _today).AddDays(1))" />
+            </div>
+            <div class="field">
+                <label for="persons">Personen</label>
+                <InputNumber id="persons" @bind-Value="_form.Persons" min="1" max="@Options.MaxPersons" />
+            </div>
+            <div class="field">
+                <label for="pets">Huisdieren</label>
+                <InputNumber id="pets" @bind-Value="_form.Pets" min="0" max="@Options.MaxPets" />
+            </div>
+        </div>
+
+        <div class="form__row">
+            <div class="field">
+                <label for="category">Soort verblijf</label>
+                <InputSelect id="category" @bind-Value="_form.Category" @bind-Value:after="OnCategoryChanged">
+                    <option value="">Alles</option>
+                    @foreach (var category in Options.Categories)
+                    {
+                        <option value="@category">@AccommodationCategoryLabels.Label(category)</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="field">
+                <label for="type">Type</label>
+                <InputSelect id="type" @bind-Value="_form.Type">
+                    <option value="">Alle types</option>
+                    @foreach (var type in VisibleTypes)
+                    {
+                        <option value="@type.Slug">@type.Name</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        @if (VisibleAmenities.Any())
+        {
+            <fieldset class="field">
+                <legend>Voorzieningen</legend>
+                <ul class="form__checks">
+                    @foreach (var amenity in VisibleAmenities)
+                    {
+                        <li @key="amenity.Code">
+                            <input type="checkbox" id="amenity-@amenity.Code"
+                                   checked="@_selectedAmenities.Contains(amenity.Code)"
+                                   @onchange="e => SetAmenity(amenity.Code, e.Value is true)" />
+                            <label for="amenity-@amenity.Code">@amenity.Name</label>
+                        </li>
+                    }
+                </ul>
+            </fieldset>
+        }
+
+        @if (_errors.Count > 0)
+        {
+            <ul class="form__errors" role="alert">
+                @foreach (var error in _errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        }
+
+        <div class="form__actions">
+            <button class="button" type="submit"><i class="bi bi-search" aria-hidden="true"></i> Zoeken</button>
+            <button class="button button--outline" type="button" @onclick="ClearFilters">Filters wissen</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public SearchOptionsDto Options { get; set; } = new();
+
+    [Parameter]
+    public AccommodationSearchCriteria? Current { get; set; }
+
+    [Parameter]
+    public string? InitialType { get; set; }
+
+    private sealed class SearchFormModel
+    {
+        public DateOnly? Arrival { get; set; }
+        public DateOnly? Departure { get; set; }
+        public int Persons { get; set; } = 1;
+        public int Pets { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+    }
+
+    private readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private readonly List<string> _errors = new();
+    private SearchFormModel _form = new();
+    private HashSet<string> _selectedAmenities = new(StringComparer.OrdinalIgnoreCase);
+    private InputDate<DateOnly?>? _arrivalInput;
+    private AccommodationSearchCriteria? _previousCurrent;
+    private bool _initialised;
+
+    public async Task FocusAsync()
+    {
+        if (_arrivalInput?.Element is { } element)
+            await element.FocusAsync();
+    }
+
+    private IEnumerable<AccommodationTypeDto> VisibleTypes =>
+        Options.Types.Where(type => _form.Category == string.Empty || type.Category == _form.Category);
+
+    private IEnumerable<AmenityOptionDto> VisibleAmenities =>
+        Options.Amenities.Where(amenity => _form.Category == string.Empty || amenity.Categories.Contains(_form.Category));
+
+    protected override void OnParametersSet()
+    {
+        if (_initialised && ReferenceEquals(Current, _previousCurrent))
+            return;
+
+        _initialised = true;
+        _previousCurrent = Current;
+        _errors.Clear();
+
+        if (Current is null)
+        {
+            var type = Options.Types.FirstOrDefault(t => t.Slug.Equals(InitialType, StringComparison.OrdinalIgnoreCase));
+            _form = new SearchFormModel
+            {
+                Type = type?.Slug ?? string.Empty,
+                Category = type?.Category ?? string.Empty,
+            };
+            _selectedAmenities = new(StringComparer.OrdinalIgnoreCase);
+            return;
+        }
+
+        _form = new SearchFormModel
+        {
+            Arrival = Current.Arrival == default ? null : Current.Arrival,
+            Departure = Current.Departure == default ? null : Current.Departure,
+            Persons = Math.Max(1, Current.Persons),
+            Pets = Current.Pets,
+            Category = Current.Category ?? string.Empty,
+            Type = Current.Type ?? string.Empty,
+        };
+        _selectedAmenities = new(Current.AmenityCodes, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnCategoryChanged()
+    {
+        if (!VisibleTypes.Any(type => type.Slug == _form.Type))
+            _form.Type = string.Empty;
+
+        var visible = VisibleAmenities.Select(amenity => amenity.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _selectedAmenities.RemoveWhere(code => !visible.Contains(code));
+    }
+
+    private void SetAmenity(string code, bool selected)
+    {
+        if (selected)
+            _selectedAmenities.Add(code);
+        else
+            _selectedAmenities.Remove(code);
+    }
+
+    private void ClearFilters()
+    {
+        _form = new SearchFormModel { Arrival = _form.Arrival, Departure = _form.Departure, Persons = _form.Persons };
+        _selectedAmenities.Clear();
+        _errors.Clear();
+    }
+
+    private void Search()
+    {
+        _errors.Clear();
+
+        if (_form.Arrival is null)
+            _errors.Add("Kies een aankomstdatum.");
+        else if (_form.Arrival < _today)
+            _errors.Add("De aankomstdatum mag niet in het verleden liggen.");
+
+        if (_form.Departure is null)
+            _errors.Add("Kies een vertrekdatum.");
+        else if (_form.Arrival is not null && _form.Departure <= _form.Arrival)
+            _errors.Add("De vertrekdatum moet na de aankomstdatum liggen.");
+
+        if (_form.Persons < 1)
+            _errors.Add("Kies minimaal 1 persoon.");
+        else if (_form.Persons > Options.MaxPersons)
+            _errors.Add($"Het grootste verblijf is voor {Options.MaxPersons} personen.");
+
+        if (_form.Pets < 0)
+            _errors.Add("Het aantal huisdieren kan niet negatief zijn.");
+        else if (_form.Pets > Options.MaxPets)
+            _errors.Add($"Er zijn maximaal {Options.MaxPets} huisdieren toegestaan.");
+
+        if (_errors.Count > 0)
+            return;
+
+        var criteria = new AccommodationSearchCriteria
+        {
+            Arrival = _form.Arrival!.Value,
+            Departure = _form.Departure!.Value,
+            Persons = _form.Persons,
+            Pets = _form.Pets,
+            Category = _form.Category == string.Empty ? null : _form.Category,
+            Type = _form.Type == string.Empty ? null : _form.Type,
+            Amenities = _selectedAmenities.Count == 0 ? null : string.Join(",", _selectedAmenities),
+        };
+
+        if (Current is not null)
+        {
+            criteria.OrderBy = Current.OrderBy;
+            criteria.OrderType = Current.OrderType;
+        }
+
+        Navigation.NavigateTo(SearchUrl.For(criteria));
+    }
+
+    private static string ToIso(DateOnly date) => date.ToString("yyyy-MM-dd");
+}

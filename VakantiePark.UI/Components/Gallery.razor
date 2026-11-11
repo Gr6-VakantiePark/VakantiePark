@@ -9,7 +9,7 @@
             }
             else
             {
-                <img src="@image.Src" alt="@image.Alt" width="800" height="600" loading="lazy">
+                <img class="@(LastIsFloorPlan && i == Images.Count - 1 ? "gallery__plan" : null)" src="@image.Src" alt="@image.Alt" width="800" height="600" loading="lazy">
             }
         }
     </div>
@@ -18,4 +18,7 @@
 @code {
     [Parameter, EditorRequired]
     public IReadOnlyList<GalleryImage> Images { get; set; } = [];
+
+    [Parameter]
+    public bool LastIsFloorPlan { get; set; }
 }
