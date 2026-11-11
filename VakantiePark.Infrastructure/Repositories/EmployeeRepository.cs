@@ -32,6 +32,8 @@ namespace VakantiePark.Infrastructure.Repositories
 
         public Task<List<Role>> GetRolesAsync(IEnumerable<string> codes)
         {
+            ArgumentNullException.ThrowIfNull(codes);
+
             var normalized = codes.Select(c => c.Trim().ToLowerInvariant()).ToList();
             return context.Roles
                 .Include(r => r.Permissions)
@@ -39,7 +41,11 @@ namespace VakantiePark.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task AddAsync(Employee employee) => await context.Employees.AddAsync(employee);
+        public async Task AddAsync(Employee employee)
+        {
+            ArgumentNullException.ThrowIfNull(employee);
+            await context.Employees.AddAsync(employee);
+        }
 
         public Task SaveChangesAsync() => context.SaveChangesAsync();
     }

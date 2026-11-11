@@ -2,7 +2,6 @@ using VakantiePark.Application.Calculators;
 using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
-using VakantiePark.Domain.Enums;
 using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.Shared.DTOs.Prices;
@@ -19,9 +18,12 @@ namespace VakantiePark.Application.Services
 
         public async Task<AccommodationDetailDto> GetByIdAsync(int id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null)
         {
+            if (id < 1)
+                throw new ArgumentException("Het id van de accommodatie moet minimaal 1 zijn.");
+
             bool hasStay = arrival is not null || departure is not null || persons is not null;
             if (hasStay)
-                ValidateStay(arrival, departure, persons);
+                AccommodationValidation.ValidateStay(arrival, departure, persons);
 
             var accommodation = await repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Accommodatie met id {id} is niet gevonden.");
@@ -68,7 +70,7 @@ namespace VakantiePark.Application.Services
 
         public async Task<PaginatedResult<AccommodationDetailDto>> SearchAsync(AccommodationSearchCriteria criteria)
         {
-            Validate(criteria);
+            criteria.Validate();
 
             var (accommodations, totalCount) = await repository.SearchAsync(criteria);
             var settings = await settingsRepository.GetAsync();
@@ -98,52 +100,6 @@ namespace VakantiePark.Application.Services
                 persons,
                 settings.CleaningFee,
                 settings.TouristTaxPerPersonPerNight);
-        }
-
-        private static void ValidateStay(DateOnly? arrival, DateOnly? departure, int? persons)
-        {
-            if (arrival is null || departure is null || persons is null)
-                throw new ArgumentException("Geef aankomst, vertrek en het aantal personen samen op om een prijs te berekenen.");
-
-            if (departure <= arrival)
-                throw new ArgumentException("De vertrekdatum moet na de aankomstdatum liggen.");
-
-            if (persons < 1)
-                throw new ArgumentException("Het aantal personen moet minimaal 1 zijn.");
-        }
-
-        private static void Validate(AccommodationSearchCriteria c)
-        {
-            if (c.Arrival == default || c.Departure == default)
-                throw new ArgumentException("Vul een aankomst- en vertrekdatum in.");
-
-            if (c.Arrival < DateOnly.FromDateTime(DateTime.Today))
-                throw new ArgumentException("De aankomstdatum mag niet in het verleden liggen.");
-
-            if (c.Departure <= c.Arrival)
-                throw new ArgumentException("De vertrekdatum moet na de aankomstdatum liggen.");
-
-            if (c.Persons < 1)
-                throw new ArgumentException("Het aantal personen moet minimaal 1 zijn.");
-
-            if (c.Pets < 0)
-                throw new ArgumentException("Het aantal huisdieren kan niet negatief zijn.");
-
-            if (c.PageNumber < 1)
-                throw new ArgumentException("Het paginanummer moet minimaal 1 zijn.");
-
-            if (c.PageSize < 1 || c.PageSize > PaginationBase.MaxPageSize)
-                throw new ArgumentException($"De paginagrootte moet tussen 1 en {PaginationBase.MaxPageSize} liggen.");
-
-            if (!Enum.IsDefined(c.OrderBy))
-                throw new ArgumentException($"Op '{c.OrderBy}' kan niet gesorteerd worden.");
-
-            if (!Enum.IsDefined(c.OrderType))
-                throw new ArgumentException($"Onbekende sorteerrichting '{c.OrderType}'.");
-
-            if (!string.IsNullOrWhiteSpace(c.Category)
-                && (!Enum.TryParse<AccommodationCategory>(c.Category, ignoreCase: true, out var category) || !Enum.IsDefined(category)))
-                throw new ArgumentException($"Onbekende soort verblijf '{c.Category}'.");
         }
     }
 }

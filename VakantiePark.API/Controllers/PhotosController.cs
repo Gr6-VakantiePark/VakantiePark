@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Shared.Common;
 
@@ -7,6 +8,7 @@ namespace VakantiePark.API.Controllers
 {
     [ApiController]
     [AllowAnonymous]
+    [DisableRateLimiting]
     [Route("photos")]
     public class PhotosController(IPhotoService service) : ControllerBase
     {

@@ -71,6 +71,8 @@ namespace VakantiePark.Infrastructure.Repositories
 
         public async Task<(List<Accommodation> Items, int TotalCount)> SearchAsync(AccommodationSearchCriteria pagination)
         {
+            ArgumentNullException.ThrowIfNull(pagination);
+
             var query = context.Accommodations
                 .AsNoTracking()
                 .Where(a => a.MaxPersons >= pagination.Persons && a.MaxPets >= pagination.Pets);
