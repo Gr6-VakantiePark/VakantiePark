@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Shared.Common;
@@ -5,6 +6,7 @@ using VakantiePark.Shared.Common;
 namespace VakantiePark.API.Controllers
 {
     [ApiController]
+    [AllowAnonymous]
     [Route("photos")]
     public class PhotosController(IPhotoService service) : ControllerBase
     {
