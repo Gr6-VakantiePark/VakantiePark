@@ -5,13 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using VakantiePark.Application.Common;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Shared.Common;
 
 namespace VakantiePark.Infrastructure.Security
 {
     public class JwtTokenService(JwtSettings settings) : ITokenService
     {
-        public const string PermissionClaim = "permission";
-
         public (string Token, DateTime ExpiresAt) CreateToken(Employee employee)
         {
             DateTime expiresAt = DateTime.UtcNow.AddMinutes(settings.ExpiryMinutes);
@@ -26,7 +25,7 @@ namespace VakantiePark.Infrastructure.Security
                 new(JwtRegisteredClaimNames.FamilyName, employee.LastName),
             };
             claims.AddRange(employee.Roles.Select(role => new Claim("role", role.Code)));
-            claims.AddRange(employee.Permissions.Select(permission => new Claim(PermissionClaim, permission.Code)));
+            claims.AddRange(employee.Permissions.Select(permission => new Claim(Permissions.ClaimType, permission.Code)));
 
             var descriptor = new SecurityTokenDescriptor
             {
@@ -42,9 +41,12 @@ namespace VakantiePark.Infrastructure.Security
 
         public static SymmetricSecurityKey CreateSigningKey(JwtSettings settings)
         {
-            byte[] key = Encoding.UTF8.GetBytes(settings.Key);
+            byte[] key = Encoding.UTF8.GetBytes(settings.Key ?? string.Empty);
             if (key.Length < 32)
-                throw new InvalidOperationException("JWT:Key moet minimaal 32 tekens lang zijn.");
+                throw new InvalidOperationException(
+                    "JWT:Key ontbreekt of is korter dan 32 tekens. Zet de sleutel in user-secrets "
+                    + "(dotnet user-secrets set \"JWT:Key\" \"<sleutel>\" --project VakantiePark.API) "
+                    + "of in de omgevingsvariabele JWT__Key.");
 
             return new SymmetricSecurityKey(key);
         }

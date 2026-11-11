@@ -2,6 +2,8 @@ namespace VakantiePark.Shared.Common
 {
     public static class Permissions
     {
+        public const string ClaimType = "permission";
+
         public const string ManageEmployees = "employees.manage";
         public const string ViewGuests = "guests.view";
         public const string ManageGuests = "guests.manage";

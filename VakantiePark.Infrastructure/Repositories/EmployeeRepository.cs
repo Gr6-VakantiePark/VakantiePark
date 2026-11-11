@@ -22,6 +22,9 @@ namespace VakantiePark.Infrastructure.Repositories
                 .ThenBy(e => e.FirstName)
                 .ToListAsync();
 
+        public Task<bool> IsActiveAsync(Guid id) =>
+            context.Employees.AnyAsync(e => e.Id == id && e.IsActive);
+
         public Task<bool> AnyAsync() => context.Employees.AnyAsync();
 
         public Task<bool> EmailExistsAsync(string normalizedEmail) =>

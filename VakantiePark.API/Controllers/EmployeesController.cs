@@ -8,7 +8,7 @@ namespace VakantiePark.API.Controllers
 {
     [ApiController]
     [Route("admin/employees")]
-    [Authorize(Roles = Roles.Administrator)]
+    [Authorize(Policy = Permissions.ManageEmployees)]
     public class EmployeesController(IEmployeeService employeeService) : ControllerBase
     {
         [HttpGet]

@@ -43,7 +43,7 @@
         </div>
         <div>
             <h2>Beheerfuncties</h2>
-            <AuthorizeView Roles="@Roles.Administrator">
+            <AuthorizeView Policy="@Permissions.ManageEmployees">
                 <Authorized>
                     <ul class="dashboard__links">
                         <li>

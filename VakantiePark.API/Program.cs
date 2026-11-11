@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using VakantiePark.Infrastructure.Data;
 using VakantiePark.Application;
-using VakantiePark.Application.Interfaces;
-using VakantiePark.Shared.DTOs.Auth;
 using VakantiePark.Infrastructure;
 
 namespace VakantiePark.API
@@ -17,7 +15,7 @@ namespace VakantiePark.API
 
             builder.Services.RegisterInfrastructureServices(builder.Configuration, builder.Environment.ContentRootPath);
             builder.Services.RegisterApplicationServices();
-            builder.Services.RegisterAPIServices(builder.Configuration);
+            builder.Services.RegisterAPIServices(builder.Configuration, builder.Environment);
             builder.Services.AddHttpClient();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -57,21 +55,6 @@ namespace VakantiePark.API
             using (var scope = app.Services.CreateScope())
             {
                 scope.ServiceProvider.GetRequiredService<ApplicationDBContext>().Database.Migrate();
-
-                var employeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
-
-                if (app.Environment.IsDevelopment()
-                    && builder.Configuration.GetSection("TestAccounts").Get<List<CreateEmployeeDto>>() is { Count: > 0 } testAccounts)
-                {
-                    employeeService.EnsureTestAccountsAsync(testAccounts).GetAwaiter().GetResult();
-                }
-
-                string? adminEmail = builder.Configuration["InitialAdmin:Email"];
-                string? adminPassword = builder.Configuration["InitialAdmin:Password"];
-                if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
-                {
-                    employeeService.EnsureInitialAdministratorAsync(adminEmail, adminPassword).GetAwaiter().GetResult();
-                }
             }
 
             if (app.Environment.IsDevelopment())

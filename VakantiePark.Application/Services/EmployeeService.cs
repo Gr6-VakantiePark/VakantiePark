@@ -66,32 +66,6 @@ namespace VakantiePark.Application.Services
             return employee.ToDto();
         }
 
-        public async Task EnsureInitialAdministratorAsync(string email, string password)
-        {
-            if (await repository.AnyAsync())
-                return;
-
-            await CreateAsync(new CreateEmployeeDto
-            {
-                Email = email,
-                Password = password,
-                FirstName = "Beheerder",
-                LastName = "Vakantiepark",
-                Roles = [Roles.Administrator],
-            });
-        }
-
-        public async Task EnsureTestAccountsAsync(IEnumerable<CreateEmployeeDto> accounts)
-        {
-            foreach (var account in accounts)
-            {
-                if (await repository.EmailExistsAsync(EmployeeMappings.NormalizeEmail(account.Email)))
-                    continue;
-
-                await CreateAsync(account);
-            }
-        }
-
         private static void ValidatePassword(string? password)
         {
             if (string.IsNullOrEmpty(password) || password.Length < MinimumPasswordLength)

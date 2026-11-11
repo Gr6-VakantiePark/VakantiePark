@@ -9,9 +9,5 @@ namespace VakantiePark.Application.Interfaces
         Task<EmployeeDto> GetByIdAsync(Guid id);
 
         Task<EmployeeDto> CreateAsync(CreateEmployeeDto request);
-
-        Task EnsureInitialAdministratorAsync(string email, string password);
-
-        Task EnsureTestAccountsAsync(IEnumerable<CreateEmployeeDto> accounts);
     }
 }

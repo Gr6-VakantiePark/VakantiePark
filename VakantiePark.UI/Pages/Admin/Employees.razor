@@ -1,5 +1,5 @@
 @page "/beheer/medewerkers"
-@attribute [Authorize(Roles = VakantiePark.Shared.Common.Roles.Administrator)]
+@attribute [Authorize(Policy = VakantiePark.Shared.Common.Permissions.ManageEmployees)]
 @using System.Globalization
 @using VakantiePark.Shared.DTOs.Auth
 @using VakantiePark.UI.Interfaces

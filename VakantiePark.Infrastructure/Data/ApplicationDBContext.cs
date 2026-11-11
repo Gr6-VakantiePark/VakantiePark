@@ -28,12 +28,14 @@ namespace VakantiePark.Infrastructure.Data
             {
                 context.UseAccommodationSeeder();
                 context.UseRoleSeeder();
+                context.UseEmployeeSeeder();
             });
 
             optionsBuilder.UseAsyncSeeding((context, _, _) =>
             {
                 context.UseAccommodationSeeder();
                 context.UseRoleSeeder();
+                context.UseEmployeeSeeder();
                 return Task.CompletedTask;
             });
 

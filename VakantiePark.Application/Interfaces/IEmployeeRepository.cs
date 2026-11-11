@@ -10,6 +10,8 @@ namespace VakantiePark.Application.Interfaces
 
         Task<List<Employee>> GetAllAsync();
 
+        Task<bool> IsActiveAsync(Guid id);
+
         Task<bool> AnyAsync();
 
         Task<bool> EmailExistsAsync(string normalizedEmail);

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.ComponentModel.Design;
+using VakantiePark.Shared.Common;
 using VakantiePark.UI;
 using VakantiePark.UI.Authentication;
 using VakantiePark.UI.Interfaces;
@@ -17,7 +18,11 @@ namespace StockFlow.ManagementApp
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            builder.Services.AddAuthorizationCore();
+            builder.Services.AddAuthorizationCore(options =>
+            {
+                foreach (string permission in Permissions.All)
+                    options.AddPolicy(permission, policy => policy.RequireClaim(Permissions.ClaimType, permission));
+            });
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<SessionStorageService>();
             builder.Services.AddScoped<AuthStateProvider>();

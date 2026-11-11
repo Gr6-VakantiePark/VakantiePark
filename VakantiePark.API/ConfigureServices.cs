@@ -1,9 +1,12 @@
-﻿using System.Text.Json;
+﻿using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using VakantiePark.Application.Common;
+using VakantiePark.Application.Interfaces;
 using VakantiePark.Infrastructure.Security;
 using VakantiePark.Shared.Common;
 
@@ -11,7 +14,7 @@ namespace VakantiePark.API
 {
     public static class ConfigureServices
     {
-        public static IServiceCollection RegisterAPIServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection RegisterAPIServices(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
             services.PostConfigure<ApiBehaviorOptions>(options =>
             {
@@ -26,15 +29,19 @@ namespace VakantiePark.API
                 };
             });
 
-            services.RegisterAuthentication(configuration);
+            services.RegisterAuthentication(configuration, environment);
 
             return services;
         }
 
-        private static IServiceCollection RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection RegisterAuthentication(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
             var settings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
                 ?? throw new InvalidOperationException("De JWT-instellingen ontbreken in appsettings.json.");
+
+            if (string.IsNullOrWhiteSpace(settings.Key) && environment.IsDevelopment())
+                settings.Key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
             services.AddSingleton(settings);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -56,6 +63,16 @@ namespace VakantiePark.API
                     };
                     options.Events = new JwtBearerEvents
                     {
+                        OnTokenValidated = async context =>
+                        {
+                            var repository = context.HttpContext.RequestServices.GetRequiredService<IEmployeeRepository>();
+                            if (context.Principal is null
+                                || !context.Principal.TryGetUserId(out Guid userId)
+                                || !await repository.IsActiveAsync(userId))
+                            {
+                                context.Fail(ApiMessages.NotLoggedIn);
+                            }
+                        },
                         OnChallenge = async context =>
                         {
                             context.HandleResponse();
@@ -66,7 +83,15 @@ namespace VakantiePark.API
                     };
                 });
 
-            services.AddAuthorization();
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                foreach (string permission in Permissions.All)
+                    options.AddPolicy(permission, policy => policy.RequireClaim(Permissions.ClaimType, permission));
+            });
 
             return services;
         }
