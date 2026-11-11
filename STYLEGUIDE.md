@@ -438,6 +438,8 @@ One large image plus three small ones. `gallery--three` gives one large and two 
 
 The first image is the largest one on the page, so it gets no `loading="lazy"`. The gallery CSS depends on the exact image count and order. Do not add images or wrap them in other elements.
 
+On holiday-home pages the fourth image is the floor plan. It gets the class `gallery__plan`, which shows the whole image (`object-fit: contain` on a `--mist` background) instead of cropping it, and the alt text `Plattegrond van de <naam>`. Camping pitches have no floor plan.
+
 ### Accommodation page blocks
 
 | Block | Markup | Notes |
@@ -505,7 +507,7 @@ Use `EditForm` with the built-in input components. `EditForm` accepts `class="fo
 
 ## 13. Images
 
-- Photos follow the slug: `img/photos/<slug>-1.jpg` is the main image (1600×1000), and `-2` to `-4` are 800×600. The exceptions are `hero.jpg` (1600×1100) and `pool-1..3.jpg` (1600×1000, then 800×600).
+- Photos follow the slug: `img/photos/<slug>-1.jpg` is the main image (1600×1000), and `-2` to `-4` are 800×600. On holiday homes `-4` is the floor plan, scaled to fit 800×600 without cropping. Photos are JPG (quality about 82); convert source PNGs before adding them. The exceptions are `hero.jpg` (1600×1100) and `pool-1..3.jpg` (1600×1000, then 800×600).
 - Always set `width` and `height` to the source dimensions.
 - Images below the fold get `loading="lazy"`. The hero and the first gallery image do not.
 - Decorative images get `alt=""`. Content images get descriptive Dutch alt text.

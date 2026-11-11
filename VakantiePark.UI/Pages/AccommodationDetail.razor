@@ -25,7 +25,7 @@ else
 
     <PageHeader Title="@_type.Name" Intro="@_type.Tagline" Crumbs="_crumbs" />
 
-    <Gallery Images="_images" />
+    <Gallery Images="_images" LastIsFloorPlan="_type.Category == AccommodationCategory.HolidayHome" />
 
     <section class="section">
         <div class="container detail">
@@ -55,7 +55,12 @@ else
         _images = _type is null
             ? []
             : Enumerable.Range(1, 4)
-                .Select(number => new GalleryImage($"img/photos/{_type.Slug}-{number}.jpg", $"{_type.Name}, foto {number}"))
+                .Select(number => new GalleryImage($"img/photos/{_type.Slug}-{number}.jpg", ImageAlt(_type, number)))
                 .ToList();
     }
+
+    private static string ImageAlt(AccommodationType type, int number) =>
+        type.Category == AccommodationCategory.HolidayHome && number == 4
+            ? $"Plattegrond van de {type.Name}"
+            : $"{type.Name}, foto {number}";
 }
