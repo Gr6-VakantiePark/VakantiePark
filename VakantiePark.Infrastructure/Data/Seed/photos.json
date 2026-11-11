@@ -1,0 +1,14 @@
+{
+  "berk-4": [ "berk4.jpg", "berk4-1.jpg", "berk4-2.jpg", "berk4-4.jpg" ],
+  "berk-6": [ "berk6.jpg", "berk6-1.jpg", "berk6-2.jpg", "berk6-3.jpg" ],
+  "eik-6": [ "eik6.jpg", "eik6-1.jpg", "eik6-2.jpg", "eik6-3.jpg" ],
+  "eik-luxe-6": [ "eikluxe6.jpg", "eikluxe6-1.jpg", "eikluxe6-2.jpg", "eikluxe6-3.jpg" ],
+  "beuk-8": [ "beuk8.jpg", "beuk8-1.jpg", "beuk8-2.jpg", "beuk8-3.jpg" ],
+  "wilg-4-mindervalide": [ "wilg4.jpg", "wilg4-1.jpg", "wilg4-2.jpg", "wilg4-3.jpg" ],
+  "bosvilla-10": [ "bosvilla10.jpg", "bosvilla10-1.jpg", "bosvilla10-2.jpg", "bosvilla10-3.jpg" ],
+  "tentplaats-basis": [ "tentbasis.jpg", "tentbasis1.jpg" ],
+  "tentplaats-comfort": [ "tentcomfort.jpg", "tentcomfort1.jpg" ],
+  "caravanplaats": [ "caravan.jpg", "caravan1.jpg" ],
+  "camperplaats": [ "camper.jpg", "camper1.jpg" ],
+  "camperplaats-xl": [ "camperXL.jpg", "camperXL1.jpg" ]
+}
