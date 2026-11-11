@@ -1,0 +1,40 @@
+@page "/boeken/bevestiging"
+@using VakantiePark.UI.Services
+@inject BookingState BookingState
+
+<PageTitle>Boeking ontvangen | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Bevestiging van je boeking bij Vakantiepark D’r op Uut.">
+</HeadContent>
+
+<PageHeader Title="Boeking ontvangen" Intro="Bedankt voor je boeking bij Vakantiepark D’r op Uut." Crumbs="_crumbs" />
+
+<section class="section">
+    <div class="container">
+        @if (BookingState.LastBooking is { } booking)
+        {
+            <div class="two-columns">
+                <div>
+                    <h2>Bedankt, @booking.Guest.Name</h2>
+                    <p class="lead">Je boeking voor @booking.Request.Type.Name is ontvangen.</p>
+                    <p>Je bent welkom vanaf @BookingRules.ArrivalTime op @Formatting.Date(booking.Request.ArrivalDate). Op @Formatting.Date(booking.Request.DepartureDate) vertrek je uiterlijk om @BookingRules.DepartureTime.</p>
+                    <p>Heb je een vraag over je boeking? Neem dan <a href="contact">contact op met de receptie</a>.</p>
+                    <a class="button button--outline" href="">Terug naar home</a>
+                </div>
+                <BookingSummary Request="booking.Request" Guest="booking.Guest" Price="booking.Price" Title="Je boeking" HeadingId="heading-confirmation" />
+            </div>
+        }
+        else
+        {
+            <div class="confirmation-empty">
+                <h2>Er is geen boeking om te tonen</h2>
+                <p>Deze pagina toont je boeking direct na het bevestigen. Wil je een verblijf boeken?</p>
+                <a class="button" href="zoek-en-boek">Naar zoek en boek</a>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private static readonly IReadOnlyList<Breadcrumb> _crumbs = [new("Zoek en boek", "zoek-en-boek")];
+}

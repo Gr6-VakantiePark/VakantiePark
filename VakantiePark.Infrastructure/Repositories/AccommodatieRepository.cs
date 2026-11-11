@@ -20,5 +20,11 @@ namespace VakantiePark.Infrastructure.Repositories
                 .Include(a => a.AccommodatieType)
                 .Include(a => a.Voorzieningen)
                 .FirstOrDefaultAsync(a => a.Id == id);
+
+        public Task<AccommodatieType?> GetTypeBySlugAsync(string slug) =>
+            context.AccommodatieTypes
+                .AsNoTracking()
+                .Include(t => t.Accommodaties)
+                .FirstOrDefaultAsync(t => t.Slug == slug);
     }
 }

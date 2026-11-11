@@ -96,6 +96,8 @@ Only these belong in the global stylesheet:
    - `.section`, `.section--mist`, `.section__header`
    - `.button`, `.button--outline`
    - `.two-columns`
+   - `.form`, `.field`, `.field__hint`, `.validation-message` (forms on the contact and booking pages)
+   - `.sidebar-card`, `.sidebar-card__note` (accommodation page and booking pages)
    - `.visually-hidden`
    - small text helpers: `.lead`, `.note`, `.count`
 4. **Rules that span components** and so cannot be scoped: the footer rule in section 7, `#content:focus`, and the `#blazor-error-ui` and `.loading` styles for `index.html`.
@@ -154,6 +156,8 @@ URLs are visible to visitors, so they are Dutch:
 | `/zwembad` | Swimming pool |
 | `/contact` | Contact form and details |
 | `/zoek-en-boek?type={slug}` | Search and booking module |
+| `/boeken?type=&aankomst=&vertrek=&volwassenen=&kinderen=&huisdieren=` | Booking: guest details form, then the summary with the price |
+| `/boeken/bevestiging` | Confirmation of the booking just made |
 
 All accommodation types share **one** routed page fed by data. Do not create a page per accommodation. An unknown slug shows a not-found state that still uses the page header.
 
@@ -444,7 +448,7 @@ The first image is the largest one on the page, so it gets no `loading="lazy"`. 
 |---|---|---|
 | Key facts | `<dl class="key-facts">` with `<div><dt>Label</dt><dd>Waarde</dd></div>` per item | 4–5 items. Houses show Personen, Slaapkamers, Badkamers, Bedden and Huisdieren. Camping pitches show Personen, Ondergrond, Stroom, Max. lengte (camper and caravan only) and Huisdieren |
 | Amenities | `<ul class="amenities">` (always present) or `amenities amenities--some` (some units, with `<span class="count">N van M</span>`) | The order is fixed: `h2` Voorzieningen, `h3` Altijd aanwezig, then `h3` "Bij een deel van de huizen" (or "plaatsen"), `p.note`, and the `--some` list. `amenities--none` exists for absent items |
-| Sidebar card | `<aside class="sidebar-card" aria-labelledby="heading-booking">` | Summary `dl`s, "Te vinden in" zones sorted by count (highest first), a full-width `.button` to `zoek-en-boek?type=@Slug`, and `p.sidebar-card__note`. Its `h3` deliberately renders as bold sans text |
+| Sidebar card | `<aside class="sidebar-card" aria-labelledby="heading-booking">` (global class, also used by the booking summary) | Summary `dl`s, "Te vinden in" zones sorted by count (highest first), a full-width `.button` to `zoek-en-boek?type=@Slug`, and `p.sidebar-card__note`. Its `h3` deliberately renders as bold sans text |
 
 The accommodation page layout is `<div class="container detail">`: the content column plus the sidebar card. `.detail` goes in that page’s scoped CSS.
 
@@ -462,7 +466,11 @@ The accommodation page layout is `<div class="container detail">`: the content c
 | `.feature` | homepage | Teal feature block (pool teaser). One per page at most |
 | `.zones`, `.zone-dot--houses`, `.zone-dot--camping` | homepage | Zone tiles. Green means houses, sand means camping |
 | `.hours`, `.pools`, `.pool`, `.pool__size` | pool page | Opening hours and pool tiles |
-| `.form`, `.field`, `.field__hint`, `.contact-details`, `.contact-details__note` | contact page | Form and address block (section 11) |
+| `.form`, `.field`, `.field__hint`, `.validation-message` | global | Forms (section 11) |
+| `.sidebar-card`, `.sidebar-card__note` | global | Bordered summary card with `dl` rows. Used by `BookingCard` and `BookingSummary` |
+| `.contact-details`, `.contact-details__note` | contact page | Address block |
+| `.booking-summary`, `.booking-summary__total` | booking summary component | Booking overview card (not sticky) and the bold total row |
+| `.booking-message`, `.booking-overview`, `.booking-actions` | booking page | Error state, summary step and the button row |
 | `.module-placeholder` | booking page | Dashed teal box for unfinished modules |
 | `.table-wrap`, `table`, `.tag` | scoped where first used | Data table with pill tags. Not used on any page yet |
 
@@ -488,11 +496,11 @@ Use `EditForm` with the built-in input components. `EditForm` accepts `class="fo
 </EditForm>
 ```
 
-- `EditForm` is a child component, so its `<form>` and everything inside it is **not** matched by the page’s scoped CSS. Wrap the form in an element and use `::deep`: `.contact-form ::deep .field input { … }`. If forms appear on several pages, move `.form` and `.field*` to the global stylesheet instead (section 3).
+- Forms appear on several pages (contact and booking), so `.form`, `.field*` and `.validation-message` live in the global stylesheet (section 3). Don’t restyle them in scoped CSS.
 - Every control has an English kebab-case `id` that matches its `<label for>`. Help text goes inside the label as `span.field__hint`.
 - Use `InputText`, `InputSelect`, `InputTextArea` and `InputDate`.
 - Required fields use `[Required]` on the model with a Dutch `ErrorMessage`. Don’t also add the HTML `required` attribute, or the browser and Blazor will both validate. Don’t mark required fields with an asterisk.
-- Blazor adds `valid`, `invalid` and `modified` classes to inputs, and renders `div.validation-message`. Style `.invalid` fields with a `var(--error)` border and `div.validation-message` as small bold `var(--error)` text, both through `::deep` from the form wrapper. `valid` and `modified` get no styles.
+- Blazor adds `valid`, `invalid` and `modified` classes to inputs, and renders `div.validation-message`. Style `.invalid` fields with a `var(--error)` border and `div.validation-message` as small bold `var(--error)` text (global). `valid` and `modified` get no styles.
 
 ## 12. Data and text formatting
 
@@ -500,6 +508,7 @@ Use `EditForm` with the built-in input components. `EditForm` accepts `class="fo
 - Ranges in data (key facts, sidebar card, times) use a spaced en dash: `2 – 3`, `09:00 – 21:00`, `10 A – 16 A`. Inside `.type-card__summary` the dash has no spaces: `4–6 personen`.
 - Times use the 24-hour clock: `08:30`. Decimals use a comma: `8,5 m`.
 - Do not set `CultureInfo.DefaultThreadCurrentCulture` in WebAssembly. Format with an explicit Dutch culture where needed (`new CultureInfo("nl-NL")`), and make sure Dutch globalization data is loaded (`<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>`), otherwise visitors whose browser uses another language may get wrong formatting. Values that never change, such as "max. 2" or "Verhard", can simply be stored as text.
+- Amounts and dates go through `Data/Formatting.cs`: `Formatting.Euro(…)` (nl-NL currency, e.g. "€ 1.234,50") and `Formatting.Date(…)` (e.g. "donderdag 1 juli 2027"). Globalization data is loaded in `VakantiePark.UI.csproj`.
 - Tone: friendly and direct. Address the visitor as "je/jij", never "u". Use short sentences and sentence-case headings.
 - Use digits in data and spelled-out numbers in short taglines ("Twee slaapkamers").
 

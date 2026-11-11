@@ -19,6 +19,7 @@ namespace VakantiePark.Application
         public static IServiceCollection RegisterScopedServices(this IServiceCollection services)
         {
             services.AddScoped<IAccommodatieService, AccommodatieService>();
+            services.AddScoped<IPriceService, PriceService>();
 
             return services;
         }

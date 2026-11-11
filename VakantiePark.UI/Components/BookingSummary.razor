@@ -1,0 +1,71 @@
+@using VakantiePark.Shared.DTOs.Prices
+@using VakantiePark.UI.Models
+
+<aside class="sidebar-card booking-summary" aria-labelledby="@HeadingId">
+    <h2 id="@HeadingId">@Title</h2>
+
+    <h3>Verblijf</h3>
+    <dl>
+        <div><dt>Accommodatie</dt><dd>@Request.Type.Name</dd></div>
+        <div><dt>Aankomst</dt><dd>@Formatting.Date(Request.ArrivalDate)<br>vanaf @BookingRules.ArrivalTime</dd></div>
+        <div><dt>Vertrek</dt><dd>@Formatting.Date(Request.DepartureDate)<br>uiterlijk @BookingRules.DepartureTime</dd></div>
+        <div><dt>Nachten</dt><dd>@Request.Nights</dd></div>
+    </dl>
+
+    <h3>Reisgezelschap</h3>
+    <dl>
+        <div><dt>Volwassenen</dt><dd>@Request.Adults</dd></div>
+        <div><dt>Kinderen</dt><dd>@Request.Children</dd></div>
+        <div><dt>Huisdieren</dt><dd>@Request.Pets</dd></div>
+    </dl>
+
+    @if (Guest is not null)
+    {
+        <h3>Hoofdboeker</h3>
+        <dl>
+            <div><dt>Naam</dt><dd>@Guest.Name</dd></div>
+            <div><dt>E-mailadres</dt><dd>@Guest.Email</dd></div>
+            <div><dt>Telefoon</dt><dd>@Guest.Phone</dd></div>
+            <div><dt>Adres</dt><dd>@Guest.Street<br>@Guest.PostalCode @Guest.City</dd></div>
+        </dl>
+    }
+
+    <h3>Prijs</h3>
+    @if (Price is not null)
+    {
+        <dl>
+            <div><dt>Verblijf (@Price.Nights × @Formatting.Euro(Price.PricePerNight))</dt><dd>@Formatting.Euro(Price.Stay)</dd></div>
+            <div><dt>Eindschoonmaak</dt><dd>@Formatting.Euro(Price.CleaningFee)</dd></div>
+            <div><dt>Toeristenbelasting (@Price.Persons pers. × @Price.Nights nachten × @Formatting.Euro(Price.TouristTaxPerPersonPerNight))</dt><dd>@Formatting.Euro(Price.TouristTax)</dd></div>
+            <div class="booking-summary__total"><dt>Totaal</dt><dd>@Formatting.Euro(Price.Total)</dd></div>
+        </dl>
+    }
+    else if (!string.IsNullOrWhiteSpace(PriceError))
+    {
+        <p class="sidebar-card__note" role="status">@PriceError</p>
+    }
+    else
+    {
+        <p class="sidebar-card__note" role="status">De prijs wordt berekend…</p>
+    }
+</aside>
+
+@code {
+    [Parameter, EditorRequired]
+    public BookingRequest Request { get; set; } = default!;
+
+    [Parameter]
+    public BookingDetails? Guest { get; set; }
+
+    [Parameter]
+    public PriceDto? Price { get; set; }
+
+    [Parameter]
+    public string? PriceError { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Je verblijf";
+
+    [Parameter]
+    public string HeadingId { get; set; } = "heading-summary";
+}

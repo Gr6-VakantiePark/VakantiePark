@@ -15,6 +15,7 @@ namespace VakantiePark.Infrastructure
         {
             services.RegisterDatabaseServices(configuration, root);
             services.AddScoped<IAccommodatieRepository, AccommodatieRepository>();
+            services.AddScoped<IParkSettingsRepository, ParkSettingsRepository>();
 
 
             return services;

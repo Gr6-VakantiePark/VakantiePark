@@ -9,6 +9,7 @@ namespace VakantiePark.Infrastructure.Data
         public DbSet<Accommodatie> Accommodaties => Set<Accommodatie>();
         public DbSet<AccommodatieType> AccommodatieTypes => Set<AccommodatieType>();
         public DbSet<Voorziening> Voorzieningen => Set<Voorziening>();
+        public DbSet<ParkSettings> ParkSettings => Set<ParkSettings>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -24,12 +25,14 @@ namespace VakantiePark.Infrastructure.Data
             optionsBuilder.UseSeeding((context, _) =>
             {
                 context.UseAccommodatieSeeder();
+                context.UsePriceSeeder();
             });
 
             // Async variant (voor MigrateAsync / EnsureCreatedAsync), doet hetzelfde
             optionsBuilder.UseAsyncSeeding((context, _, _) =>
             {
                 context.UseAccommodatieSeeder();
+                context.UsePriceSeeder();
                 return Task.CompletedTask;
             });
 

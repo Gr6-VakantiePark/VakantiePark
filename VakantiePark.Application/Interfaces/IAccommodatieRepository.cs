@@ -9,5 +9,7 @@ namespace VakantiePark.Application.Interfaces
 
         /// <summary>Eén accommodatie inclusief type en voorzieningen, of null als die niet bestaat.</summary>
         Task<Accommodatie?> GetByIdAsync(int id);
+
+        Task<AccommodatieType?> GetTypeBySlugAsync(string slug);
     }
 }

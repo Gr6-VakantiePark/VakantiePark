@@ -1,0 +1,160 @@
+@page "/boeken"
+@using VakantiePark.Shared.DTOs.Prices
+@using VakantiePark.UI.Interfaces
+@using VakantiePark.UI.Models
+@using VakantiePark.UI.Services
+@inject IPriceService PriceService
+@inject BookingState BookingState
+@inject NavigationManager Navigation
+
+<PageTitle>Boeken | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Vul je gegevens in en bevestig je boeking bij Vakantiepark D’r op Uut.">
+</HeadContent>
+
+<PageHeader Title="Boeken" Intro="@Intro" Crumbs="_crumbs" />
+
+<section class="section">
+    <div class="container">
+        @if (_request is null)
+        {
+            <div class="booking-message" role="alert">
+                <h2>Deze boeking kan niet verder</h2>
+                <p>@_error</p>
+                <a class="button" href="zoek-en-boek">Naar zoek en boek</a>
+            </div>
+        }
+        else if (_step == BookingStep.Details)
+        {
+            <div class="two-columns">
+                <div class="booking-form">
+                    <h2 id="heading-details">Jouw gegevens</h2>
+                    <EditForm class="form" Model="_details" OnValidSubmit="ShowSummary" FormName="booking">
+                        <DataAnnotationsValidator />
+                        <div class="field">
+                            <label for="name">Naam</label>
+                            <InputText id="name" @bind-Value="_details.Name" autocomplete="name" maxlength="@BookingDetails.NameMaxLength" />
+                            <ValidationMessage For="() => _details.Name" />
+                        </div>
+                        <div class="field">
+                            <label for="email">E-mailadres</label>
+                            <InputText id="email" type="email" @bind-Value="_details.Email" autocomplete="email" maxlength="@BookingDetails.EmailMaxLength" />
+                            <ValidationMessage For="() => _details.Email" />
+                        </div>
+                        <div class="field">
+                            <label for="phone">Telefoonnummer</label>
+                            <InputText id="phone" type="tel" @bind-Value="_details.Phone" autocomplete="tel" maxlength="@BookingDetails.PhoneMaxLength" />
+                            <ValidationMessage For="() => _details.Phone" />
+                        </div>
+                        <div class="field">
+                            <label for="street">Straat en huisnummer</label>
+                            <InputText id="street" @bind-Value="_details.Street" autocomplete="street-address" maxlength="@BookingDetails.StreetMaxLength" />
+                            <ValidationMessage For="() => _details.Street" />
+                        </div>
+                        <div class="field">
+                            <label for="postal-code">Postcode</label>
+                            <InputText id="postal-code" @bind-Value="_details.PostalCode" autocomplete="postal-code" maxlength="@BookingDetails.PostalCodeMaxLength" />
+                            <ValidationMessage For="() => _details.PostalCode" />
+                        </div>
+                        <div class="field">
+                            <label for="city">Woonplaats</label>
+                            <InputText id="city" @bind-Value="_details.City" autocomplete="address-level2" maxlength="@BookingDetails.CityMaxLength" />
+                            <ValidationMessage For="() => _details.City" />
+                        </div>
+                        <div><button class="button" type="submit">Naar overzicht</button></div>
+                    </EditForm>
+                </div>
+                <BookingSummary Request="_request" Price="_price" PriceError="@_priceError" />
+            </div>
+        }
+        else
+        {
+            <div class="booking-overview">
+                <p class="lead">Controleer je gegevens. Klopt alles? Bevestig dan je boeking.</p>
+                <BookingSummary Request="_request" Guest="_details" Price="_price" PriceError="@_priceError" Title="Overzicht van je boeking" />
+                <div class="booking-actions">
+                    <button class="button button--outline" type="button" @onclick="EditDetails">Gegevens aanpassen</button>
+                    <button class="button" type="button" @onclick="Confirm">Boeking bevestigen</button>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private enum BookingStep
+    {
+        Details,
+        Summary
+    }
+
+    private static readonly IReadOnlyList<Breadcrumb> _crumbs = [new("Zoek en boek", "zoek-en-boek")];
+
+    private BookingRequest? _request;
+    private string _error = string.Empty;
+    private BookingDetails _details = new();
+    private BookingStep _step = BookingStep.Details;
+    private PriceDto? _price;
+    private string? _priceError;
+
+    [SupplyParameterFromQuery(Name = BookingQuery.Type)]
+    public string? Type { get; set; }
+
+    [SupplyParameterFromQuery(Name = BookingQuery.Arrival)]
+    public string? Arrival { get; set; }
+
+    [SupplyParameterFromQuery(Name = BookingQuery.Departure)]
+    public string? Departure { get; set; }
+
+    [SupplyParameterFromQuery(Name = BookingQuery.Adults)]
+    public string? Adults { get; set; }
+
+    [SupplyParameterFromQuery(Name = BookingQuery.Children)]
+    public string? Children { get; set; }
+
+    [SupplyParameterFromQuery(Name = BookingQuery.Pets)]
+    public string? Pets { get; set; }
+
+    private string Intro => _step == BookingStep.Details
+        ? "Stap 1 van 2: vul je gegevens in."
+        : "Stap 2 van 2: controleer en bevestig je boeking.";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        BookingQuery.TryParse(Type, Arrival, Departure, Adults, Children, Pets, today, out var request, out _error);
+
+        if (request == _request)
+            return;
+
+        _request = request;
+        _step = BookingStep.Details;
+        _price = null;
+        _priceError = null;
+
+        if (_request is not null)
+            await LoadPriceAsync(_request);
+    }
+
+    private async Task LoadPriceAsync(BookingRequest request)
+    {
+        var response = await PriceService.GetPriceAsync(request);
+        if (response.Succeeded && response.Value is not null)
+            _price = response.Value;
+        else
+            _priceError = "De prijs kon nu niet worden berekend. Probeer het later opnieuw of neem contact op met de receptie.";
+    }
+
+    private void ShowSummary() => _step = BookingStep.Summary;
+
+    private void EditDetails() => _step = BookingStep.Details;
+
+    private void Confirm()
+    {
+        if (_request is null)
+            return;
+
+        BookingState.Confirm(_request, _details, _price);
+        Navigation.NavigateTo("boeken/bevestiging");
+    }
+}
