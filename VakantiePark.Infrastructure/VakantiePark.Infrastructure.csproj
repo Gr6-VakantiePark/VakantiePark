@@ -17,6 +17,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Seed-bestanden meekopiëren naar de output (ook naar de API) -->
+		<None Update="Data\Seed\*.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\VakantiePark.Application\VakantiePark.Application.csproj" />
 		<ProjectReference Include="..\VakantiePark.Domain\VakantiePark.Domain.csproj" />
 	</ItemGroup>

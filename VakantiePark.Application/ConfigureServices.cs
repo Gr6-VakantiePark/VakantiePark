@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using VakantiePark.Application.Interfaces;
+using VakantiePark.Application.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -16,7 +18,7 @@ namespace VakantiePark.Application
         }
         public static IServiceCollection RegisterScopedServices(this IServiceCollection services)
         {
-
+            services.AddScoped<IAccommodatieService, AccommodatieService>();
 
             return services;
         }

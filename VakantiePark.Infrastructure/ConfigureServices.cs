@@ -3,7 +3,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StockFlow.Infrastructure.Data;
+using VakantiePark.Application.Interfaces;
+using VakantiePark.Infrastructure.Data;
+using VakantiePark.Infrastructure.Repositories;
 
 namespace VakantiePark.Infrastructure
 {
@@ -12,6 +14,7 @@ namespace VakantiePark.Infrastructure
         public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services, IConfiguration configuration, string root)
         {
             services.RegisterDatabaseServices(configuration, root);
+            services.AddScoped<IAccommodatieRepository, AccommodatieRepository>();
 
 
             return services;
@@ -21,7 +24,7 @@ namespace VakantiePark.Infrastructure
         {
             string? configuredFolder = configuration["DataFolder"];
             string folder = string.IsNullOrWhiteSpace(configuredFolder)
-                ? Path.GetFullPath(Path.Combine(root, "..", "StockFlow.Infrastructure", "Data"))
+                ? Path.GetFullPath(Path.Combine(root, "..", "VakantiePark.Infrastructure", "Data"))
                 : Path.GetFullPath(configuredFolder);
 
             if (!Directory.Exists(folder))
