@@ -1,0 +1,30 @@
+.amenities {
+  columns: 2 14rem;
+  column-gap: 2rem;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.amenities li {
+  position: relative;
+  padding: 0.35rem 0 0.35rem 1.9rem;
+  break-inside: avoid;
+}
+
+.amenities li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62rem;
+  width: 1.1rem;
+  height: 0.6rem;
+  border-left: 3px solid var(--grass);
+  border-bottom: 3px solid var(--grass);
+  transform: rotate(-45deg);
+  transform-origin: 30% 60%;
+}
+
+.amenities--some li::before {
+  border-color: var(--leaf);
+}
