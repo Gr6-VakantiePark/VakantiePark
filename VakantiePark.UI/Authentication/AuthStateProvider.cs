@@ -107,11 +107,16 @@ namespace VakantiePark.UI.Authentication
                     ? ClaimTypes.Role
                     : "role";
 
+            string nameClaimType =
+                claims.Any(c => c.Type == ClaimTypes.Name)
+                    ? ClaimTypes.Name
+                    : "name";
+
             return new ClaimsPrincipal(
                 new ClaimsIdentity(
                     claims,
                     "jwt",
-                    ClaimTypes.Name,
+                    nameClaimType,
                     roleClaimType));
         }
 

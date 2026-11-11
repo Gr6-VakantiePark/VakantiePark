@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Infrastructure.Data;
 using VakantiePark.Infrastructure.Repositories;
+using VakantiePark.Infrastructure.Security;
 
 namespace VakantiePark.Infrastructure
 {
@@ -16,6 +17,10 @@ namespace VakantiePark.Infrastructure
             services.RegisterDatabaseServices(configuration, root);
             services.AddScoped<IAccommodationRepository, AccommodationRepository>();
             services.AddScoped<IPhotoRepository, PhotoRepository>();
+            services.AddScoped<IParkSettingsRepository, ParkSettingsRepository>();
+            services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddSingleton<ITokenService, JwtTokenService>();
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
 
             return services;

@@ -1,0 +1,83 @@
+@page "/beheer"
+@attribute [Authorize]
+@using VakantiePark.Shared.Common
+@using VakantiePark.Shared.DTOs.Auth
+@using VakantiePark.UI.Interfaces
+@inject IAccountService AccountService
+@inject NavigationManager Navigation
+
+<PageTitle>Beheer | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex">
+</HeadContent>
+
+<AuthorizeView>
+    <PageHeader Title="Beheer" Intro="@($"Welkom, {context.User.Identity?.Name}.")" />
+</AuthorizeView>
+
+<section class="section" aria-labelledby="heading-account">
+    <div class="container two-columns">
+        <div>
+            <h2 id="heading-account">Je account</h2>
+            @if (_error is not null)
+            {
+                <p class="dashboard__error" role="alert">@_error</p>
+            }
+            else if (_employee is null)
+            {
+                <LoadingIndicator Text="Je gegevens laden…" />
+            }
+            else
+            {
+                <dl class="dashboard__account">
+                    <div><dt>Naam</dt><dd>@_employee.FirstName @_employee.LastName</dd></div>
+                    <div><dt>E-mailadres</dt><dd>@_employee.Email</dd></div>
+                    <div><dt>@(_employee.RoleNames.Count == 1 ? "Rol" : "Rollen")</dt><dd>@string.Join(", ", _employee.RoleNames)</dd></div>
+                </dl>
+                <h3>Je mag</h3>
+                <CheckList Items="_employee.PermissionNames.Select(name => new CheckListItem(name))" />
+            }
+            <button class="button button--outline" type="button" @onclick="LogoutAsync">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Uitloggen
+            </button>
+        </div>
+        <div>
+            <h2>Beheerfuncties</h2>
+            <AuthorizeView Policy="@Permissions.ManageEmployees">
+                <Authorized>
+                    <ul class="dashboard__links">
+                        <li>
+                            <a class="dashboard__link" href="beheer/medewerkers">
+                                <span class="dashboard__link-title"><i class="bi bi-people" aria-hidden="true"></i> Medewerkers</span>
+                                <span class="note">Bekijk wie toegang heeft tot de beheeromgeving.</span>
+                            </a>
+                        </li>
+                    </ul>
+                </Authorized>
+                <NotAuthorized>
+                    <p>De beheerfuncties voor jouw rol komen hier zodra ze klaar zijn.</p>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</section>
+
+@code {
+    private EmployeeDto? _employee;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await AccountService.GetCurrentEmployeeAsync();
+        if (response.Succeeded && response.Value is not null)
+            _employee = response.Value;
+        else
+            _error = string.IsNullOrWhiteSpace(response.Message) ? "Je gegevens konden niet worden geladen." : response.Message;
+    }
+
+    private async Task LogoutAsync()
+    {
+        await AccountService.LogoutAsync();
+        Navigation.NavigateTo("beheer/inloggen");
+    }
+}

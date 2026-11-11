@@ -4,6 +4,16 @@
         <li><NavLink href="accommodaties">Accommodaties</NavLink></li>
         <li><NavLink href="zwembad">Zwembad</NavLink></li>
         <li><NavLink href="contact">Contact</NavLink></li>
-        <li><NavLink class="button" href="zoek-en-boek">Zoek en boek</NavLink></li>
+        <li class="main-nav__cta"><NavLink class="button" href="zoek-en-boek">Zoek en boek</NavLink></li>
+        <li class="main-nav__account">
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink class="button button--outline" href="beheer"><i class="bi bi-person-check" aria-hidden="true"></i> Beheer</NavLink>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink class="button button--outline" href="beheer/inloggen"><i class="bi bi-person" aria-hidden="true"></i> Inloggen</NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </li>
     </ul>
 </nav>

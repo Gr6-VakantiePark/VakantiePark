@@ -1,3 +1,5 @@
+using VakantiePark.Shared.DTOs.Prices;
+
 namespace VakantiePark.Shared.DTOs.Accommodations
 {
     public class AccommodationDetailDto : AccommodationDto
@@ -18,5 +20,7 @@ namespace VakantiePark.Shared.DTOs.Accommodations
 
         public List<string> Photos { get; set; } = new();
         public List<AmenityDto> Amenities { get; set; } = new();
+
+        public PriceDto? Price { get; set; }
     }
 }
