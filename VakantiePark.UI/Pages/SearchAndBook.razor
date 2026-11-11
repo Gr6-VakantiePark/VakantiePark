@@ -1,0 +1,33 @@
+@page "/zoek-en-boek"
+
+<PageTitle>Zoek en boek | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Zoek een vakantiehuis of kampeerplaats en boek je verblijf.">
+</HeadContent>
+
+<PageHeader Title="Zoek en boek" Intro="Kies je data en het aantal personen." />
+
+<section class="section">
+    <div class="container">
+        <div class="module-placeholder">
+            <h2>Hier komt de zoek-en-boekmodule</h2>
+            <p>Deze pagina is een plaatshouder. Vanaf een accommodatiepagina komt de bezoeker hier binnen met <code>?type=naam</code>, bijvoorbeeld <code>?type=eik-luxe-6</code>.</p>
+            @if (_selectedType is not null)
+            {
+                <p>Gekozen type: <strong>@_selectedType.Name</strong></p>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private AccommodationType? _selectedType;
+
+    [SupplyParameterFromQuery(Name = "type")]
+    public string? Type { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _selectedType = string.IsNullOrWhiteSpace(Type) ? null : ParkData.GetBySlug(Type);
+    }
+}

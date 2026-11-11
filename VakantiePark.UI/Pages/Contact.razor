@@ -1,0 +1,76 @@
+@page "/contact"
+@using VakantiePark.UI.Models
+
+<PageTitle>Contact | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Neem contact op met de receptie van Vakantiepark D’r op Uut.">
+</HeadContent>
+
+<PageHeader Title="Contact" Intro="Vragen over je verblijf of een boeking? De receptie helpt je graag." />
+
+<section class="section">
+    <div class="container two-columns">
+        <div class="contact-form">
+            <h2>Stuur ons een bericht</h2>
+            <EditForm class="form" Model="_message" OnValidSubmit="Send" FormName="contact">
+                <DataAnnotationsValidator />
+                <div class="field">
+                    <label for="name">Naam</label>
+                    <InputText id="name" @bind-Value="_message.Name" autocomplete="name" />
+                    <ValidationMessage For="() => _message.Name" />
+                </div>
+                <div class="field">
+                    <label for="email">E-mailadres</label>
+                    <InputText id="email" type="email" @bind-Value="_message.Email" autocomplete="email" />
+                    <ValidationMessage For="() => _message.Email" />
+                </div>
+                <div class="field">
+                    <label for="subject">Onderwerp</label>
+                    <InputSelect id="subject" @bind-Value="_message.Subject">
+                        @foreach (var subject in _subjects)
+                        {
+                            <option value="@subject">@subject</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="field">
+                    <label for="reservation-number">Reserveringsnummer <span class="field__hint">Alleen als je al geboekt hebt</span></label>
+                    <InputText id="reservation-number" @bind-Value="_message.ReservationNumber" />
+                </div>
+                <div class="field">
+                    <label for="message">Bericht</label>
+                    <InputTextArea id="message" @bind-Value="_message.Message" />
+                    <ValidationMessage For="() => _message.Message" />
+                </div>
+                <div><button class="button" type="submit">Verstuur bericht</button></div>
+            </EditForm>
+        </div>
+        <address class="contact-details">
+            <h2>Receptie</h2>
+            <dl>
+                <div><dt>Adres</dt><dd>Parkweg 1<br>1234 AB Voorbeeldstad</dd></div>
+                <div><dt>Telefoon</dt><dd><a href="tel:+31000000000">000 - 000 00 00</a></dd></div>
+                <div><dt>E-mail</dt><dd><a href="mailto:info@dropuut.example">info@dropuut.example</a></dd></div>
+                <div><dt>Open</dt><dd>Dagelijks 08:30 – 18:00<br>Vrijdag tot 20:00</dd></div>
+            </dl>
+            <p class="contact-details__note">Na sluitingstijd en bij nood bel je het noodnummer dat je bij aankomst krijgt.</p>
+        </address>
+    </div>
+</section>
+
+@code {
+    private static readonly string[] _subjects =
+    [
+        "Vraag over een boeking",
+        "Vraag over een accommodatie",
+        "Zwembad",
+        "Iets anders"
+    ];
+
+    private ContactMessage _message = new();
+
+    private void Send()
+    {
+        // TODO: Send the message to VakantiePark.API once the endpoint exists.
+    }
+}

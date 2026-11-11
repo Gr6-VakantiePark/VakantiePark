@@ -1,5 +1,7 @@
 @page "/"
 
+@* TODO: Accommodation types and zones come from the static ParkData class for now. Load them from VakantiePark.API once its endpoints exist. *@
+
 <PageTitle>Home | Vakantiepark D’r op Uut</PageTitle>
 <HeadContent>
     <meta name="description" content="Vakantiehuizen en kampeerplaatsen tussen bos, heide en water.">
@@ -17,12 +19,7 @@
         </div>
         <img class="hero__image" src="img/photos/hero.jpg" alt="Uitzicht over het park" width="1600" height="1100">
     </div>
-    <svg class="waves" viewBox="0 0 1440 170" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        <path fill="#0b8a50" d="M0,20 C360,-10 720,70 1440,30 L1440,58 C720,98 360,18 0,48 Z"/>
-        <path fill="#3e9d9b" d="M0,62 C400,40 760,110 1440,72 L1440,92 C760,130 400,60 0,82 Z"/>
-        <path fill="#0e5b3a" d="M0,96 C380,80 800,145 1440,104 L1440,122 C800,163 380,98 0,114 Z"/>
-        <path fill="#d9c9a1" d="M200,134 C520,120 860,168 1240,140 L1240,152 C860,178 520,140 200,148 Z"/>
-    </svg>
+    <WaveDivider />
 </section>
 
 <section class="section" aria-labelledby="heading-houses">
@@ -31,19 +28,7 @@
             <h2 id="heading-houses">Vakantiehuizen</h2>
             <p>Van een huis voor vier tot een bosvilla voor tien.</p>
         </div>
-        <ul class="type-cards">
-            @foreach (var type in _houseTypes)
-            {
-                <li @key="type.Slug">
-                    <a class="type-card" href="accommodaties/@type.Slug">
-                        <img src="img/photos/@(type.Slug)-1.jpg" alt="" width="1600" height="1000" loading="lazy">
-                        <span class="type-card__name">@type.Name</span>
-                        <span class="type-card__tagline">@type.Tagline</span>
-                        <span class="type-card__summary">@type.Summary</span>
-                    </a>
-                </li>
-            }
-        </ul>
+        <TypeCardList Types="ParkData.GetByCategory(AccommodationCategory.HolidayHome)" />
     </div>
 </section>
 
@@ -53,19 +38,7 @@
             <h2 id="heading-camping">Kamperen</h2>
             <p>Met tent, caravan of camper.</p>
         </div>
-        <ul class="type-cards">
-            @foreach (var type in _campingTypes)
-            {
-                <li @key="type.Slug">
-                    <a class="type-card" href="accommodaties/@type.Slug">
-                        <img src="img/photos/@(type.Slug)-1.jpg" alt="" width="1600" height="1000" loading="lazy">
-                        <span class="type-card__name">@type.Name</span>
-                        <span class="type-card__tagline">@type.Tagline</span>
-                        <span class="type-card__summary">@type.Summary</span>
-                    </a>
-                </li>
-            }
-        </ul>
+        <TypeCardList Types="ParkData.GetByCategory(AccommodationCategory.CampingPitch)" />
     </div>
 </section>
 
@@ -79,11 +52,11 @@
             </p>
         </div>
         <ul class="zones">
-            @foreach (var zone in _zones)
+            @foreach (var zone in ParkData.Zones)
             {
                 <li @key="zone.Name">
-                    <h3><span class="zone-dot @(zone.IsCamping ? "zone-dot--camping" : "zone-dot--houses")"></span>@zone.Name</h3>
-                    <p>@zone.Count @(zone.IsCamping ? "kampeerplaatsen" : "vakantiehuizen")</p>
+                    <h3><span class="zone-dot @(zone.Category == AccommodationCategory.CampingPitch ? "zone-dot--camping" : "zone-dot--houses")"></span>@zone.Name</h3>
+                    <p>@zone.UnitCount @(zone.Category == AccommodationCategory.CampingPitch ? "kampeerplaatsen" : "vakantiehuizen")</p>
                 </li>
             }
         </ul>
@@ -106,42 +79,3 @@
         </div>
     </div>
 </section>
-
-@code {
-    private sealed record AccommodationType(string Slug, string Name, string Tagline, string Summary);
-
-    private sealed record Zone(string Name, int Count, bool IsCamping);
-
-    private static readonly AccommodationType[] _houseTypes =
-    [
-        new("berk-4", "Berk 4", "Twee slaapkamers", "4 personen, 32 huizen"),
-        new("wilg-4-mindervalide", "Wilg 4 Mindervalide", "Rolstoeltoegankelijk", "4 personen, 12 huizen"),
-        new("berk-6", "Berk 6", "Drie slaapkamers", "6 personen, 26 huizen"),
-        new("eik-6", "Eik 6", "Drie slaapkamers, soms sauna", "6 personen, 24 huizen"),
-        new("eik-luxe-6", "Eik Luxe 6", "Sauna en twee badkamers", "6 personen, 18 huizen"),
-        new("beuk-8", "Beuk 8", "Vier slaapkamers", "8 personen, 20 huizen"),
-        new("bosvilla-10", "Bosvilla 10", "Vijf slaapkamers en openhaard", "10 personen, 18 huizen")
-    ];
-
-    private static readonly AccommodationType[] _campingTypes =
-    [
-        new("tentplaats-basis", "Tentplaats Basis", "Gras, zonder aansluitingen", "4–6 personen, 12 plaatsen"),
-        new("tentplaats-comfort", "Tentplaats Comfort", "Met stroom", "4–6 personen, 10 plaatsen"),
-        new("caravanplaats", "Caravanplaats", "Stroom, meestal water", "6 personen, 12 plaatsen"),
-        new("camperplaats", "Camperplaats", "Verhard, water en afvoer", "6 personen, 10 plaatsen"),
-        new("camperplaats-xl", "Camperplaats XL", "Extra breed, tot 11 meter", "6 personen, 6 plaatsen")
-    ];
-
-    private static readonly Zone[] _zones =
-    [
-        new("Bosrand", 27, false),
-        new("Heideveld", 31, false),
-        new("Parkcentrum", 29, false),
-        new("Rustweide", 39, false),
-        new("Waterkant", 24, false),
-        new("Bosveld", 12, true),
-        new("Kampeerveld Noord", 19, true),
-        new("Kampeerveld Zuid", 10, true),
-        new("Waterweide", 9, true)
-    ];
-}

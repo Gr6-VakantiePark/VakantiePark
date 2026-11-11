@@ -35,10 +35,11 @@ All tokens live on `:root` in `wwwroot/css/style.css`. Scoped CSS reads them wit
 | `--mist` | `#eef4ee` | Light surfaces: `.section--mist`, image placeholder background, outline-button hover |
 | `--white` | `#ffffff` | Page background, cards |
 | `--line` | `#d4e0d6` | Hairlines, field borders, row dividers |
+| `--error` | `#b3261e` | Validation messages and the border of invalid form fields. About 6.5:1 on white. Never use it for anything else |
 
 Two literal colors exist: `#dfeadf` (footer body text) and `#b9a877` (border of the sand zone dot). Reuse them only in those same roles.
 
-There is **no error, warning or success color** yet. When validation or status styling is needed, ask the user for the value of a new token (for example `--error`). Do not invent one.
+There is **no warning or success color** yet. When status styling is needed, ask the user for the value of a new token. Do not invent one.
 
 Contrast warnings:
 - White text on `--water` is about 3.2:1, which fails WCAG AA for body text. It is only used in `.feature`. Do not put white body text on `--water` anywhere new.
@@ -492,7 +493,7 @@ Use `EditForm` with the built-in input components. `EditForm` accepts `class="fo
 - Every control has an English kebab-case `id` that matches its `<label for>`. Help text goes inside the label as `span.field__hint`.
 - Use `InputText`, `InputSelect`, `InputTextArea` and `InputDate`.
 - Required fields use `[Required]` on the model with a Dutch `ErrorMessage`. Don’t also add the HTML `required` attribute, or the browser and Blazor will both validate. Don’t mark required fields with an asterisk.
-- Blazor adds `valid`, `invalid` and `modified` classes to inputs, and renders `div.validation-message`. These have no styles yet, because no error color token exists. See section 2 and ask first.
+- Blazor adds `valid`, `invalid` and `modified` classes to inputs, and renders `div.validation-message`. Style `.invalid` fields with a `var(--error)` border and `div.validation-message` as small bold `var(--error)` text, both through `::deep` from the form wrapper. `valid` and `modified` get no styles.
 
 ## 12. Data and text formatting
 

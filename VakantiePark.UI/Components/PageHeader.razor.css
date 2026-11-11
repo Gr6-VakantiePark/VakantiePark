@@ -1,0 +1,29 @@
+.page-header {
+  background: var(--white);
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+.page-header p {
+  font-size: var(--text-md);
+  color: var(--ink-soft);
+}
+
+.breadcrumbs {
+  font-size: var(--text-sm);
+  margin-bottom: 1.25rem;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li + li::before {
+  content: "/";
+  margin-right: 0.35rem;
+  color: var(--ink-soft);
+}
