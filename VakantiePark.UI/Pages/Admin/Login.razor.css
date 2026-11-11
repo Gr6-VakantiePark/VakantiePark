@@ -1,0 +1,15 @@
+.login {
+  max-width: 34rem;
+}
+
+.login ::deep .login__error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--error);
+  color: var(--error);
+  font-weight: 700;
+}
+
+.login__note {
+  margin-top: 1.5rem;
+}

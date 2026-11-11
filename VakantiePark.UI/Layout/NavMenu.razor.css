@@ -40,11 +40,13 @@
     gap: 0.5rem 1rem;
   }
 
-  .main-nav li:last-child {
+  .main-nav__cta,
+  .main-nav__account {
     width: 100%;
   }
 
-  .main-nav li:last-child ::deep .button {
+  .main-nav__cta ::deep .button,
+  .main-nav__account ::deep .button {
     display: block;
     text-align: center;
   }

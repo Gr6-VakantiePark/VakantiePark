@@ -1,0 +1,87 @@
+@page "/beheer/medewerkers"
+@attribute [Authorize(Roles = VakantiePark.Shared.Common.Roles.Administrator)]
+@using System.Globalization
+@using VakantiePark.Shared.DTOs.Auth
+@using VakantiePark.UI.Interfaces
+@inject IAccountService AccountService
+
+<PageTitle>Medewerkers | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex">
+</HeadContent>
+
+<PageHeader Title="Medewerkers" Intro="Wie heeft toegang tot de beheeromgeving." Crumbs="_crumbs" />
+
+<section class="section" aria-labelledby="heading-employees">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-employees">Alle medewerkers</h2>
+            @if (_employees is not null)
+            {
+                <p>@_employees.Count @(_employees.Count == 1 ? "medewerker" : "medewerkers")</p>
+            }
+        </div>
+
+        @if (_error is not null)
+        {
+            <p class="employees__error" role="alert">@_error</p>
+        }
+        else if (_employees is null)
+        {
+            <LoadingIndicator Text="Medewerkers laden…" />
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Naam</th>
+                            <th scope="col">E-mailadres</th>
+                            <th scope="col">Rollen</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Laatst ingelogd</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var employee in _employees)
+                        {
+                            <tr @key="employee.Id">
+                                <td>@employee.FirstName @employee.LastName</td>
+                                <td>@employee.Email</td>
+                                <td>
+                                    @foreach (var role in employee.RoleNames)
+                                    {
+                                        <span class="tag employees__role">@role</span>
+                                    }
+                                </td>
+                                <td>@(employee.IsActive ? "Actief" : "Uitgeschakeld")</td>
+                                <td>@FormatLastLogin(employee.LastLoginAt)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
+    private static readonly IReadOnlyList<Breadcrumb> _crumbs = [new("Beheer", "beheer")];
+
+    private List<EmployeeDto>? _employees;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await AccountService.GetEmployeesAsync();
+        if (response.Succeeded && response.Value is not null)
+            _employees = response.Value;
+        else
+            _error = string.IsNullOrWhiteSpace(response.Message) ? "De medewerkers konden niet worden geladen." : response.Message;
+    }
+
+    private static string FormatLastLogin(DateTime? lastLogin) =>
+        lastLogin is null ? "Nog nooit" : lastLogin.Value.ToLocalTime().ToString("d MMMM yyyy, HH:mm", Dutch);
+}
