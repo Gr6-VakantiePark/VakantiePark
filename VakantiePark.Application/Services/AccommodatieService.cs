@@ -1,5 +1,5 @@
 using VakantiePark.Application.Interfaces;
-using VakantiePark.Application.Mappings;
+using VakantiePark.Application.Extensions;
 using VakantiePark.Shared.DTOs.Accommodaties;
 
 namespace VakantiePark.Application.Services

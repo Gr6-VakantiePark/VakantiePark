@@ -1,7 +1,7 @@
 using VakantiePark.Domain.Entities;
 using VakantiePark.Shared.DTOs.Accommodaties;
 
-namespace VakantiePark.Application.Mappings
+namespace VakantiePark.Application.Extensions
 {
     /// <summary>Zet entiteiten om naar DTO's, zodat de API nooit entiteiten teruggeeft.</summary>
     public static class AccommodatieMappings
