@@ -1,0 +1,78 @@
+@page "/zwembad"
+
+<PageTitle>Zwembad | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Openingstijden en baden van het zwembad.">
+</HeadContent>
+
+<PageHeader Title="Het zwembad" Intro="Overdekt zwemmen midden in het park, gratis voor gasten." />
+
+<Gallery Images="_images" />
+
+<section class="section">
+    <div class="container two-columns">
+        <div>
+            <h2>Openingstijden</h2>
+            <dl class="hours">
+                <div><dt>Maandag tot en met vrijdag</dt><dd>09:00 – 21:00</dd></div>
+                <div><dt>Zaterdag en zondag</dt><dd>08:00 – 21:00</dd></div>
+                <div><dt>Banenzwemmen</dt><dd>Dagelijks 08:00 – 10:00</dd></div>
+                <div><dt>Buitenbad</dt><dd>Mei tot en met september</dd></div>
+            </dl>
+            <p>Toegang is gratis voor gasten van het park. Neem je parkpas mee naar de ingang.</p>
+        </div>
+        <div>
+            <h2>Goed om te weten</h2>
+            <CheckList Items="_goodToKnow" />
+            <p>Wil je dichtbij logeren? 61 accommodaties liggen dicht bij het zwembad. Je kunt hierop filteren bij <a href="zoek-en-boek">zoek en boek</a>.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section section--mist" aria-labelledby="heading-pools">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-pools">De baden</h2>
+        </div>
+        <ul class="pools">
+            <li class="pool">
+                <h3>Wedstrijdbad</h3>
+                <p>Voor banenzwemmen en vrij zwemmen.</p>
+                <p class="pool__size">25 meter, 1,20 tot 2,00 meter diep</p>
+            </li>
+            <li class="pool">
+                <h3>Recreatiebad</h3>
+                <p>Met golfslag, bubbelbank en een glijbaan van 60 meter.</p>
+                <p class="pool__size">0,90 tot 1,30 meter diep</p>
+            </li>
+            <li class="pool">
+                <h3>Peuterbad</h3>
+                <p>Warm, ondiep water met een kleine glijbaan en fonteintjes.</p>
+                <p class="pool__size">0,20 tot 0,40 meter diep</p>
+            </li>
+            <li class="pool">
+                <h3>Buitenbad</h3>
+                <p>Verwarmd buitenbad met ligweide, open in de zomer.</p>
+                <p class="pool__size">0,80 tot 1,40 meter diep</p>
+            </li>
+        </ul>
+    </div>
+</section>
+
+@code {
+    private static readonly IReadOnlyList<GalleryImage> _images =
+    [
+        new("img/photos/pool-1.jpg", "Het binnenbad"),
+        new("img/photos/pool-2.jpg", "Het recreatiebad"),
+        new("img/photos/pool-3.jpg", "Het buitenbad")
+    ];
+
+    private static readonly IReadOnlyList<CheckListItem> _goodToKnow =
+    [
+        new("Kinderen zonder zwemdiploma zwemmen onder begeleiding van een volwassene"),
+        new("Er is altijd een badmeester aanwezig"),
+        new("Kleedhokjes en kluisjes zijn gratis"),
+        new("Het zwembad is rolstoeltoegankelijk, met een tillift bij het wedstrijdbad"),
+        new("Huisdieren mogen niet in het zwembad")
+    ];
+}

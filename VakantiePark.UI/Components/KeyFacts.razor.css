@@ -1,0 +1,24 @@
+.key-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 1rem;
+  margin: 0 0 2.5rem;
+}
+
+.key-facts div {
+  padding-top: 0.5rem;
+  border-top: 2px solid var(--leaf);
+}
+
+.key-facts dt {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.key-facts dd {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  line-height: 1.2;
+  color: var(--forest);
+}

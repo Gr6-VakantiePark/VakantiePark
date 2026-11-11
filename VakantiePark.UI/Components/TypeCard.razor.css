@@ -1,0 +1,44 @@
+.type-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.type-card img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 4px;
+  margin-bottom: 1rem;
+  background: var(--mist);
+}
+
+.type-card__name {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  color: var(--forest);
+  line-height: 1.2;
+}
+
+.type-card:hover .type-card__name {
+  color: var(--grass);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.type-card__tagline {
+  color: var(--ink);
+  margin-top: 0.2rem;
+}
+
+.type-card__summary {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 2px solid var(--leaf);
+  align-self: flex-start;
+}

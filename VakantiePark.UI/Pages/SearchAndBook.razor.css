@@ -1,0 +1,17 @@
+.module-placeholder {
+  padding: clamp(2rem, 6vw, 4rem);
+  border: 3px dashed var(--water);
+  border-radius: var(--radius-lg);
+  background: var(--mist);
+  text-align: center;
+}
+
+.module-placeholder p {
+  margin-inline: auto;
+}
+
+.module-placeholder code {
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: var(--white);
+}

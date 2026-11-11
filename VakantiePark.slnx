@@ -7,6 +7,7 @@
     <Project Path="VakantiePark.Shared/VakantiePark.Shared.csproj" />
   </Folder>
   <Folder Name="/Frontend/">
+    <File Path="STYLEGUIDE.md" />
     <Project Path="VakantiePark.UI/VakantiePark.UI.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">

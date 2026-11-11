@@ -1,0 +1,35 @@
+@page "/accommodaties"
+
+@* TODO: Accommodation types come from the static ParkData class for now. Load them from VakantiePark.API once its endpoints exist. *@
+
+<PageTitle>Accommodaties | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Alle vakantiehuizen en kampeerplaatsen van Vakantiepark D’r op Uut.">
+</HeadContent>
+
+<PageHeader Title="Accommodaties" Intro="Kies een type om alle huizen of plaatsen van dat type te zien." />
+
+<section class="section" id="holiday-homes" aria-labelledby="heading-houses">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-houses">Vakantiehuizen</h2>
+            <p>@_holidayHomes.Sum(type => type.UnitCount) huizen in @_holidayHomes.Count types</p>
+        </div>
+        <TypeCardList Types="_holidayHomes" />
+    </div>
+</section>
+
+<section class="section section--mist" id="camping" aria-labelledby="heading-camping">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-camping">Kampeerplaatsen</h2>
+            <p>@_campingPitches.Sum(type => type.UnitCount) plaatsen in @_campingPitches.Count types</p>
+        </div>
+        <TypeCardList Types="_campingPitches" />
+    </div>
+</section>
+
+@code {
+    private readonly List<AccommodationType> _holidayHomes = ParkData.GetByCategory(AccommodationCategory.HolidayHome).ToList();
+    private readonly List<AccommodationType> _campingPitches = ParkData.GetByCategory(AccommodationCategory.CampingPitch).ToList();
+}
