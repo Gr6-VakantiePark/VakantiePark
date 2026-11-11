@@ -32,6 +32,12 @@ namespace VakantiePark.Infrastructure.Repositories
                 .ThenBy(t => t.Name)
                 .ToListAsync();
 
+        public Task<AccommodationType?> GetTypeBySlugAsync(string slug) =>
+            context.AccommodationTypes
+                .AsNoTracking()
+                .Include(t => t.Accommodations)
+                .FirstOrDefaultAsync(t => t.Slug == slug);
+
         public Task<List<Amenity>> GetAmenitiesAsync() =>
             context.Amenities
                 .AsNoTracking()

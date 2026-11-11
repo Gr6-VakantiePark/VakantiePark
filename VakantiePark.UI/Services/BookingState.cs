@@ -1,4 +1,4 @@
-using VakantiePark.Shared.DTOs.Prices;
+using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.UI.Models;
 
 namespace VakantiePark.UI.Services;
@@ -7,10 +7,10 @@ public sealed class BookingState
 {
     public ConfirmedBooking? LastBooking { get; private set; }
 
-    public void Confirm(BookingRequest request, BookingDetails guest, PriceDto? price)
+    public void Confirm(BookingRequest request, AccommodationDetailDto accommodation, BookingDetails guest)
     {
-        LastBooking = new ConfirmedBooking(request, guest, price);
+        LastBooking = new ConfirmedBooking(request, accommodation, guest);
     }
 }
 
-public sealed record ConfirmedBooking(BookingRequest Request, BookingDetails Guest, PriceDto? Price);
+public sealed record ConfirmedBooking(BookingRequest Request, AccommodationDetailDto Accommodation, BookingDetails Guest);

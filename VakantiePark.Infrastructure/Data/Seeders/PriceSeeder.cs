@@ -31,17 +31,18 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                     TouristTaxPerPersonPerNight = 2.50m,
                     ArrivalTime = new TimeOnly(15, 0),
                     DepartureTime = new TimeOnly(10, 0),
+                    MinimumNightsHighSeason = 7,
                 });
             }
 
-            var typesWithoutPrice = context.Set<AccommodatieType>()
-                .Where(t => t.PrijsPerNacht == 0m)
+            var typesWithoutPrice = context.Set<AccommodationType>()
+                .Where(t => t.PricePerNight == 0m)
                 .ToList();
 
             foreach (var type in typesWithoutPrice)
             {
                 if (ExamplePricesPerType.TryGetValue(type.Slug, out var price))
-                    type.PrijsPerNacht = price;
+                    type.PricePerNight = price;
             }
 
             context.SaveChanges();

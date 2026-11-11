@@ -184,6 +184,9 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Property<TimeOnly>("DepartureTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("MinimumNightsHighSeason")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("TouristTaxPerPersonPerNight")
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");

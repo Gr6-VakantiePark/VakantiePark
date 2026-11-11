@@ -20,34 +20,37 @@ namespace VakantiePark.Infrastructure.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
 
-            modelBuilder.Entity("AccommodatieVoorziening", b =>
+            modelBuilder.Entity("AccommodationAmenity", b =>
                 {
-                    b.Property<int>("AccommodatiesId")
+                    b.Property<int>("AccommodationsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("VoorzieningenId")
+                    b.Property<int>("AmenitiesId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("AccommodatiesId", "VoorzieningenId");
+                    b.HasKey("AccommodationsId", "AmenitiesId");
 
-                    b.HasIndex("VoorzieningenId");
+                    b.HasIndex("AmenitiesId");
 
-                    b.ToTable("AccommodatieVoorzieningen", (string)null);
+                    b.ToTable("AccommodationAmenities", (string)null);
                 });
 
-            modelBuilder.Entity("VakantiePark.Domain.Entities.Accommodatie", b =>
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Accommodation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("AccommodatieTypeId")
+                    b.Property<int>("AccommodationTypeId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("Badkamers")
+                    b.Property<int?>("Bathrooms")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("Bedden")
+                    b.Property<int?>("Bedrooms")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Beds")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Code")
@@ -55,40 +58,37 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("ElektriciteitAmpere")
+                    b.Property<int?>("ElectricityAmps")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal?>("MaxCaravanLengteMeters")
+                    b.Property<decimal?>("MaxCaravanLengthMeters")
                         .HasPrecision(4, 1)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("MaxHuisdieren")
+                    b.Property<int>("MaxPersons")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("MaxPersonen")
+                    b.Property<int>("MaxPets")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal?>("MaxVoertuigLengteMeters")
+                    b.Property<decimal?>("MaxVehicleLengthMeters")
                         .HasPrecision(4, 1)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Naam")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Ondergrond")
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Schaduw")
+                    b.Property<string>("Shade")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("Slaapkamers")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Surface")
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("WifiDekking")
+                    b.Property<string>("WifiCoverage")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
@@ -99,39 +99,35 @@ namespace VakantiePark.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccommodatieTypeId");
+                    b.HasIndex("AccommodationTypeId");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Accommodaties", (string)null);
+                    b.ToTable("Accommodations", (string)null);
                 });
 
-            modelBuilder.Entity("VakantiePark.Domain.Entities.AccommodatieType", b =>
+            modelBuilder.Entity("VakantiePark.Domain.Entities.AccommodationType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.PrimitiveCollection<string>("Afbeeldingen")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Categorie")
+                    b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Naam")
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Omschrijving")
-                        .HasMaxLength(2000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("PrijsPerNacht")
+                    b.Property<decimal>("PricePerNight")
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
 
@@ -142,13 +138,37 @@ namespace VakantiePark.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Naam")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("AccommodatieTypes", (string)null);
+                    b.ToTable("AccommodationTypes", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Amenity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Amenities", (string)null);
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.ParkSettings", b =>
@@ -176,59 +196,108 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("ParkSettings", (string)null);
                 });
 
-            modelBuilder.Entity("VakantiePark.Domain.Entities.Voorziening", b =>
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Photo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Code")
+                    b.Property<int>("AccommodationTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Naam")
+                    b.Property<string>("FileName")
                         .IsRequired()
-                        .HasMaxLength(100)
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
+                    b.HasIndex("AccommodationTypeId", "SortOrder");
 
-                    b.ToTable("Voorzieningen", (string)null);
+                    b.ToTable("Photos", (string)null);
                 });
 
-            modelBuilder.Entity("AccommodatieVoorziening", b =>
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PhotoFile", b =>
                 {
-                    b.HasOne("VakantiePark.Domain.Entities.Accommodatie", null)
+                    b.Property<int>("PhotoId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("PhotoId");
+
+                    b.ToTable("PhotoFiles", (string)null);
+                });
+
+            modelBuilder.Entity("AccommodationAmenity", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Accommodation", null)
                         .WithMany()
-                        .HasForeignKey("AccommodatiesId")
+                        .HasForeignKey("AccommodationsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VakantiePark.Domain.Entities.Voorziening", null)
+                    b.HasOne("VakantiePark.Domain.Entities.Amenity", null)
                         .WithMany()
-                        .HasForeignKey("VoorzieningenId")
+                        .HasForeignKey("AmenitiesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("VakantiePark.Domain.Entities.Accommodatie", b =>
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Accommodation", b =>
                 {
-                    b.HasOne("VakantiePark.Domain.Entities.AccommodatieType", "AccommodatieType")
-                        .WithMany("Accommodaties")
-                        .HasForeignKey("AccommodatieTypeId")
+                    b.HasOne("VakantiePark.Domain.Entities.AccommodationType", "AccommodationType")
+                        .WithMany("Accommodations")
+                        .HasForeignKey("AccommodationTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AccommodatieType");
+                    b.Navigation("AccommodationType");
                 });
 
-            modelBuilder.Entity("VakantiePark.Domain.Entities.AccommodatieType", b =>
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Photo", b =>
                 {
-                    b.Navigation("Accommodaties");
+                    b.HasOne("VakantiePark.Domain.Entities.AccommodationType", "AccommodationType")
+                        .WithMany("Photos")
+                        .HasForeignKey("AccommodationTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AccommodationType");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PhotoFile", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Photo", "Photo")
+                        .WithOne("File")
+                        .HasForeignKey("VakantiePark.Domain.Entities.PhotoFile", "PhotoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Photo");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.AccommodationType", b =>
+                {
+                    b.Navigation("Accommodations");
+
+                    b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Photo", b =>
+                {
+                    b.Navigation("File")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

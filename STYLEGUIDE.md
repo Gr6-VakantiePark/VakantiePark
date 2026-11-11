@@ -156,7 +156,7 @@ URLs are visible to visitors, so they are Dutch:
 | `/zwembad` | Swimming pool |
 | `/contact` | Contact form and details |
 | `/zoek-en-boek?type={slug}` | Search and booking module |
-| `/boeken?type=&aankomst=&vertrek=&volwassenen=&kinderen=&huisdieren=` | Booking: guest details form, then the summary with the price |
+| `/boeken?accommodatie={id}&aankomst=&vertrek=&personen=&huisdieren=` | Booking of one accommodation from the search results: guest details form, then the summary with the price |
 | `/boeken/bevestiging` | Confirmation of the booking just made |
 
 All accommodation types share **one** routed page fed by data. Do not create a page per accommodation. An unknown slug shows a not-found state that still uses the page header.
@@ -450,7 +450,7 @@ On holiday-home pages the fourth image is the floor plan. It gets the class `gal
 |---|---|---|
 | Key facts | `<dl class="key-facts">` with `<div><dt>Label</dt><dd>Waarde</dd></div>` per item | 4–5 items. Houses show Personen, Slaapkamers, Badkamers, Bedden and Huisdieren. Camping pitches show Personen, Ondergrond, Stroom, Max. lengte (camper and caravan only) and Huisdieren |
 | Amenities | `<ul class="amenities">` (always present) or `amenities amenities--some` (some units, with `<span class="count">N van M</span>`) | The order is fixed: `h2` Voorzieningen, `h3` Altijd aanwezig, then `h3` "Bij een deel van de huizen" (or "plaatsen"), `p.note`, and the `--some` list. `amenities--none` exists for absent items |
-| Sidebar card | `<aside class="sidebar-card" aria-labelledby="heading-booking">` (global class, also used by the booking summary) | Summary `dl`s, "Te vinden in" zones sorted by count (highest first), a full-width `.button` to `zoek-en-boek?type=@Slug`, and `p.sidebar-card__note`. Its `h3` deliberately renders as bold sans text |
+| Sidebar card | `<aside class="sidebar-card" aria-labelledby="heading-booking">` (global class, also used by the booking summary) | Summary `dl`s, "Te vinden in" zones sorted by count (highest first), an `h3` Boeken with a small `.form` (aankomst, vertrek, personen, huisdieren) and a full-width `.button` that opens `/boeken` for the first free accommodation of the type, and `p.sidebar-card__note`. Its `h3` deliberately renders as bold sans text |
 
 The accommodation page layout is `<div class="container detail">`: the content column plus the sidebar card. `.detail` goes in that page’s scoped CSS.
 

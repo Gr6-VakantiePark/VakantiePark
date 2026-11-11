@@ -5,7 +5,7 @@ using VakantiePark.Shared.DTOs.Prices;
 
 namespace VakantiePark.Application.Services
 {
-    public class PriceService(IAccommodatieRepository accommodationRepository, IParkSettingsRepository settingsRepository) : IPriceService
+    public class PriceService(IAccommodationRepository accommodationRepository, IParkSettingsRepository settingsRepository) : IPriceService
     {
         public async Task<PriceDto> CalculateAsync(PriceRequestDto request)
         {
@@ -14,9 +14,9 @@ namespace VakantiePark.Application.Services
             var type = await accommodationRepository.GetTypeBySlugAsync(request.Type.Trim())
                 ?? throw new KeyNotFoundException($"Accommodatietype '{request.Type}' is niet gevonden.");
 
-            int maxPersons = type.Accommodaties.Count == 0 ? 0 : type.Accommodaties.Max(a => a.MaxPersonen);
+            int maxPersons = type.Accommodations.Count == 0 ? 0 : type.Accommodations.Max(a => a.MaxPersons);
             if (request.Persons > maxPersons)
-                throw new ArgumentException($"{type.Naam} is geschikt voor maximaal {maxPersons} personen.");
+                throw new ArgumentException($"{type.Name} is geschikt voor maximaal {maxPersons} personen.");
 
             var settings = await settingsRepository.GetAsync()
                 ?? throw new KeyNotFoundException("De parkinstellingen zijn niet gevonden.");
@@ -24,7 +24,7 @@ namespace VakantiePark.Application.Services
             int nights = request.Departure.DayNumber - request.Arrival.DayNumber;
 
             return PriceCalculator.Calculate(
-                type.PrijsPerNacht,
+                type.PricePerNight,
                 nights,
                 request.Persons,
                 settings.CleaningFee,

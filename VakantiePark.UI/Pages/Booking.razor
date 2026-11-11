@@ -1,9 +1,9 @@
 @page "/boeken"
-@using VakantiePark.Shared.DTOs.Prices
+@using VakantiePark.Shared.DTOs.Accommodations
 @using VakantiePark.UI.Interfaces
 @using VakantiePark.UI.Models
 @using VakantiePark.UI.Services
-@inject IPriceService PriceService
+@inject IBookingService BookingService
 @inject BookingState BookingState
 @inject NavigationManager Navigation
 
@@ -16,13 +16,17 @@
 
 <section class="section">
     <div class="container">
-        @if (_request is null)
+        @if (_error is not null)
         {
             <div class="booking-message" role="alert">
                 <h2>Deze boeking kan niet verder</h2>
                 <p>@_error</p>
                 <a class="button" href="zoek-en-boek">Naar zoek en boek</a>
             </div>
+        }
+        else if (_request is null || _accommodation is null)
+        {
+            <LoadingIndicator Text="Verblijf laden…" />
         }
         else if (_step == BookingStep.Details)
         {
@@ -64,14 +68,14 @@
                         <div><button class="button" type="submit">Naar overzicht</button></div>
                     </EditForm>
                 </div>
-                <BookingSummary Request="_request" Price="_price" PriceError="@_priceError" />
+                <BookingSummary Request="_request" Accommodation="_accommodation" />
             </div>
         }
         else
         {
             <div class="booking-overview">
                 <p class="lead">Controleer je gegevens. Klopt alles? Bevestig dan je boeking.</p>
-                <BookingSummary Request="_request" Guest="_details" Price="_price" PriceError="@_priceError" Title="Overzicht van je boeking" />
+                <BookingSummary Request="_request" Accommodation="_accommodation" Guest="_details" Title="Overzicht van je boeking" />
                 <div class="booking-actions">
                     <button class="button button--outline" type="button" @onclick="EditDetails">Gegevens aanpassen</button>
                     <button class="button" type="button" @onclick="Confirm">Boeking bevestigen</button>
@@ -91,29 +95,25 @@
     private static readonly IReadOnlyList<Breadcrumb> _crumbs = [new("Zoek en boek", "zoek-en-boek")];
 
     private BookingRequest? _request;
-    private string _error = string.Empty;
+    private AccommodationDetailDto? _accommodation;
+    private string? _error;
     private BookingDetails _details = new();
     private BookingStep _step = BookingStep.Details;
-    private PriceDto? _price;
-    private string? _priceError;
 
-    [SupplyParameterFromQuery(Name = BookingQuery.Type)]
-    public string? Type { get; set; }
+    [SupplyParameterFromQuery(Name = BookingQuery.Accommodation)]
+    public string? AccommodationValue { get; set; }
 
     [SupplyParameterFromQuery(Name = BookingQuery.Arrival)]
-    public string? Arrival { get; set; }
+    public string? ArrivalValue { get; set; }
 
     [SupplyParameterFromQuery(Name = BookingQuery.Departure)]
-    public string? Departure { get; set; }
+    public string? DepartureValue { get; set; }
 
-    [SupplyParameterFromQuery(Name = BookingQuery.Adults)]
-    public string? Adults { get; set; }
-
-    [SupplyParameterFromQuery(Name = BookingQuery.Children)]
-    public string? Children { get; set; }
+    [SupplyParameterFromQuery(Name = BookingQuery.Persons)]
+    public string? PersonsValue { get; set; }
 
     [SupplyParameterFromQuery(Name = BookingQuery.Pets)]
-    public string? Pets { get; set; }
+    public string? PetsValue { get; set; }
 
     private string Intro => _step == BookingStep.Details
         ? "Stap 1 van 2: vul je gegevens in."
@@ -122,27 +122,32 @@
     protected override async Task OnParametersSetAsync()
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        BookingQuery.TryParse(Type, Arrival, Departure, Adults, Children, Pets, today, out var request, out _error);
+        if (!BookingQuery.TryParse(AccommodationValue, ArrivalValue, DepartureValue, PersonsValue, PetsValue, today, out var request, out var error))
+        {
+            _request = null;
+            _accommodation = null;
+            _error = error;
+            return;
+        }
 
-        if (request == _request)
+        if (request == _request && _accommodation is not null)
             return;
 
         _request = request;
+        _accommodation = null;
+        _error = null;
         _step = BookingStep.Details;
-        _price = null;
-        _priceError = null;
 
-        if (_request is not null)
-            await LoadPriceAsync(_request);
-    }
+        var response = await BookingService.GetStayAsync(request!);
+        if (!response.Succeeded || response.Value is null)
+        {
+            _error = string.IsNullOrWhiteSpace(response.Message) ? "Dit verblijf kon niet worden geladen." : response.Message;
+            return;
+        }
 
-    private async Task LoadPriceAsync(BookingRequest request)
-    {
-        var response = await PriceService.GetPriceAsync(request);
-        if (response.Succeeded && response.Value is not null)
-            _price = response.Value;
-        else
-            _priceError = "De prijs kon nu niet worden berekend. Probeer het later opnieuw of neem contact op met de receptie.";
+        _error = BookingQuery.CheckAgainst(request!, response.Value);
+        if (_error is null)
+            _accommodation = response.Value;
     }
 
     private void ShowSummary() => _step = BookingStep.Summary;
@@ -151,10 +156,10 @@
 
     private void Confirm()
     {
-        if (_request is null)
+        if (_request is null || _accommodation is null)
             return;
 
-        BookingState.Confirm(_request, _details, _price);
+        BookingState.Confirm(_request, _accommodation, _details);
         Navigation.NavigateTo("boeken/bevestiging");
     }
 }

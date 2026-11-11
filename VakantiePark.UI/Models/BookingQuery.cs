@@ -1,25 +1,31 @@
 using System.Globalization;
-using VakantiePark.UI.Data;
+using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.UI.Models;
 
 public static class BookingQuery
 {
-    public const string Type = "type";
+    public const string Page = "boeken";
+    public const string Accommodation = "accommodatie";
     public const string Arrival = "aankomst";
     public const string Departure = "vertrek";
-    public const string Adults = "volwassenen";
-    public const string Children = "kinderen";
+    public const string Persons = "personen";
     public const string Pets = "huisdieren";
 
     private const string DateFormat = "yyyy-MM-dd";
 
+    public static string For(int accommodationId, AccommodationSearchCriteria criteria) =>
+        $"{Page}?{Accommodation}={accommodationId}" +
+        $"&{Arrival}={criteria.Arrival.ToString(DateFormat, CultureInfo.InvariantCulture)}" +
+        $"&{Departure}={criteria.Departure.ToString(DateFormat, CultureInfo.InvariantCulture)}" +
+        $"&{Persons}={criteria.Persons}" +
+        (criteria.Pets > 0 ? $"&{Pets}={criteria.Pets}" : string.Empty);
+
     public static bool TryParse(
-        string? typeSlug,
+        string? accommodation,
         string? arrival,
         string? departure,
-        string? adults,
-        string? children,
+        string? persons,
         string? pets,
         DateOnly today,
         out BookingRequest? request,
@@ -27,8 +33,7 @@ public static class BookingQuery
     {
         request = null;
 
-        var type = string.IsNullOrWhiteSpace(typeSlug) ? null : ParkData.GetBySlug(typeSlug);
-        if (type is null)
+        if (!TryParseCount(accommodation, out var accommodationId) || accommodationId < 1)
         {
             error = "Kies eerst een verblijf.";
             return false;
@@ -52,37 +57,35 @@ public static class BookingQuery
             return false;
         }
 
-        if (!TryParseCount(adults, out var adultCount) || adultCount < 1)
+        if (!TryParseCount(persons, out var personCount) || personCount < 1)
         {
-            error = "Kies met hoeveel volwassenen je komt.";
+            error = "Kies met hoeveel personen je komt.";
             return false;
         }
 
-        var childCount = 0;
         var petCount = 0;
-        if (!string.IsNullOrEmpty(children) && !TryParseCount(children, out childCount)
-            || !string.IsNullOrEmpty(pets) && !TryParseCount(pets, out petCount))
+        if (!string.IsNullOrEmpty(pets) && !TryParseCount(pets, out petCount))
         {
-            error = "Je reisgezelschap is niet goed ingevuld.";
+            error = "Het aantal huisdieren is niet goed ingevuld.";
             return false;
         }
 
-        var maxPersons = BookingRules.MaxPersons(type);
-        if (adultCount + childCount > maxPersons)
-        {
-            error = $"{type.Name} is voor maximaal {maxPersons} personen.";
-            return false;
-        }
-
-        if (petCount > BookingRules.MaxPets)
-        {
-            error = $"Je kunt maximaal {BookingRules.MaxPets} huisdieren meenemen.";
-            return false;
-        }
-
-        request = new BookingRequest(type, arrivalDate, departureDate, adultCount, childCount, petCount);
+        request = new BookingRequest(accommodationId, arrivalDate, departureDate, personCount, petCount);
         error = string.Empty;
         return true;
+    }
+
+    public static string? CheckAgainst(BookingRequest request, AccommodationDetailDto accommodation)
+    {
+        if (request.Persons > accommodation.MaxPersons)
+            return $"{accommodation.Name} is voor maximaal {accommodation.MaxPersons} personen.";
+
+        if (request.Pets > accommodation.MaxPets)
+            return accommodation.MaxPets == 0
+                ? $"In {accommodation.Name} zijn geen huisdieren toegestaan."
+                : $"In {accommodation.Name} mag je maximaal {accommodation.MaxPets} huisdieren meenemen.";
+
+        return null;
     }
 
     private static bool TryParseDate(string? value, out DateOnly date) =>

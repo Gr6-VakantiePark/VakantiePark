@@ -31,7 +31,12 @@
 
         <div class="result-card__footer">
             <p class="result-card__price">
-                @if (Accommodation.PricePerNight > 0)
+                @if (Accommodation.Price is { } price)
+                {
+                    <strong>@price.Total.ToString("C", Dutch)</strong>
+                    <span class="note">totaal voor @Nights @(Nights == 1 ? "nacht" : "nachten"), incl. eindschoonmaak en toeristenbelasting</span>
+                }
+                else if (Accommodation.PricePerNight > 0)
                 {
                     <strong>@((Accommodation.PricePerNight * Nights).ToString("C", Dutch))</strong>
                     <span class="note">voor @Nights @(Nights == 1 ? "nacht" : "nachten")</span>
@@ -42,6 +47,7 @@
                 }
             </p>
             <a class="button button--outline" href="accommodaties/@Accommodation.TypeSlug">Over de @Accommodation.Type</a>
+            <a class="button" href="@BookUrl">Boeken</a>
         </div>
     </article>
 </li>
@@ -57,6 +63,9 @@
 
     [Parameter]
     public string? PhotoUrl { get; set; }
+
+    [Parameter, EditorRequired]
+    public string BookUrl { get; set; } = string.Empty;
 
     private IEnumerable<(string Label, string Value)> Facts()
     {

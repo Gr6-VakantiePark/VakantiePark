@@ -1,16 +1,11 @@
-using VakantiePark.UI.Data;
-
 namespace VakantiePark.UI.Models;
 
 public sealed record BookingRequest(
-    AccommodationType Type,
+    int AccommodationId,
     DateOnly ArrivalDate,
     DateOnly DepartureDate,
-    int Adults,
-    int Children,
+    int Persons,
     int Pets)
 {
-    public int Persons => Adults + Children;
-
     public int Nights => DepartureDate.DayNumber - ArrivalDate.DayNumber;
 }

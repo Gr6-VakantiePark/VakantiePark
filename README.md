@@ -16,20 +16,22 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 
 ## Prices (US08)
 
-- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, arrival time and departure time. Each accommodation type has its own `PrijsPerNacht`.
-- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50, arrival 15:00, departure 10:00) and gives every type with price 0 a **temporary example price** per night. Replace these with the real amounts from the client.
+- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
+- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and gives every type with price 0 a **temporary example price** per night. Replace these with the real amounts from the client.
 - `PriceCalculator` (Application) calculates: nights × price per night + cleaning fee + tourist tax (all persons × nights × tax).
-- Endpoint: `GET /accommodaties/price?type={slug}&arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}` returns `ApiResponse<PriceDto>` with the breakdown. Invalid input gives 400, an unknown type 404.
+- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}`. Without those three query values the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
+- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
 
 ## Booking (US09)
 
-1. `/boeken?type=&aankomst=&vertrek=&volwassenen=&kinderen=&huisdieren=` checks the query (type, dates, party size, max persons and pets) and asks for the guest’s name, email, phone and address.
-2. The summary step shows the stay, the party, the guest and the price from the price endpoint, with “Gegevens aanpassen” and “Boeking bevestigen”.
-3. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; it is not saved in the API yet.
+1. Every search result on `/zoek-en-boek` shows the total price and a **Boeken** button to `/boeken?accommodatie={id}&aankomst=&vertrek=&personen=&huisdieren=`. The sidebar on an accommodation page (`/accommodaties/{slug}`) has a small form with dates, persons and pets; **Boeken** there opens `/boeken` for the first free accommodation of that type, or shows a message when none is free.
+2. `/boeken` checks the query, loads the accommodation with its price from the API, checks persons and pets against that accommodation and asks for the guest’s name, email, phone and address.
+3. The summary step shows the stay, the party, the guest and the price breakdown, with “Gegevens aanpassen” and “Boeking bevestigen”.
+4. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; saving it in the API comes with US11.
 
 ## Database
 
-The API applies the migrations (`InitialCreate`, `ParkSettings`) and runs the seeders at startup. For a later model change:
+The API applies the migrations (`InitialCreate` up to `ParkSettings` and `MinimumNightsHighSeason`) and runs the seeders at startup. For a later model change:
 
 ```
 dotnet ef migrations add <Name> --project VakantiePark.Infrastructure --startup-project VakantiePark.API --output-dir Data/Migrations

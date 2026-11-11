@@ -11,5 +11,7 @@ namespace VakantiePark.Domain.Entities
         public TimeOnly ArrivalTime { get; set; }
 
         public TimeOnly DepartureTime { get; set; }
+
+        public int MinimumNightsHighSeason { get; set; }
     }
 }

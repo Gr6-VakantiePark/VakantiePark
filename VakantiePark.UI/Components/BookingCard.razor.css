@@ -1,0 +1,4 @@
+.sidebar-card ::deep .booking-card__form {
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}

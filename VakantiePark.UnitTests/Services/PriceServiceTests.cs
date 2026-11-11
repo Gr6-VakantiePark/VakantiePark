@@ -8,7 +8,7 @@ namespace VakantiePark.UnitTests.Services
 {
     public class PriceServiceTests
     {
-        private readonly Mock<IAccommodatieRepository> _accommodationRepository = new();
+        private readonly Mock<IAccommodationRepository> _accommodationRepository = new();
         private readonly Mock<IParkSettingsRepository> _settingsRepository = new();
         private readonly PriceService _sut;
 
@@ -17,12 +17,12 @@ namespace VakantiePark.UnitTests.Services
             _sut = new PriceService(_accommodationRepository.Object, _settingsRepository.Object);
         }
 
-        private static AccommodatieType CreateType(decimal pricePerNight = 100m, int maxPersons = 4) => new()
+        private static AccommodationType CreateType(decimal pricePerNight = 100m, int maxPersons = 4) => new()
         {
-            Naam = "Berk 4",
+            Name = "Berk 4",
             Slug = "berk-4",
-            PrijsPerNacht = pricePerNight,
-            Accommodaties = [new Accommodatie { MaxPersonen = maxPersons }],
+            PricePerNight = pricePerNight,
+            Accommodations = [new Accommodation { MaxPersons = maxPersons }],
         };
 
         private static ParkSettings CreateSettings() => new()
@@ -58,7 +58,7 @@ namespace VakantiePark.UnitTests.Services
         [Fact]
         public async Task CalculateAsync_TypeNotFound_ThrowsKeyNotFoundException()
         {
-            _accommodationRepository.Setup(r => r.GetTypeBySlugAsync("berk-4")).ReturnsAsync((AccommodatieType?)null);
+            _accommodationRepository.Setup(r => r.GetTypeBySlugAsync("berk-4")).ReturnsAsync((AccommodationType?)null);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.CalculateAsync(CreateRequest()));
         }
