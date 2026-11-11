@@ -24,7 +24,6 @@ namespace VakantiePark.Infrastructure.Data.Configurations
             builder.Property(a => a.Schaduw).HasMaxLength(20);
             builder.Property(a => a.WifiDekking).HasMaxLength(20);
 
-            // Veel-op-veel: een accommodatie heeft meerdere voorzieningen, een voorziening hoort bij meerdere accommodaties
             builder.HasMany(a => a.Voorzieningen)
                 .WithMany(v => v.Accommodaties)
                 .UsingEntity(j => j.ToTable("AccommodatieVoorzieningen"));

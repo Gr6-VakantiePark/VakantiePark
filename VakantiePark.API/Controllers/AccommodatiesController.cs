@@ -9,13 +9,22 @@ namespace VakantiePark.API.Controllers
     [Route("accommodaties")]
     public class AccommodatiesController(IAccommodatieService service) : ControllerBase
     {
-        /// <summary>Alle accommodaties.</summary>
         [HttpGet]
         [ProducesResponseType<ApiResponse<List<AccommodatieDto>>>(StatusCodes.Status200OK)]
         public Task<IActionResult> GetAll() =>
             this.RunAsync(() => service.GetAllAsync());
 
-        /// <summary>Eén accommodatie met alle details.</summary>
+        [HttpGet("zoekopties")]
+        [ProducesResponseType<ApiResponse<ZoekOptiesDto>>(StatusCodes.Status200OK)]
+        public Task<IActionResult> GetZoekOpties() =>
+            this.RunAsync(() => service.GetZoekOptiesAsync());
+
+        [HttpGet("zoek")]
+        [ProducesResponseType<ApiResponse<PaginatedResult<AccommodatieDetailDto>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ApiResponse<PaginatedResult<AccommodatieDetailDto>>>(StatusCodes.Status400BadRequest)]
+        public Task<IActionResult> Zoek([FromQuery] AccommodatieZoekCriteria criteria) =>
+            this.RunAsync(() => service.ZoekAsync(criteria));
+
         [HttpGet("{id:int}")]
         [ProducesResponseType<ApiResponse<AccommodatieDetailDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ApiResponse<AccommodatieDetailDto>>(StatusCodes.Status404NotFound)]

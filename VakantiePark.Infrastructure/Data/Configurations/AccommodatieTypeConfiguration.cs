@@ -17,19 +17,15 @@ namespace VakantiePark.Infrastructure.Data.Configurations
             builder.Property(t => t.Slug).IsRequired().HasMaxLength(100);
             builder.HasIndex(t => t.Slug).IsUnique();
 
-            // Enum als tekst opslaan ("Huisje" / "Campingplaats") i.p.v. 1 / 2
             builder.Property(t => t.Categorie).IsRequired().HasConversion<string>().HasMaxLength(20);
 
             builder.Property(t => t.Omschrijving).HasMaxLength(2000);
             builder.Property(t => t.PrijsPerNacht).HasPrecision(10, 2);
 
-            // List<string> wordt door EF Core als JSON-array in één kolom opgeslagen
-            builder.Property(t => t.Afbeeldingen);
-
             builder.HasMany(t => t.Accommodaties)
                 .WithOne(a => a.AccommodatieType)
                 .HasForeignKey(a => a.AccommodatieTypeId)
-                .OnDelete(DeleteBehavior.Restrict); // type niet verwijderen zolang er accommodaties aan hangen
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

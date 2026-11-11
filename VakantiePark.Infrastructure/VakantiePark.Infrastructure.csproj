@@ -17,8 +17,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Seed-bestanden meekopiëren naar de output (ook naar de API) -->
 		<None Update="Data\Seed\*.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Data\Seed\afbeeldingen\*.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

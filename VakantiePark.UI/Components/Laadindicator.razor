@@ -1,0 +1,8 @@
+<div class="d-flex align-items-center gap-3 py-4" role="status" aria-live="polite">
+    <div class="spinner-border text-primary" aria-hidden="true"></div>
+    <span>@Tekst</span>
+</div>
+
+@code {
+    [Parameter] public string Tekst { get; set; } = "Laden...";
+}

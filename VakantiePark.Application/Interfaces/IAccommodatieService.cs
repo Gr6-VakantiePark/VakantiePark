@@ -1,3 +1,4 @@
+using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Accommodaties;
 
 namespace VakantiePark.Application.Interfaces
@@ -6,7 +7,10 @@ namespace VakantiePark.Application.Interfaces
     {
         Task<List<AccommodatieDto>> GetAllAsync();
 
-        /// <exception cref="KeyNotFoundException">Als de accommodatie niet bestaat.</exception>
         Task<AccommodatieDetailDto> GetByIdAsync(int id);
+
+        Task<ZoekOptiesDto> GetZoekOptiesAsync();
+
+        Task<PaginatedResult<AccommodatieDetailDto>> ZoekAsync(AccommodatieZoekCriteria criteria);
     }
 }

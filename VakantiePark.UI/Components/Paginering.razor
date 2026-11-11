@@ -1,0 +1,50 @@
+@if (AantalPaginas > 1)
+{
+    <nav aria-label="Pagina's met zoekresultaten">
+        <ul class="pagination justify-content-center flex-wrap mt-4">
+            <li class="page-item @(Huidig <= 1 ? "disabled" : null)">
+                <a class="page-link" href="@(Huidig <= 1 ? null : Url(Huidig - 1))" aria-label="Vorige pagina">&laquo; Vorige</a>
+            </li>
+
+            @foreach (int? nummer in Nummers())
+            {
+                if (nummer is null)
+                {
+                    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                }
+                else if (nummer == Huidig)
+                {
+                    <li class="page-item active" aria-current="page"><span class="page-link">@nummer</span></li>
+                }
+                else
+                {
+                    <li class="page-item"><a class="page-link" href="@Url(nummer.Value)">@nummer</a></li>
+                }
+            }
+
+            <li class="page-item @(Huidig >= AantalPaginas ? "disabled" : null)">
+                <a class="page-link" href="@(Huidig >= AantalPaginas ? null : Url(Huidig + 1))" aria-label="Volgende pagina">Volgende &raquo;</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+@code {
+    [Parameter, EditorRequired] public int Huidig { get; set; }
+    [Parameter, EditorRequired] public int AantalPaginas { get; set; }
+    [Parameter, EditorRequired] public Func<int, string> Url { get; set; } = _ => "";
+
+    private const int Buren = 2;
+
+    private IEnumerable<int?> Nummers()
+    {
+        int van = Math.Max(2, Huidig - Buren);
+        int tot = Math.Min(AantalPaginas - 1, Huidig + Buren);
+
+        yield return 1;
+        if (van > 2) yield return null;
+        for (int i = van; i <= tot; i++) yield return i;
+        if (tot < AantalPaginas - 1) yield return null;
+        yield return AantalPaginas;
+    }
+}

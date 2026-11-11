@@ -1,0 +1,195 @@
+@using VakantiePark.Shared.DTOs.Accommodaties
+@inject NavigationManager Navigation
+
+<EditForm Model="formulier" OnSubmit="Zoeken" FormName="zoeken" class="card mb-4" id="zoekformulier">
+    <div class="card-body">
+        <h2 class="h5 card-title mb-3">Zoek een verblijf</h2>
+
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-3">
+                <label for="aankomst" class="form-label">Aankomst</label>
+                <InputDate id="aankomst" class="form-control" @bind-Value="formulier.Aankomst" min="@Iso(vandaag)" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label for="vertrek" class="form-label">Vertrek</label>
+                <InputDate id="vertrek" class="form-control" @bind-Value="formulier.Vertrek"
+                           min="@Iso((formulier.Aankomst ?? vandaag).AddDays(1))" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label for="personen" class="form-label">Personen</label>
+                <InputNumber id="personen" class="form-control" @bind-Value="formulier.Personen" min="1" max="@Opties.MaxPersonen" />
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label for="huisdieren" class="form-label">Huisdieren</label>
+                <InputNumber id="huisdieren" class="form-control" @bind-Value="formulier.Huisdieren" min="0" max="@Opties.MaxHuisdieren" />
+            </div>
+
+            <div class="col-sm-6">
+                <label for="categorie" class="form-label">Soort verblijf</label>
+                <InputSelect id="categorie" class="form-select" @bind-Value="formulier.Categorie" @bind-Value:after="CategorieGewijzigd">
+                    <option value="">Alles</option>
+                    @foreach (var categorie in Opties.Categorieen)
+                    {
+                        <option value="@categorie">@categorie</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-sm-6">
+                <label for="type" class="form-label">Type</label>
+                <InputSelect id="type" class="form-select" @bind-Value="formulier.Type">
+                    <option value="">Alle types</option>
+                    @foreach (var type in ZichtbareTypes)
+                    {
+                        <option value="@type.Slug">@type.Naam</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+
+        @if (ZichtbareVoorzieningen.Any())
+        {
+            <fieldset class="mt-3">
+                <legend class="form-label fs-6">Voorzieningen</legend>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-1">
+                    @foreach (var vz in ZichtbareVoorzieningen)
+                    {
+                        <div class="col">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="vz-@vz.Code"
+                                       checked="@gekozenVoorzieningen.Contains(vz.Code)"
+                                       @onchange="e => ZetVoorziening(vz.Code, e.Value is true)" />
+                                <label class="form-check-label" for="vz-@vz.Code">@vz.Naam</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </fieldset>
+        }
+
+        @if (fouten.Count > 0)
+        {
+            <div class="alert alert-warning mt-3 mb-0" role="alert">
+                <ul class="mb-0">
+                    @foreach (var fout in fouten)
+                    {
+                        <li>@fout</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Zoeken</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="Wissen">Filters wissen</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public ZoekOptiesDto Opties { get; set; } = new();
+
+    [Parameter] public AccommodatieZoekCriteria? Huidig { get; set; }
+
+    private class Formulier
+    {
+        public DateOnly? Aankomst { get; set; }
+        public DateOnly? Vertrek { get; set; }
+        public int Personen { get; set; } = 1;
+        public int Huisdieren { get; set; }
+        public string Categorie { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+    }
+
+    private readonly DateOnly vandaag = DateOnly.FromDateTime(DateTime.Today);
+    private Formulier formulier = new();
+    private HashSet<string> gekozenVoorzieningen = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<string> fouten = new();
+    private AccommodatieZoekCriteria? vorigeHuidig;
+
+    private IEnumerable<AccommodatieTypeDto> ZichtbareTypes =>
+        Opties.Types.Where(t => formulier.Categorie == "" || t.Categorie == formulier.Categorie);
+
+    private IEnumerable<VoorzieningOptieDto> ZichtbareVoorzieningen =>
+        Opties.Voorzieningen.Where(v => formulier.Categorie == "" || v.Categorieen.Contains(formulier.Categorie));
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Huidig, vorigeHuidig))
+            return;
+        vorigeHuidig = Huidig;
+
+        formulier = Huidig is null
+            ? new Formulier()
+            : new Formulier
+            {
+                Aankomst = Huidig.Aankomst == default ? null : Huidig.Aankomst,
+                Vertrek = Huidig.Vertrek == default ? null : Huidig.Vertrek,
+                Personen = Math.Max(1, Huidig.Personen),
+                Huisdieren = Huidig.Huisdieren,
+                Categorie = Huidig.Categorie ?? string.Empty,
+                Type = Huidig.Type ?? string.Empty,
+            };
+        gekozenVoorzieningen = new(Huidig?.VoorzieningCodes ?? [], StringComparer.OrdinalIgnoreCase);
+        fouten.Clear();
+    }
+
+    private void CategorieGewijzigd()
+    {
+        if (!ZichtbareTypes.Any(t => t.Slug == formulier.Type))
+            formulier.Type = string.Empty;
+
+        var zichtbaar = ZichtbareVoorzieningen.Select(v => v.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        gekozenVoorzieningen.RemoveWhere(code => !zichtbaar.Contains(code));
+    }
+
+    private void ZetVoorziening(string code, bool aan)
+    {
+        if (aan) gekozenVoorzieningen.Add(code);
+        else gekozenVoorzieningen.Remove(code);
+    }
+
+    private void Wissen()
+    {
+        formulier = new Formulier { Aankomst = formulier.Aankomst, Vertrek = formulier.Vertrek, Personen = formulier.Personen };
+        gekozenVoorzieningen.Clear();
+        fouten.Clear();
+    }
+
+    private void Zoeken()
+    {
+        fouten.Clear();
+
+        if (formulier.Aankomst is null) fouten.Add("Kies een aankomstdatum.");
+        else if (formulier.Aankomst < vandaag) fouten.Add("De aankomstdatum mag niet in het verleden liggen.");
+
+        if (formulier.Vertrek is null) fouten.Add("Kies een vertrekdatum.");
+        else if (formulier.Aankomst is not null && formulier.Vertrek <= formulier.Aankomst)
+            fouten.Add("De vertrekdatum moet na de aankomstdatum liggen.");
+
+        if (formulier.Personen < 1) fouten.Add("Kies minimaal 1 persoon.");
+        else if (formulier.Personen > Opties.MaxPersonen)
+            fouten.Add($"Het grootste verblijf is voor {Opties.MaxPersonen} personen.");
+
+        if (formulier.Huisdieren < 0) fouten.Add("Het aantal huisdieren kan niet negatief zijn.");
+        else if (formulier.Huisdieren > Opties.MaxHuisdieren)
+            fouten.Add($"Er zijn maximaal {Opties.MaxHuisdieren} huisdieren toegestaan.");
+
+        if (fouten.Count > 0)
+            return;
+
+        var criteria = new AccommodatieZoekCriteria
+        {
+            Aankomst = formulier.Aankomst!.Value,
+            Vertrek = formulier.Vertrek!.Value,
+            Personen = formulier.Personen,
+            Huisdieren = formulier.Huisdieren,
+            Categorie = formulier.Categorie == "" ? null : formulier.Categorie,
+            Type = formulier.Type == "" ? null : formulier.Type,
+            Voorzieningen = gekozenVoorzieningen.Count == 0 ? null : string.Join(",", gekozenVoorzieningen),
+        };
+
+        Navigation.NavigateTo($"zoekresultaten?{criteria.ToQueryString()}");
+    }
+
+    private static string Iso(DateOnly d) => d.ToString("yyyy-MM-dd");
+}

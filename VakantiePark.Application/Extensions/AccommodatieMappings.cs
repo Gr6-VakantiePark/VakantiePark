@@ -3,7 +3,6 @@ using VakantiePark.Shared.DTOs.Accommodaties;
 
 namespace VakantiePark.Application.Extensions
 {
-    /// <summary>Zet entiteiten om naar DTO's, zodat de API nooit entiteiten teruggeeft.</summary>
     public static class AccommodatieMappings
     {
         public static AccommodatieDto ToDto(this Accommodatie a) => new()
@@ -17,7 +16,7 @@ namespace VakantiePark.Application.Extensions
             MaxPersonen = a.MaxPersonen,
             Zone = a.Zone,
             PrijsPerNacht = a.AccommodatieType.PrijsPerNacht,
-            Hoofdafbeelding = a.AccommodatieType.Afbeeldingen.FirstOrDefault(),
+            Hoofdafbeelding = AfbeeldingUrls(a.AccommodatieType).FirstOrDefault(),
         };
 
         public static AccommodatieDetailDto ToDetailDto(this Accommodatie a) => new()
@@ -31,7 +30,7 @@ namespace VakantiePark.Application.Extensions
             MaxPersonen = a.MaxPersonen,
             Zone = a.Zone,
             PrijsPerNacht = a.AccommodatieType.PrijsPerNacht,
-            Hoofdafbeelding = a.AccommodatieType.Afbeeldingen.FirstOrDefault(),
+            Hoofdafbeelding = AfbeeldingUrls(a.AccommodatieType).FirstOrDefault(),
 
             Omschrijving = a.AccommodatieType.Omschrijving,
             MaxHuisdieren = a.MaxHuisdieren,
@@ -44,11 +43,17 @@ namespace VakantiePark.Application.Extensions
             Ondergrond = a.Ondergrond,
             Schaduw = a.Schaduw,
             WifiDekking = a.WifiDekking,
-            Afbeeldingen = a.AccommodatieType.Afbeeldingen.ToList(),
+            Afbeeldingen = AfbeeldingUrls(a.AccommodatieType),
             Voorzieningen = a.Voorzieningen
                 .OrderBy(v => v.Naam)
                 .Select(v => new VoorzieningDto { Id = v.Id, Code = v.Code, Naam = v.Naam })
                 .ToList(),
         };
+
+        private static List<string> AfbeeldingUrls(AccommodatieType type) =>
+            type.Afbeeldingen
+                .OrderBy(f => f.Volgorde)
+                .Select(f => $"afbeeldingen/{f.Id}")
+                .ToList();
     }
 }

@@ -109,10 +109,6 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.PrimitiveCollection<string>("Afbeeldingen")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Categorie")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -145,6 +141,49 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("AccommodatieTypes", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Afbeelding", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AccommodatieTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Bestandsnaam")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Volgorde")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccommodatieTypeId", "Volgorde");
+
+                    b.ToTable("Afbeeldingen", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.AfbeeldingBestand", b =>
+                {
+                    b.Property<int>("AfbeeldingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("AfbeeldingId");
+
+                    b.ToTable("AfbeeldingBestanden", (string)null);
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.Voorziening", b =>
@@ -197,9 +236,39 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Navigation("AccommodatieType");
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Afbeelding", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.AccommodatieType", "AccommodatieType")
+                        .WithMany("Afbeeldingen")
+                        .HasForeignKey("AccommodatieTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AccommodatieType");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.AfbeeldingBestand", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Afbeelding", "Afbeelding")
+                        .WithOne("Bestand")
+                        .HasForeignKey("VakantiePark.Domain.Entities.AfbeeldingBestand", "AfbeeldingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Afbeelding");
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.AccommodatieType", b =>
                 {
                     b.Navigation("Accommodaties");
+
+                    b.Navigation("Afbeeldingen");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Afbeelding", b =>
+                {
+                    b.Navigation("Bestand")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

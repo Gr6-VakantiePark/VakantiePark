@@ -1,17 +1,14 @@
 namespace VakantiePark.Shared.DTOs.Accommodaties
 {
-    /// <summary>Alle gegevens van één accommodatie (GET /accommodaties/{id}).</summary>
     public class AccommodatieDetailDto : AccommodatieDto
     {
         public string? Omschrijving { get; set; }
         public int MaxHuisdieren { get; set; }
 
-        // Huisjes
         public int? Slaapkamers { get; set; }
         public int? Badkamers { get; set; }
         public int? Bedden { get; set; }
 
-        // Campingplaatsen
         public int? ElektriciteitAmpere { get; set; }
         public decimal? MaxVoertuigLengteMeters { get; set; }
         public decimal? MaxCaravanLengteMeters { get; set; }
