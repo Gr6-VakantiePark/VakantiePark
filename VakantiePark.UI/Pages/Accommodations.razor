@@ -1,6 +1,7 @@
 @page "/accommodaties"
-
-@* TODO: Accommodation types come from the static ParkData class for now. Load them from VakantiePark.API once its endpoints exist. *@
+@using VakantiePark.Shared.DTOs.Accommodations
+@using VakantiePark.UI.Interfaces
+@inject IHttpService Http
 
 <PageTitle>Accommodaties | Vakantiepark D’r op Uut</PageTitle>
 <HeadContent>
@@ -9,27 +10,87 @@
 
 <PageHeader Title="Accommodaties" Intro="Kies een type om alle huizen of plaatsen van dat type te zien." />
 
-<section class="section" id="holiday-homes" aria-labelledby="heading-houses">
-    <div class="container">
-        <div class="section__header">
-            <h2 id="heading-houses">Vakantiehuizen</h2>
-            <p>@_holidayHomes.Sum(type => type.UnitCount) huizen in @_holidayHomes.Count types</p>
+@if (_error is not null)
+{
+    <section class="section" aria-labelledby="heading-error">
+        <div class="container">
+            <p id="heading-error" class="search-message" role="alert">De accommodaties konden niet worden geladen: @_error</p>
         </div>
-        <TypeCardList Types="_holidayHomes" />
-    </div>
-</section>
+    </section>
+}
+else if (!_loaded)
+{
+    <section class="section" aria-labelledby="heading-loading">
+        <div class="container">
+            <LoadingIndicator Text="Accommodaties laden…" />
+        </div>
+    </section>
+}
+else
+{
+    <section class="section" id="holiday-homes" aria-labelledby="heading-houses">
+        <div class="container">
+            <div class="section__header">
+                <h2 id="heading-houses">Vakantiehuizen</h2>
+                <p>@_holidayHomes.Sum(type => type.UnitCount) huizen in @_holidayHomes.Count types</p>
+            </div>
+            <TypeCardList Types="_holidayHomes" />
+        </div>
+    </section>
 
-<section class="section section--mist" id="camping" aria-labelledby="heading-camping">
-    <div class="container">
-        <div class="section__header">
-            <h2 id="heading-camping">Kampeerplaatsen</h2>
-            <p>@_campingPitches.Sum(type => type.UnitCount) plaatsen in @_campingPitches.Count types</p>
+    <section class="section section--mist" id="camping" aria-labelledby="heading-camping">
+        <div class="container">
+            <div class="section__header">
+                <h2 id="heading-camping">Kampeerplaatsen</h2>
+                <p>@_campingPitches.Sum(type => type.UnitCount) plaatsen in @_campingPitches.Count types</p>
+            </div>
+            <TypeCardList Types="_campingPitches" />
         </div>
-        <TypeCardList Types="_campingPitches" />
-    </div>
-</section>
+    </section>
+}
 
 @code {
-    private readonly List<AccommodationType> _holidayHomes = ParkData.GetByCategory(AccommodationCategory.HolidayHome).ToList();
-    private readonly List<AccommodationType> _campingPitches = ParkData.GetByCategory(AccommodationCategory.CampingPitch).ToList();
+    private List<AccommodationType> _holidayHomes = [];
+    private List<AccommodationType> _campingPitches = [];
+    private string? _error;
+    private bool _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync<List<AccommodationDto>>("accommodations");
+        if (!response.Succeeded || response.Value is null)
+        {
+            _error = string.IsNullOrWhiteSpace(response.Message) ? "onbekende fout." : response.Message;
+            return;
+        }
+
+        var types = response.Value
+            .GroupBy(accommodation => accommodation.TypeSlug)
+            .Select(CreateType)
+            .ToList();
+
+        _holidayHomes = types.Where(type => type.Category == AccommodationCategory.HolidayHome).ToList();
+        _campingPitches = types.Where(type => type.Category == AccommodationCategory.CampingPitch).ToList();
+        _loaded = true;
+    }
+
+    private static AccommodationType CreateType(IGrouping<string, AccommodationDto> group)
+    {
+        var first = group.First();
+        var maxPersons = group.Max(accommodation => accommodation.MaxPersons);
+        var category = Enum.Parse<AccommodationCategory>(first.Category, ignoreCase: true);
+
+        return new AccommodationType(
+            Slug: first.TypeSlug,
+            Name: first.Type,
+            Category: category,
+            Tagline: $"Voor maximaal {maxPersons} personen",
+            Description: string.Empty,
+            Persons: maxPersons.ToString(),
+            UnitCount: group.Count(),
+            KeyFacts: [],
+            Amenities: [],
+            PartialAmenities: [],
+            Zones: []);
+    }
 }
