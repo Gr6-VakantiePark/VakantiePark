@@ -1,12 +1,15 @@
+using VakantiePark.Application.Calculators;
 using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Entities;
 using VakantiePark.Domain.Enums;
 using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Accommodations;
+using VakantiePark.Shared.DTOs.Prices;
 
 namespace VakantiePark.Application.Services
 {
-    public class AccommodationService(IAccommodationRepository repository) : IAccommodationService
+    public class AccommodationService(IAccommodationRepository repository, IParkSettingsRepository settingsRepository) : IAccommodationService
     {
         public async Task<List<AccommodationDto>> GetAllAsync()
         {
@@ -14,12 +17,25 @@ namespace VakantiePark.Application.Services
             return accommodations.Select(a => a.ToDto()).ToList();
         }
 
-        public async Task<AccommodationDetailDto> GetByIdAsync(int id)
+        public async Task<AccommodationDetailDto> GetByIdAsync(int id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null)
         {
+            bool hasStay = arrival is not null || departure is not null || persons is not null;
+            if (hasStay)
+                ValidateStay(arrival, departure, persons);
+
             var accommodation = await repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Accommodatie met id {id} is niet gevonden.");
 
-            return accommodation.ToDetailDto();
+            var dto = accommodation.ToDetailDto();
+            if (!hasStay)
+                return dto;
+
+            if (persons > accommodation.MaxPersons)
+                throw new ArgumentException($"{accommodation.Name} is geschikt voor maximaal {accommodation.MaxPersons} personen.");
+
+            var settings = await settingsRepository.GetAsync();
+            dto.Price = PriceFor(accommodation, arrival!.Value, departure!.Value, persons!.Value, settings);
+            return dto;
         }
 
         public async Task<SearchOptionsDto> GetSearchOptionsAsync()
@@ -55,14 +71,45 @@ namespace VakantiePark.Application.Services
             Validate(criteria);
 
             var (accommodations, totalCount) = await repository.SearchAsync(criteria);
+            var settings = await settingsRepository.GetAsync();
 
             return new PaginatedResult<AccommodationDetailDto>
             {
-                Items = accommodations.Select(a => a.ToDetailDto()).ToList(),
+                Items = accommodations.Select(a =>
+                {
+                    var dto = a.ToDetailDto();
+                    dto.Price = PriceFor(a, criteria.Arrival, criteria.Departure, criteria.Persons, settings);
+                    return dto;
+                }).ToList(),
                 TotalCount = totalCount,
                 PageNumber = criteria.PageNumber,
                 PageSize = criteria.PageSize,
             };
+        }
+
+        private static PriceDto? PriceFor(Accommodation accommodation, DateOnly arrival, DateOnly departure, int persons, ParkSettings? settings)
+        {
+            if (settings is null || accommodation.AccommodationType.PricePerNight <= 0m)
+                return null;
+
+            return PriceCalculator.Calculate(
+                accommodation.AccommodationType.PricePerNight,
+                departure.DayNumber - arrival.DayNumber,
+                persons,
+                settings.CleaningFee,
+                settings.TouristTaxPerPersonPerNight);
+        }
+
+        private static void ValidateStay(DateOnly? arrival, DateOnly? departure, int? persons)
+        {
+            if (arrival is null || departure is null || persons is null)
+                throw new ArgumentException("Geef aankomst, vertrek en het aantal personen samen op om een prijs te berekenen.");
+
+            if (departure <= arrival)
+                throw new ArgumentException("De vertrekdatum moet na de aankomstdatum liggen.");
+
+            if (persons < 1)
+                throw new ArgumentException("Het aantal personen moet minimaal 1 zijn.");
         }
 
         private static void Validate(AccommodationSearchCriteria c)

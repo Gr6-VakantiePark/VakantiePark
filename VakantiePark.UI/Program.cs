@@ -29,6 +29,8 @@ namespace StockFlow.ManagementApp
             builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthStateProvider>());
             builder.Services.AddScoped<IHttpService, HttpService>();
             builder.Services.AddScoped<ISearchService, ApiSearchService>();
+            builder.Services.AddScoped<IBookingService, ApiBookingService>();
+            builder.Services.AddScoped<BookingState>();
             builder.Services.AddScoped<IAccountService, ApiAccountService>();
             builder.Services.AddTransient<AuthHandler>();
 

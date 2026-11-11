@@ -11,6 +11,7 @@ namespace VakantiePark.Infrastructure.Data
         public DbSet<Amenity> Amenities => Set<Amenity>();
         public DbSet<Photo> Photos => Set<Photo>();
         public DbSet<PhotoFile> PhotoFiles => Set<PhotoFile>();
+        public DbSet<ParkSettings> ParkSettings => Set<ParkSettings>();
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<Permission> Permissions => Set<Permission>();
@@ -27,6 +28,7 @@ namespace VakantiePark.Infrastructure.Data
             optionsBuilder.UseSeeding((context, _) =>
             {
                 context.UseAccommodationSeeder();
+                context.UsePriceSeeder();
                 context.UseRoleSeeder();
                 context.UseEmployeeSeeder();
             });
@@ -34,6 +36,7 @@ namespace VakantiePark.Infrastructure.Data
             optionsBuilder.UseAsyncSeeding((context, _, _) =>
             {
                 context.UseAccommodationSeeder();
+                context.UsePriceSeeder();
                 context.UseRoleSeeder();
                 context.UseEmployeeSeeder();
                 return Task.CompletedTask;

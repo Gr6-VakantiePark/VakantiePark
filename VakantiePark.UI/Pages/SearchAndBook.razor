@@ -5,6 +5,7 @@
 @using VakantiePark.Shared.Common
 @using VakantiePark.Shared.DTOs.Accommodations
 @using VakantiePark.UI.Interfaces
+@using VakantiePark.UI.Models
 @using VakantiePark.UI.Services
 @inject ISearchService SearchService
 @inject HttpClient Http
@@ -124,7 +125,7 @@
                 <ul class="results">
                     @foreach (var accommodation in _results.Items)
                     {
-                        <SearchResultCard @key="accommodation.Id" Accommodation="accommodation" Nights="_criteria.Nights" PhotoUrl="@PhotoUrl(accommodation.MainPhoto)" />
+                        <SearchResultCard @key="accommodation.Id" Accommodation="accommodation" Nights="_criteria.Nights" PhotoUrl="@PhotoUrl(accommodation.MainPhoto)" BookUrl="@BookingQuery.For(accommodation.Id, _criteria)" />
                     }
                 </ul>
 

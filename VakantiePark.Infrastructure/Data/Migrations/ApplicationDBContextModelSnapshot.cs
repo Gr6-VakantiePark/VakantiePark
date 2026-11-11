@@ -243,6 +243,34 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("Employees", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.ParkSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<TimeOnly>("ArrivalTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("CleaningFee")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeOnly>("DepartureTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MinimumNightsHighSeason")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("TouristTaxPerPersonPerNight")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ParkSettings", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.Permission", b =>
                 {
                     b.Property<int>("Id")
