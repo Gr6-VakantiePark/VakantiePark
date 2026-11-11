@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Backend/">
+    <Project Path="VakantiePark.API/VakantiePark.API.csproj" />
+    <Project Path="VakantiePark.Application/VakantiePark.Application.csproj" />
+    <Project Path="VakantiePark.Domain/VakantiePark.Domain.csproj" />
+    <Project Path="VakantiePark.Infrastructure/VakantiePark.Infrastructure.csproj" />
+    <Project Path="VakantiePark.Shared/VakantiePark.Shared.csproj" />
+  </Folder>
+  <Folder Name="/Frontend/">
+    <Project Path="VakantiePark.UI/VakantiePark.UI.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="ci-build-test.yml" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="VakantiePark.UnitTests/VakantiePark.UnitTests.csproj" />
+  </Folder>
+</Solution>
