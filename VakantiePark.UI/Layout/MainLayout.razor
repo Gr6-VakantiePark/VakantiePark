@@ -1,16 +1,25 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
+@inherits LayoutComponentBase
+
+<a class="skip-link" href="#content" @onclick="SkipToContent" @onclick:preventDefault>Naar de inhoud</a>
+
+<header class="site-header">
+    <div class="container">
+        <a class="brand" href="">
+            <img src="img/logo-mark.png" alt="" width="58" height="47">
+            <span class="brand__name"><span class="brand__label">VAKANTIEPARK</span><span class="brand__title">D’r op Uut</span></span>
+        </a>
         <NavMenu />
     </div>
+</header>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<main id="content" tabindex="-1" @ref="_main">
+    @Body
+</main>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<SiteFooter />
+
+@code {
+    private ElementReference _main;
+
+    private async Task SkipToContent() => await _main.FocusAsync();
+}

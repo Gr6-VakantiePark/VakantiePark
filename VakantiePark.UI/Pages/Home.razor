@@ -1,7 +1,81 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+@* TODO: Accommodation types and zones come from the static ParkData class for now. Load them from VakantiePark.API once its endpoints exist. *@
 
-<h1>Hello, world!</h1>
+<PageTitle>Home | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="description" content="Vakantiehuizen en kampeerplaatsen tussen bos, heide en water.">
+</HeadContent>
 
-Welcome to your new app.
+<section class="hero">
+    <div class="container hero__grid">
+        <div>
+            <h1>Tussen bos, heide en water</h1>
+            <p class="hero__intro">150 vakantiehuizen en 50 kampeerplaatsen, verdeeld over 9 zones. Met een overdekt zwembad midden in het park.</p>
+            <div class="hero__actions">
+                <a class="button" href="zoek-en-boek">Zoek en boek</a>
+                <a class="button button--outline" href="accommodaties">Bekijk accommodaties</a>
+            </div>
+        </div>
+        <img class="hero__image" src="img/photos/hero.jpg" alt="Uitzicht over het park" width="1600" height="1100">
+    </div>
+    <WaveDivider />
+</section>
+
+<section class="section" aria-labelledby="heading-houses">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-houses">Vakantiehuizen</h2>
+            <p>Van een huis voor vier tot een bosvilla voor tien.</p>
+        </div>
+        <TypeCardList Types="ParkData.GetByCategory(AccommodationCategory.HolidayHome)" />
+    </div>
+</section>
+
+<section class="section section--mist" aria-labelledby="heading-camping">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-camping">Kamperen</h2>
+            <p>Met tent, caravan of camper.</p>
+        </div>
+        <TypeCardList Types="ParkData.GetByCategory(AccommodationCategory.CampingPitch)" />
+    </div>
+</section>
+
+<section class="section" id="zones" aria-labelledby="heading-zones">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-zones">Het park in 9 zones</h2>
+            <p class="zones__legend">
+                <span><span class="zone-dot zone-dot--houses"></span>Vakantiehuizen</span>
+                <span><span class="zone-dot zone-dot--camping"></span>Kampeerplaatsen</span>
+            </p>
+        </div>
+        <ul class="zones">
+            @foreach (var zone in ParkData.Zones)
+            {
+                <li @key="zone.Name">
+                    <h3><span class="zone-dot @(zone.Category == AccommodationCategory.CampingPitch ? "zone-dot--camping" : "zone-dot--houses")"></span>@zone.Name</h3>
+                    <p>@zone.UnitCount @(zone.Category == AccommodationCategory.CampingPitch ? "kampeerplaatsen" : "vakantiehuizen")</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="section section--flush-top" aria-labelledby="heading-pool">
+    <div class="container">
+        <div class="feature">
+            <div>
+                <h2 id="heading-pool">Zwemmen, ook als het regent</h2>
+                <p>Het overdekte zwembad heeft een wedstrijdbad, een peuterbad en een glijbaan. In de zomer is ook het buitenbad open.</p>
+                <a class="button" href="zwembad">Naar het zwembad</a>
+            </div>
+            <dl>
+                <div><dt>Dagelijks</dt><dd>09:00 – 21:00</dd></div>
+                <div><dt>Buitenbad</dt><dd>Mei tot en met september</dd></div>
+                <div><dt>Toegang</dt><dd>Gratis voor gasten</dd></div>
+            </dl>
+        </div>
+    </div>
+</section>

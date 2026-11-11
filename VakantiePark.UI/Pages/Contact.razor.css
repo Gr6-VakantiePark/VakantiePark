@@ -1,0 +1,74 @@
+.contact-form ::deep .form {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 34rem;
+}
+
+.contact-form ::deep .field label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.contact-form ::deep .field__hint {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.contact-form ::deep .field input,
+.contact-form ::deep .field select,
+.contact-form ::deep .field textarea {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+
+.contact-form ::deep .field input:focus-visible,
+.contact-form ::deep .field select:focus-visible,
+.contact-form ::deep .field textarea:focus-visible {
+  border-color: var(--water);
+  outline-offset: 0;
+}
+
+.contact-form ::deep .field textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.contact-form ::deep .field .invalid {
+  border-color: var(--error);
+}
+
+.contact-form ::deep .validation-message {
+  margin-top: 0.3rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--error);
+}
+
+.contact-details {
+  font-style: normal;
+}
+
+.contact-details dl {
+  margin: 0;
+}
+
+.contact-details dt {
+  margin-top: 1rem;
+  font-weight: 700;
+}
+
+.contact-details dd {
+  margin: 0;
+}
+
+.contact-details__note {
+  margin-top: 1.5rem;
+}

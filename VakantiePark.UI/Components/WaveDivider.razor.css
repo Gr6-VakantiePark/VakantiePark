@@ -1,0 +1,36 @@
+.waves {
+  width: 100%;
+  height: auto;
+  min-height: 70px;
+  margin-top: -1px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .waves path {
+    animation: wave-in 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .waves path:nth-child(2) {
+    animation-delay: 90ms;
+  }
+
+  .waves path:nth-child(3) {
+    animation-delay: 180ms;
+  }
+
+  .waves path:nth-child(4) {
+    animation-delay: 270ms;
+  }
+}
+
+@keyframes wave-in {
+  from {
+    transform: translateX(-4%);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}

@@ -1,0 +1,24 @@
+<aside class="sidebar-card" aria-labelledby="heading-booking">
+    <h2 id="heading-booking">@Type.Name</h2>
+    <dl>
+        <div><dt>Soort</dt><dd>@(IsHolidayHome ? "Vakantiehuis" : "Kampeerplaats")</dd></div>
+        <div><dt>Personen</dt><dd>@Type.Persons</dd></div>
+        <div><dt>@(IsHolidayHome ? "Aantal huizen" : "Aantal plaatsen")</dt><dd>@Type.UnitCount</dd></div>
+    </dl>
+    <h3>Te vinden in</h3>
+    <dl>
+        @foreach (var zone in Type.Zones.OrderByDescending(zone => zone.UnitCount))
+        {
+            <div @key="zone.Zone"><dt>@zone.Zone</dt><dd>@zone.UnitCount</dd></div>
+        }
+    </dl>
+    <a class="button" href="zoek-en-boek?type=@Type.Slug">Zoek en boek</a>
+    <p class="sidebar-card__note">Prijs en beschikbaarheid zie je bij het boeken.</p>
+</aside>
+
+@code {
+    [Parameter, EditorRequired]
+    public AccommodationType Type { get; set; } = default!;
+
+    private bool IsHolidayHome => Type.Category == AccommodationCategory.HolidayHome;
+}
