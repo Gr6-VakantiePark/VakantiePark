@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Shared.Common;
@@ -7,6 +8,7 @@ using VakantiePark.Shared.DTOs.Prices;
 namespace VakantiePark.API.Controllers
 {
     [ApiController]
+    [AllowAnonymous]
     [Route("accommodations")]
     public class AccommodationsController(IAccommodationService service, IPriceService priceService) : ControllerBase
     {

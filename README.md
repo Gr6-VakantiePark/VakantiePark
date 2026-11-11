@@ -31,7 +31,7 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 
 ## Database
 
-The API applies the migrations (`InitialCreate` up to `ParkSettings` and `MinimumNightsHighSeason`) and runs the seeders at startup. For a later model change:
+The API applies all migrations in `Data/Migrations` and runs the seeders at startup. For a later model change:
 
 ```
 dotnet ef migrations add <Name> --project VakantiePark.Infrastructure --startup-project VakantiePark.API --output-dir Data/Migrations
@@ -42,3 +42,11 @@ dotnet ef migrations add <Name> --project VakantiePark.Infrastructure --startup-
 ```
 dotnet test
 ```
+
+## JWT-sleutel
+
+De sleutel waarmee de API inlogtokens ondertekent staat niet in de repo.
+
+- **Development:** zonder ingestelde sleutel maakt de API bij elke start een willekeurige sleutel aan. Na een herstart moet je opnieuw inloggen. Wil je dat niet, zet dan een vaste sleutel in user-secrets:
+  `dotnet user-secrets set "JWT:Key" "<minimaal 32 willekeurige tekens>" --project VakantiePark.API`
+- **Andere omgevingen:** zet de sleutel in de omgevingsvariabele `JWT__Key`. Zonder sleutel start de API niet.

@@ -1,5 +1,5 @@
 .search-form ::deep .form {
-  display: grid;
+  max-width: none;
   gap: 1.5rem;
 }
 
@@ -14,31 +14,6 @@
   margin: 0;
   padding: 0;
   border: 0;
-}
-
-.search-form ::deep .field > label,
-.search-form ::deep .field > legend {
-  display: block;
-  margin-bottom: 0.3rem;
-  padding: 0;
-  font-weight: 700;
-}
-
-.search-form ::deep .field input:not([type="checkbox"]),
-.search-form ::deep .field select {
-  width: 100%;
-  padding: 0.65rem 0.8rem;
-  border: 2px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--white);
-  color: var(--ink);
-  font: inherit;
-}
-
-.search-form ::deep .field input:focus-visible,
-.search-form ::deep .field select:focus-visible {
-  border-color: var(--water);
-  outline-offset: 0;
 }
 
 .search-form ::deep .form__checks {

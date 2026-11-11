@@ -23,4 +23,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VakantiePark.Domain\VakantiePark.Domain.csproj" />
+    <ProjectReference Include="..\VakantiePark.Infrastructure\VakantiePark.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

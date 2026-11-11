@@ -32,6 +32,36 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("AccommodationAmenities", (string)null);
                 });
 
+            modelBuilder.Entity("EmployeeRole", b =>
+                {
+                    b.Property<Guid>("EmployeesId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RolesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("EmployeesId", "RolesId");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("EmployeeRoles", (string)null);
+                });
+
+            modelBuilder.Entity("PermissionRole", b =>
+                {
+                    b.Property<int>("PermissionsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RolesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PermissionsId", "RolesId");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("RolePermissions", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.Accommodation", b =>
                 {
                     b.Property<int>("Id")
@@ -168,6 +198,51 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("Amenities", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Employees", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.ParkSettings", b =>
                 {
                     b.Property<int>("Id")
@@ -194,6 +269,30 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ParkSettings", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.Photo", b =>
@@ -239,6 +338,34 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("PhotoFiles", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Roles", (string)null);
+                });
+
             modelBuilder.Entity("AccommodationAmenity", b =>
                 {
                     b.HasOne("VakantiePark.Domain.Entities.Accommodation", null)
@@ -250,6 +377,36 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.HasOne("VakantiePark.Domain.Entities.Amenity", null)
                         .WithMany()
                         .HasForeignKey("AmenitiesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EmployeeRole", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VakantiePark.Domain.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PermissionRole", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Permission", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VakantiePark.Domain.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

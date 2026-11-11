@@ -20,6 +20,10 @@ namespace VakantiePark.API
             {
                 return controller.NotFound(ApiResponse<T>.Fail(exception.Message));
             }
+            catch (UnauthorizedAccessException exception)
+            {
+                return controller.Unauthorized(ApiResponse<T>.Fail(exception.Message));
+            }
         }
 
         public static async Task<IActionResult> RunAsync(this ControllerBase controller, Func<Task> action, string message)
@@ -36,6 +40,10 @@ namespace VakantiePark.API
             catch (KeyNotFoundException exception)
             {
                 return controller.NotFound(ApiResponse<object>.Fail(exception.Message));
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                return controller.Unauthorized(ApiResponse<object>.Fail(exception.Message));
             }
         }
 

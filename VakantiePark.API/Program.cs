@@ -15,7 +15,7 @@ namespace VakantiePark.API
 
             builder.Services.RegisterInfrastructureServices(builder.Configuration, builder.Environment.ContentRootPath);
             builder.Services.RegisterApplicationServices();
-            builder.Services.RegisterAPIServices(builder.Configuration);
+            builder.Services.RegisterAPIServices(builder.Configuration, builder.Environment);
             builder.Services.AddHttpClient();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

@@ -305,6 +305,71 @@ a:hover {
   white-space: nowrap;
 }
 
+.form {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 34rem;
+}
+
+.field label,
+.field legend {
+  display: block;
+  margin-bottom: 0.3rem;
+  padding: 0;
+  font-weight: 700;
+}
+
+.field__hint {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.field input:not([type="checkbox"]),
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--water);
+  outline-offset: 0;
+}
+
+.field textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.field .invalid {
+  border-color: var(--error);
+}
+
+.validation-message {
+  margin-top: 0.3rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--error);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--mist);
+  font-size: var(--text-sm);
+}
+
 main:has(> .section--mist:last-child) + .site-footer {
   margin-top: 0;
 }

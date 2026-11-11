@@ -1,0 +1,94 @@
+@page "/beheer/inloggen"
+@using VakantiePark.Shared.DTOs.Auth
+@using VakantiePark.UI.Interfaces
+@using VakantiePark.UI.Models
+@inject IAccountService AccountService
+@inject NavigationManager Navigation
+
+<PageTitle>Inloggen | Vakantiepark D’r op Uut</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex">
+</HeadContent>
+
+<PageHeader Title="Inloggen" Intro="Voor medewerkers van Vakantiepark D’r op Uut." />
+
+<section class="section" aria-labelledby="heading-login">
+    <div class="container login">
+        <h2 id="heading-login">Log in op de beheeromgeving</h2>
+
+        <EditForm class="form" Model="_form" OnValidSubmit="LoginAsync" FormName="login">
+            <DataAnnotationsValidator />
+            <div class="field">
+                <label for="email">E-mailadres</label>
+                <InputText id="email" type="email" @bind-Value="_form.Email" autocomplete="username" />
+                <ValidationMessage For="() => _form.Email" />
+            </div>
+            <div class="field">
+                <label for="password">Wachtwoord</label>
+                <InputText id="password" type="password" @bind-Value="_form.Password" autocomplete="current-password" />
+                <ValidationMessage For="() => _form.Password" />
+            </div>
+
+            @if (_error is not null)
+            {
+                <p class="login__error" role="alert">@_error</p>
+            }
+
+            <div>
+                <button class="button" type="submit" disabled="@_busy">
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> @(_busy ? "Bezig met inloggen…" : "Inloggen")
+                </button>
+            </div>
+        </EditForm>
+
+        <p class="note login__note">Wachtwoord vergeten of geen account? Vraag het een beheerder.</p>
+    </div>
+</section>
+
+@code {
+    private const string DefaultReturnUrl = "beheer";
+
+    private readonly LoginForm _form = new();
+    private string? _error;
+    private bool _busy;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    [SupplyParameterFromQuery(Name = "terug")]
+    public string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is not null && (await AuthenticationState).User.Identity?.IsAuthenticated == true)
+            Navigation.NavigateTo(SafeReturnUrl, replace: true);
+    }
+
+    private async Task LoginAsync()
+    {
+        _busy = true;
+        _error = null;
+
+        var response = await AccountService.LoginAsync(new LoginRequestDto { Email = _form.Email, Password = _form.Password });
+
+        _busy = false;
+
+        if (response.Succeeded)
+        {
+            Navigation.NavigateTo(SafeReturnUrl);
+            return;
+        }
+
+        _form.Password = string.Empty;
+        _error = string.IsNullOrWhiteSpace(response.Message) ? "Inloggen is niet gelukt. Probeer het opnieuw." : response.Message;
+    }
+
+    private string SafeReturnUrl =>
+        string.IsNullOrWhiteSpace(ReturnUrl)
+        || ReturnUrl.Contains("://", StringComparison.Ordinal)
+        || ReturnUrl.StartsWith("/", StringComparison.Ordinal)
+        || ReturnUrl.StartsWith("\\", StringComparison.Ordinal)
+        || ReturnUrl.StartsWith("beheer/inloggen", StringComparison.OrdinalIgnoreCase)
+            ? DefaultReturnUrl
+            : ReturnUrl;
+}
