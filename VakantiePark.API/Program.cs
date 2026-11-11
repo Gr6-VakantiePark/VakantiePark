@@ -1,7 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
-using StockFlow.Infrastructure.Data;
+using VakantiePark.Infrastructure.Data;
 using VakantiePark.Application;
 using VakantiePark.Infrastructure;
 

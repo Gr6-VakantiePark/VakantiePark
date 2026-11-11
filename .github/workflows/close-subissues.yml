@@ -1,0 +1,41 @@
+name: Close sub-issues with user story
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+
+jobs:
+  close-subissues:
+    if: github.event.issue.state_reason != 'not_planned' && contains(github.event.issue.labels.*.name, 'user story')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign and close sub-issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const story = context.payload.issue;
+            const storyAssignees = story.assignees.map(a => a.login);
+
+            const subIssues = await github.paginate(
+              'GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues',
+              { owner, repo, issue_number: story.number, per_page: 100 }
+            );
+
+            for (const sub of subIssues) {
+              if (sub.assignees.length === 0 && storyAssignees.length > 0) {
+                await github.rest.issues.addAssignees({
+                  owner, repo, issue_number: sub.number, assignees: storyAssignees
+                });
+                core.info(`#${sub.number}: toegewezen aan ${storyAssignees.join(', ')}`);
+              }
+              if (sub.state === 'open') {
+                await github.rest.issues.update({
+                  owner, repo, issue_number: sub.number, state: 'closed', state_reason: 'completed'
+                });
+                core.info(`#${sub.number}: gesloten`);
+              }
+            }

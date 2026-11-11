@@ -1,0 +1,62 @@
+{
+  "Berk 4": {
+    "slug": "berk-4",
+    "count": 32,
+    "category": "holiday_home"
+  },
+  "Berk 6": {
+    "slug": "berk-6",
+    "count": 26,
+    "category": "holiday_home"
+  },
+  "Eik 6": {
+    "slug": "eik-6",
+    "count": 24,
+    "category": "holiday_home"
+  },
+  "Eik Luxe 6": {
+    "slug": "eik-luxe-6",
+    "count": 18,
+    "category": "holiday_home"
+  },
+  "Beuk 8": {
+    "slug": "beuk-8",
+    "count": 20,
+    "category": "holiday_home"
+  },
+  "Wilg 4 Mindervalide": {
+    "slug": "wilg-4-mindervalide",
+    "count": 12,
+    "category": "holiday_home"
+  },
+  "Bosvilla 10": {
+    "slug": "bosvilla-10",
+    "count": 18,
+    "category": "holiday_home"
+  },
+  "Tentplaats Basis": {
+    "slug": "tentplaats-basis",
+    "count": 12,
+    "category": "camping_pitch"
+  },
+  "Tentplaats Comfort": {
+    "slug": "tentplaats-comfort",
+    "count": 10,
+    "category": "camping_pitch"
+  },
+  "Caravanplaats": {
+    "slug": "caravanplaats",
+    "count": 12,
+    "category": "camping_pitch"
+  },
+  "Camperplaats": {
+    "slug": "camperplaats",
+    "count": 10,
+    "category": "camping_pitch"
+  },
+  "Camperplaats XL": {
+    "slug": "camperplaats-xl",
+    "count": 6,
+    "category": "camping_pitch"
+  }
+}

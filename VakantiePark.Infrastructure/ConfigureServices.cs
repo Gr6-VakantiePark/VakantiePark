@@ -3,7 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StockFlow.Infrastructure.Data;
+using VakantiePark.Infrastructure.Data;
 
 namespace VakantiePark.Infrastructure
 {
@@ -21,7 +21,7 @@ namespace VakantiePark.Infrastructure
         {
             string? configuredFolder = configuration["DataFolder"];
             string folder = string.IsNullOrWhiteSpace(configuredFolder)
-                ? Path.GetFullPath(Path.Combine(root, "..", "StockFlow.Infrastructure", "Data"))
+                ? Path.GetFullPath(Path.Combine(root, "..", "VakantiePark.Infrastructure", "Data"))
                 : Path.GetFullPath(configuredFolder);
 
             if (!Directory.Exists(folder))
