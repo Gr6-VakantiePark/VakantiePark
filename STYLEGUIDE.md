@@ -1,6 +1,6 @@
 # Style guide: Vakantiepark D’r op Uut (Blazor WebAssembly)
 
-Rules for AI agents that build or edit the Vakantiepark D’r op Uut site. The site is a **Blazor WebAssembly Standalone** app styled with hand-written CSS. It uses no Bootstrap, no Tailwind and no CSS framework. Icons come from **Font Awesome 4.7**.
+Rules for AI agents that build or edit the Vakantiepark D’r op Uut site. The site is a **Blazor WebAssembly Standalone** app styled with hand-written CSS. It uses no Bootstrap, no Tailwind and no CSS framework. Icons come from **Bootstrap Icons**.
 
 The source of truth is the CSS in the project: the global stylesheet plus each component’s scoped CSS (section 3). When this guide and the CSS disagree, report the mismatch and do not guess.
 
@@ -9,7 +9,7 @@ The source of truth is the CSS in the project: the global stylesheet plus each c
 - **Global stylesheet for the foundation only.** `wwwroot/css/style.css` holds the design tokens, base element styles, and classes used in many places. Everything else is component-scoped CSS in a `.razor.css` file next to the component that renders it. Section 3 explains what goes where.
 - **No `<style>` blocks or `style=""` attributes.**
 - **No CSS frameworks.** Delete the Bootstrap folder the .NET project template ships with.
-- **Icons: Font Awesome 4.7 only** (section 4). No other icon set and no inline SVG icons.
+- **Icons: Bootstrap Icons only** (section 4). No other icon set and no inline SVG icons.
 - **Never hard-code** a color, font, font size, radius or width that exists as a custom property. Use `var(--…)` in both global and scoped CSS.
 - **Content is Dutch, code is English.** Visible text is Dutch and the page uses `<html lang="nl">`. Everything in the code is English: CSS custom properties, CSS class names, element IDs, URL fragments, and every C# type, variable, parameter, field, property and method.
 - **Component names are not fixed by this guide.** It describes components by their role (page header, breadcrumbs, type card). Use whatever names exist in the project, and when creating a new component, give it a clear English name.
@@ -115,13 +115,14 @@ Move a class from scoped to global when it is used in **three or more** unrelate
 - `::deep` only works when the parent element is in the component’s own markup. A component whose root is another component cannot use it, so wrap that component in an element.
 - Keep the `<link>` to the `{Project}.styles.css` bundle in `index.html` (section 5).
 
-## 4. Icons: Font Awesome 4.7
+## 4. Icons: Bootstrap Icons
 
-- Load Font Awesome 4.7 from a local copy in `wwwroot/lib/font-awesome/` (the `css` and `fonts` folders from the 4.7.0 release). Self-hosting avoids another third-party runtime dependency. If the project already uses the CDN, keep using it.
-- Use only the 4.7 class syntax: `fa fa-<name>`. Font Awesome 5 and later syntax (`fas`, `fa-solid`, `fa-regular`) and newer icons do not exist in 4.7. Check the name against the 4.7 icon list before using it. Useful icons that do exist in 4.7 include `fa-wheelchair`, `fa-paw`, `fa-bed`, `fa-bath`, `fa-car`, `fa-bolt`, `fa-tint`, `fa-fire`, `fa-users`, `fa-phone`, `fa-envelope`, `fa-map-marker`, `fa-clock-o` and `fa-check`.
-- **Icon next to text** (decorative): `<i class="fa fa-phone" aria-hidden="true"></i> 000 - 000 00 00`.
-- **Icon-only control:** hide the icon and give the control an accessible name: `<button class="…" aria-label="Sluiten"><i class="fa fa-times" aria-hidden="true"></i></button>`. You can also use a `<span class="visually-hidden">` with the text instead of `aria-label`.
-- Icons inherit `color` and `font-size`. Color them with tokens through their parent. Size them with the type-scale tokens rather than `fa-2x` or `fa-3x`. `fa-fw` is fine for aligning icons in a list.
+- Load Bootstrap Icons 1.13.2 (the icon font) from jsDelivr with the `<link>` in `index.html` (section 5): `https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css`. Do not add a local copy in `wwwroot/lib`, and do not switch to another CDN or version without updating this guide.
+- Bootstrap Icons is a standalone icon set. It does not load the Bootstrap CSS framework, which stays forbidden (section 1).
+- Use the icon-font class syntax: `bi bi-<name>`. Do not use the SVG sprite or inline SVG versions. Check every name on icons.getbootstrap.com before using it. Useful icons include `bi-telephone`, `bi-envelope`, `bi-geo-alt`, `bi-clock`, `bi-people`, `bi-person-wheelchair`, `bi-car-front`, `bi-lightning-charge`, `bi-droplet`, `bi-fire`, `bi-check-lg` and `bi-x-lg`.
+- **Icon next to text** (decorative): `<i class="bi bi-telephone" aria-hidden="true"></i> 000 - 000 00 00`.
+- **Icon-only control:** hide the icon and give the control an accessible name: `<button class="…" aria-label="Sluiten"><i class="bi bi-x-lg" aria-hidden="true"></i></button>`. You can also use a `<span class="visually-hidden">` with the text instead of `aria-label`.
+- Icons inherit `color` and `font-size`. Color them with tokens through their parent, and size them with the type-scale tokens.
 - Never use an icon as the only carrier of meaning (status, availability). Always pair it with text.
 - The CSS-drawn checkmarks in `.amenities` and the zone dots are part of the design. Keep them; don’t swap them for icons.
 
@@ -133,8 +134,6 @@ Move a class from scoped to global when it is used in **three or more** unrelate
 wwwroot/
   index.html
   css/style.css
-  lib/font-awesome/css/font-awesome.min.css
-  lib/font-awesome/fonts/…
   img/favicon.png, logo.png, logo-mark.png
   img/photos/<slug>-1.jpg … <slug>-4.jpg, hero.jpg, pool-1..3.jpg
 ```
@@ -174,7 +173,7 @@ Read the query string with `[SupplyParameterFromQuery(Name = "type")] public str
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="{Project}.styles.css">
 </head>
@@ -190,7 +189,7 @@ Read the query string with `[SupplyParameterFromQuery(Name = "type")] public str
 </html>
 ```
 
-- Keep the stylesheet order: Font Awesome, then global, then the scoped bundle, so component CSS can override the shared styles.
+- Keep the stylesheet order: Bootstrap Icons, then global, then the scoped bundle, so component CSS can override the shared styles.
 - Replace `{Project}` with the project’s assembly name, exactly as the template generated it.
 - Keep the `<script>`, preload and import-map lines the .NET template generated. Their exact form depends on the SDK version.
 - Keep `<HeadOutlet>` registered in `Program.cs` so pages can set their own title and meta description.
@@ -517,13 +516,13 @@ Use `EditForm` with the built-in input components. `EditForm` accepts `class="fo
 - Every `<nav>` has a Dutch `aria-label` (`Hoofdmenu`, `Kruimelpad`).
 - One `h1` per page, and heading levels never skip.
 - Use `<dl>` for label/value data and lists for lists. Wrap each `dt`/`dd` pair in a `<div>`.
-- Decorative SVGs and Font Awesome icons get `aria-hidden="true"`. Icon-only controls get an accessible name.
+- Decorative SVGs and Bootstrap Icons get `aria-hidden="true"`. Icon-only controls get an accessible name.
 - Never remove the global `:focus-visible` outline (3px `--water`).
 - Motion goes only inside `@media (prefers-reduced-motion: no-preference)`.
 
 ## 15. Don’ts
 
-- No Bootstrap, Tailwind or component libraries (MudBlazor, Radzen and similar). No icon set other than Font Awesome 4.7.
+- No Bootstrap, Tailwind or component libraries (MudBlazor, Radzen and similar). No icon set other than Bootstrap Icons.
 - No `<style>` blocks or `style=""` attributes.
 - No component-specific classes in the global stylesheet, and no class defined both globally and scoped.
 - No redefining tokens in scoped CSS, and no new colors, fonts, radii or shadows outside the tokens.
