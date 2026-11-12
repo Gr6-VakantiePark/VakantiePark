@@ -1,0 +1,74 @@
+name: Discord CI Notifications
+
+on:
+  workflow_run:
+    workflows:
+      - CI + build and test
+    types:
+      - completed
+
+permissions:
+  actions: read
+
+jobs:
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_CI }}
+          RUN_JSON: ${{ toJSON(github.event.workflow_run) }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::warning::DISCORD_WEBHOOK_CI secret is not set, skipping notification."
+            exit 0
+          fi
+
+          jq -n \
+            --argjson run "$RUN_JSON" \
+            --arg repo "$REPOSITORY" \
+            '
+            ({
+              success:   { status: "✅ Passed",    color: 5763719 },
+              failure:   { status: "❌ Failed",    color: 15548997 },
+              cancelled: { status: "⏹️ Cancelled", color: 9807270 },
+              timed_out: { status: "⌛ Timed out", color: 15105570 }
+            }[$run.conclusion] // { status: ($run.conclusion // "unknown"), color: 9807270 }) as $result
+            | ((($run.updated_at | fromdateiso8601) - ($run.run_started_at | fromdateiso8601)) as $s
+                | "\($s / 60 | floor)m \($s % 60)s") as $duration
+            | ([$run.pull_requests[]? | "#\(.number)"] | join(", ")) as $prs
+            | {
+                username: "GitHub",
+                embeds: [{
+                  author: {
+                    name: $run.actor.login,
+                    url: $run.actor.html_url,
+                    icon_url: $run.actor.avatar_url
+                  },
+                  title: ("\($result.status): \($run.name) #\($run.run_number)")[0:256],
+                  url: $run.html_url,
+                  description: ("[`\($run.head_sha[0:7])`](https://github.com/\($repo)/commit/\($run.head_sha)) " + (($run.head_commit.message // "") | split("\n")[0] | .[0:200])),
+                  color: $result.color,
+                  fields: (
+                    [
+                      { name: "Branch", value: ("`" + $run.head_branch + "`"), inline: true },
+                      { name: "Trigger", value: $run.event, inline: true },
+                      { name: "Duration", value: $duration, inline: true }
+                    ]
+                    + (if $prs != "" then [{ name: "Pull request", value: $prs, inline: true }] else [] end)
+                  ),
+                  footer: { text: $repo },
+                  timestamp: $run.updated_at
+                }]
+              }
+            ' > payload.json
+
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 2 --retry-all-errors \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @payload.json \
+            "$WEBHOOK"
