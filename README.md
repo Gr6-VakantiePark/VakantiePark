@@ -29,6 +29,12 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 3. The summary step shows the stay, the party, the guest and the price breakdown, with “Gegevens aanpassen” and “Boeking bevestigen”.
 4. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; saving it in the API comes with US11.
 
+## Employees (US41)
+
+- `/beheer/medewerkers` lists all employees. **Bewerken** opens a form to change the first name, last name and email, and to switch the employee off (**Uitschakelen**, after a confirmation) or back on (**Inschakelen**).
+- `PUT /admin/employees/{id}` changes name and email (the email must stay unique). `PUT /admin/employees/{id}/active` with `{ "isActive": false }` switches an employee off. Both need the `ManageEmployees` permission.
+- A switched-off employee can't log in, and tokens they already have stop working on the next request. Nobody can switch off their own account.
+
 ## API conventions
 
 - Every endpoint returns `ApiResponse<T>`. Services throw `ArgumentException` (400), `KeyNotFoundException` (404) or `UnauthorizedAccessException` (401); controllers wrap the call with `RunAsync`.
@@ -79,5 +85,5 @@ GitHub Actions post to the G6 Vakantiepark Discord server. Each workflow uses it
 
 Scheduled and `workflow_run` workflows only run from the default branch (`master`).
 
-The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line; it is set to `2026-12-11`. The optional `BURNDOWN_START_DATE` changes where the chart starts (default: the first issue).
+The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line, which runs from the current total scope at the start date to 0 on that day; it is set to `2026-12-11`. `BURNDOWN_START_DATE` is the first day of the chart and is set to `2026-11-11`; without it the chart starts at the first issue.
 

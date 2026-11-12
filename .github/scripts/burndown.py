@@ -100,7 +100,7 @@ def plot(data, path):
     axes.fill_between(days, remaining, color="#5865f2", alpha=0.15)
 
     if data["end"] and data["end"] > data["start"]:
-        axes.plot([data["start"], data["end"]], [remaining[0], 0],
+        axes.plot([data["start"], data["end"]], [data["scope"][-1], 0],
                   color="#fee75c", linestyle="--", linewidth=1.5, label="Ideal")
         axes.set_xlim(data["start"], max(data["end"], days[-1]))
 
@@ -129,7 +129,7 @@ def ideal_today(data):
         return None
     total = (data["end"] - data["start"]).days
     passed = min((data["days"][-1] - data["start"]).days, total)
-    return data["remaining"][0] * (1 - passed / total)
+    return data["scope"][-1] * (1 - passed / total)
 
 
 def main():
