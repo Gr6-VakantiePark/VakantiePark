@@ -1,0 +1,12 @@
+@namespace VakantiePark.UI.Components
+<ul class="type-cards">
+    @foreach (var type in Types)
+    {
+        <TypeCard @key="type.Slug" Type="type" />
+    }
+</ul>
+
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<AccommodationType> Types { get; set; } = [];
+}

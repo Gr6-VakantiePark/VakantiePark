@@ -1,0 +1,29 @@
+@namespace VakantiePark.UI.Components
+<section class="page-header">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="Kruimelpad">
+            <ol>
+                <li><a href="">Home</a></li>
+                @foreach (var crumb in Crumbs)
+                {
+                    <li><a href="@crumb.Href">@crumb.Text</a></li>
+                }
+                <li aria-current="page">@Title</li>
+            </ol>
+        </nav>
+        <h1>@Title</h1>
+        <p>@Intro</p>
+    </div>
+    <WaveDivider />
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Intro { get; set; } = string.Empty;
+
+    [Parameter]
+    public IReadOnlyList<Breadcrumb> Crumbs { get; set; } = [];
+}
