@@ -471,7 +471,8 @@ The accommodation page layout is `<div class="container detail">`: the content c
 | `.form`, `.field`, `.field__hint`, `.validation-message` | global | Forms (section 11) |
 | `.sidebar-card`, `.sidebar-card__note` | global | Bordered summary card with `dl` rows. Used by `BookingCard` and `BookingSummary` |
 | `.contact-details`, `.contact-details__note` | contact page | Address block |
-| `.booking-summary`, `.booking-summary__total` | booking summary component | Booking overview card (not sticky) and the bold total row |
+| `.booking-summary` | booking summary component | Booking overview card (not sticky) |
+| `.price-breakdown`, `.price-breakdown__total` | price breakdown component | Price rows (stay, cleaning, tourist tax) and the bold total row. Takes a `PriceDto?` and shows a note when it is `null` |
 | `.booking-message`, `.booking-overview`, `.booking-actions` | booking page | Error state, summary step and the button row |
 | `.module-placeholder` | booking page | Dashed teal box for unfinished modules |
 | `.table-wrap`, `table`, `.tag` | scoped where first used | Data table with pill tags. Not used on any page yet |

@@ -1,0 +1,20 @@
+@using VakantiePark.Shared.DTOs.Prices
+
+@if (Price is { } price)
+{
+    <dl class="price-breakdown">
+        <div><dt>Verblijf (@price.Nights × @Formatting.Euro(price.PricePerNight))</dt><dd>@Formatting.Euro(price.Stay)</dd></div>
+        <div><dt>Eindschoonmaak</dt><dd>@Formatting.Euro(price.CleaningFee)</dd></div>
+        <div><dt>Toeristenbelasting (@price.Persons pers. × @price.Nights nachten × @Formatting.Euro(price.TouristTaxPerPersonPerNight))</dt><dd>@Formatting.Euro(price.TouristTax)</dd></div>
+        <div class="price-breakdown__total"><dt>Totaal</dt><dd>@Formatting.Euro(price.Total)</dd></div>
+    </dl>
+}
+else
+{
+    <p class="sidebar-card__note">De prijs voor dit verblijf volgt. Neem bij vragen contact op met de receptie.</p>
+}
+
+@code {
+    [Parameter]
+    public PriceDto? Price { get; set; }
+}
