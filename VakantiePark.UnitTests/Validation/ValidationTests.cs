@@ -167,6 +167,43 @@ namespace VakantiePark.UnitTests.Validation
             Assert.Throws<ArgumentException>(() => request.Validate());
         }
 
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(2)]
+        public void Validate_InvalidYoungChildren_ThrowsArgumentException(int youngChildren)
+        {
+            var criteria = CreateCriteria();
+            criteria.YoungChildren = youngChildren;
+
+            Assert.Throws<ArgumentException>(() => criteria.Validate());
+        }
+
+        [Fact]
+        public void Validate_YoungChildrenWithOlderPerson_DoesNotThrow()
+        {
+            var criteria = CreateCriteria();
+            criteria.YoungChildren = 1;
+
+            var exception = Record.Exception(() => criteria.Validate());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void Validate_PriceRequestTooManyPets_ThrowsArgumentException()
+        {
+            var request = new PriceRequestDto
+            {
+                Type = "berk-4",
+                Arrival = Arrival,
+                Departure = Departure,
+                Persons = 2,
+                Pets = FieldLimits.MaxPets + 1,
+            };
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
         [Fact]
         public void ValidateStay_IncompleteStay_ThrowsArgumentException()
         {

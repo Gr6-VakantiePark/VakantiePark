@@ -10,6 +10,7 @@ public static class BookingQuery
     public const string Arrival = "aankomst";
     public const string Departure = "vertrek";
     public const string Persons = "personen";
+    public const string YoungChildren = "kleine-kinderen";
     public const string Pets = "huisdieren";
 
     private const string DateFormat = "yyyy-MM-dd";
@@ -19,6 +20,7 @@ public static class BookingQuery
         $"&{Arrival}={criteria.Arrival.ToString(DateFormat, CultureInfo.InvariantCulture)}" +
         $"&{Departure}={criteria.Departure.ToString(DateFormat, CultureInfo.InvariantCulture)}" +
         $"&{Persons}={criteria.Persons}" +
+        (criteria.YoungChildren > 0 ? $"&{YoungChildren}={criteria.YoungChildren}" : string.Empty) +
         (criteria.Pets > 0 ? $"&{Pets}={criteria.Pets}" : string.Empty);
 
     public static bool TryParse(
@@ -26,6 +28,7 @@ public static class BookingQuery
         string? arrival,
         string? departure,
         string? persons,
+        string? youngChildren,
         string? pets,
         DateOnly today,
         out BookingRequest? request,
@@ -63,6 +66,19 @@ public static class BookingQuery
             return false;
         }
 
+        var youngChildCount = 0;
+        if (!string.IsNullOrEmpty(youngChildren) && !TryParseCount(youngChildren, out youngChildCount))
+        {
+            error = "Het aantal kleine kinderen is niet goed ingevuld.";
+            return false;
+        }
+
+        if (youngChildCount >= personCount)
+        {
+            error = "Er moet minimaal 1 persoon meegaan die geen klein kind is.";
+            return false;
+        }
+
         var petCount = 0;
         if (!string.IsNullOrEmpty(pets) && !TryParseCount(pets, out petCount))
         {
@@ -70,7 +86,7 @@ public static class BookingQuery
             return false;
         }
 
-        request = new BookingRequest(accommodationId, arrivalDate, departureDate, personCount, petCount);
+        request = new BookingRequest(accommodationId, arrivalDate, departureDate, personCount, youngChildCount, petCount);
         error = string.Empty;
         return true;
     }

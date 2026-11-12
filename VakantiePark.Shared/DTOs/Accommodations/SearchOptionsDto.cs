@@ -10,7 +10,11 @@ namespace VakantiePark.Shared.DTOs.Accommodations
 
         public int MaxPersons { get; set; }
 
+        public const int DefaultTouristTaxMinimumAge = 3;
+
         public int MaxPets { get; set; }
+
+        public int TouristTaxMinimumAge { get; set; } = DefaultTouristTaxMinimumAge;
     }
 
     public class AccommodationTypeDto

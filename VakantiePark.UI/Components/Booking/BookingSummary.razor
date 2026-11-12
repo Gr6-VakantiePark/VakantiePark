@@ -17,6 +17,10 @@
     <h3>Reisgezelschap</h3>
     <dl>
         <div><dt>Personen</dt><dd>@Request.Persons</dd></div>
+        @if (Request.YoungChildren > 0)
+        {
+            <div><dt>Waarvan onder @(Accommodation.Price?.TouristTaxMinimumAge ?? SearchOptionsDto.DefaultTouristTaxMinimumAge) jaar</dt><dd>@Request.YoungChildren</dd></div>
+        }
         <div><dt>Huisdieren</dt><dd>@Request.Pets</dd></div>
     </dl>
 

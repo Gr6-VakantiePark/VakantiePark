@@ -7,7 +7,7 @@ namespace VakantiePark.Application.Interfaces
     {
         Task<List<AccommodationDto>> GetAllAsync();
 
-        Task<AccommodationDetailDto> GetByIdAsync(Guid id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null);
+        Task<AccommodationDetailDto> GetByIdAsync(Guid id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null, int youngChildren = 0, int pets = 0);
 
         Task<SearchOptionsDto> GetSearchOptionsAsync();
 

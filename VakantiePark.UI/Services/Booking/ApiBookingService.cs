@@ -13,6 +13,8 @@ namespace VakantiePark.UI.Services
                 $"accommodations/{request.AccommodationId}" +
                 $"?arrival={request.ArrivalDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" +
                 $"&departure={request.DepartureDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" +
-                $"&persons={request.Persons}");
+                $"&persons={request.Persons}" +
+                $"&youngChildren={request.YoungChildren}" +
+                $"&pets={request.Pets}");
     }
 }

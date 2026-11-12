@@ -16,11 +16,12 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 
 ## Prices (US08)
 
-- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
-- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and gives every type with price 0 a **temporary example price** per night. Replace these with the real amounts from the client.
-- `PriceCalculator` (Application) calculates: nights × price per night + cleaning fee + tourist tax (all persons × nights × tax).
-- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}`. Without those three query values the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
-- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
+- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, tourist tax minimum age, weekend surcharge percentage, pet fee per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
+- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50 from 3 years, weekend surcharge 10%, € 10 per pet per night, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and sets the prices per night agreed with the client (Berk 4 € 100, Berk 6 € 125, Beuk 8 € 175, Bosvilla 10 € 250, Eik 6 € 175, Eik 6 luxe € 200, Wilg € 100). Existing databases still on the old example prices are updated at start-up. Camping pitches keep their example prices until the client confirms them.
+- `PriceCalculator` (Application) calculates: nights × price per night + weekend surcharge (percentage of the price per night for every Friday and Saturday night) + pets × nights × pet fee + cleaning fee (holiday homes only) + tourist tax ((persons − young children) × nights × tax).
+- `persons` is the total group including young children, so young children count towards the maximum number of persons. `youngChildren` is the number of those under the tourist tax minimum age; at least one person must be older.
+- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}&youngChildren={n}&pets={n}`. Without arrival, departure and persons the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
+- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=&youngChildren=&pets=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
 
 ## Booking (US09)
 

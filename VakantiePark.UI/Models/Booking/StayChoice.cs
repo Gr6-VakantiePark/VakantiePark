@@ -13,6 +13,9 @@ public sealed class StayChoice
     [Range(1, int.MaxValue, ErrorMessage = "Kies minimaal 1 persoon.")]
     public int Persons { get; set; } = 2;
 
+    [Range(0, int.MaxValue, ErrorMessage = "Het aantal kinderen kan niet negatief zijn.")]
+    public int YoungChildren { get; set; }
+
     [Range(0, int.MaxValue, ErrorMessage = "Het aantal huisdieren kan niet negatief zijn.")]
     public int Pets { get; set; }
 }

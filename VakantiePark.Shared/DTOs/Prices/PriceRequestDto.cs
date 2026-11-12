@@ -6,5 +6,7 @@ namespace VakantiePark.Shared.DTOs.Prices
         public DateOnly Arrival { get; set; }
         public DateOnly Departure { get; set; }
         public int Persons { get; set; }
+        public int YoungChildren { get; set; }
+        public int Pets { get; set; }
     }
 }
