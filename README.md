@@ -46,6 +46,10 @@ The API applies all migrations in `Data/Migrations` and runs the seeders at star
 dotnet ef migrations add <Name> --project VakantiePark.Infrastructure --startup-project VakantiePark.API --output-dir Data/Migrations
 ```
 
+All ids are `Guid`s. Seeded rows get fixed ids from `SeedIds` (derived from the code, slug or email), so an accommodation has the same id on every machine and after a reseed.
+
+The `GuidIds` migration switched the old `int` ids to `Guid`. It drops and recreates the tables, after which the seeders fill them again; employees that were added by hand are gone after this migration.
+
 ## Tests
 
 ```

@@ -7,7 +7,7 @@ namespace VakantiePark.Infrastructure.Repositories
 {
     public class PhotoRepository(ApplicationDBContext context) : IPhotoRepository
     {
-        public Task<Photo?> GetWithFileAsync(int id) =>
+        public Task<Photo?> GetWithFileAsync(Guid id) =>
             context.Photos
                 .AsNoTracking()
                 .Include(a => a.File)

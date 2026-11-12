@@ -2,7 +2,7 @@ namespace VakantiePark.Shared.DTOs.Accommodations
 {
     public class AccommodationDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;

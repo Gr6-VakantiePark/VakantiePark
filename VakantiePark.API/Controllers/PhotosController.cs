@@ -12,11 +12,11 @@ namespace VakantiePark.API.Controllers
     [Route("photos")]
     public class PhotosController(IPhotoService service) : ControllerBase
     {
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:guid}")]
         [ResponseCache(Duration = 86400)]
         [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> Get(Guid id)
         {
             try
             {

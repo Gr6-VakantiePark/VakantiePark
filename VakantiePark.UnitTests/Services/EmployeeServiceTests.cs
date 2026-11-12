@@ -27,7 +27,7 @@ namespace VakantiePark.UnitTests.Services
             Roles = ["reception"],
         };
 
-        private static Role CreateRole(string code = "reception") => new() { Id = 2, Code = code, Name = "Receptie" };
+        private static Role CreateRole(string code = "reception") => new() { Id = Guid.NewGuid(), Code = code, Name = "Receptie" };
 
         [Fact]
         public async Task CreateAsync_ValidRequest_AddsEmployeeOnce()

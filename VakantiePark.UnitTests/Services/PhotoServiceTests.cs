@@ -10,6 +10,8 @@ namespace VakantiePark.UnitTests.Services
         private readonly Mock<IPhotoRepository> _repository = new();
         private readonly PhotoService _sut;
 
+        private static readonly Guid PhotoId = Guid.NewGuid();
+
         public PhotoServiceTests()
         {
             _sut = new PhotoService(_repository.Object);
@@ -18,15 +20,15 @@ namespace VakantiePark.UnitTests.Services
         [Fact]
         public async Task GetFileAsync_Found_ReturnsFile()
         {
-            _repository.Setup(r => r.GetWithFileAsync(3)).ReturnsAsync(new Photo
+            _repository.Setup(r => r.GetWithFileAsync(PhotoId)).ReturnsAsync(new Photo
             {
-                Id = 3,
+                Id = PhotoId,
                 FileName = "berk4.jpg",
                 ContentType = "image/jpeg",
-                File = new PhotoFile { PhotoId = 3, Data = [1, 2, 3] },
+                File = new PhotoFile { PhotoId = PhotoId, Data = [1, 2, 3] },
             });
 
-            var file = await _sut.GetFileAsync(3);
+            var file = await _sut.GetFileAsync(PhotoId);
 
             Assert.Equal("image/jpeg", file.ContentType);
             Assert.Equal(new byte[] { 1, 2, 3 }, file.Data);
@@ -35,19 +37,17 @@ namespace VakantiePark.UnitTests.Services
         [Fact]
         public async Task GetFileAsync_NotFound_ThrowsKeyNotFoundException()
         {
-            _repository.Setup(r => r.GetWithFileAsync(3)).ReturnsAsync((Photo?)null);
+            _repository.Setup(r => r.GetWithFileAsync(PhotoId)).ReturnsAsync((Photo?)null);
 
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.GetFileAsync(3));
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.GetFileAsync(PhotoId));
         }
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public async Task GetFileAsync_InvalidId_ThrowsArgumentException(int id)
+        [Fact]
+        public async Task GetFileAsync_EmptyId_ThrowsArgumentException()
         {
-            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetFileAsync(id));
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetFileAsync(Guid.Empty));
 
-            _repository.Verify(r => r.GetWithFileAsync(It.IsAny<int>()), Times.Never);
+            _repository.Verify(r => r.GetWithFileAsync(It.IsAny<Guid>()), Times.Never);
         }
     }
 }

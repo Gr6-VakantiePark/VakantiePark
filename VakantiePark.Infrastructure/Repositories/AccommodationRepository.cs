@@ -18,7 +18,7 @@ namespace VakantiePark.Infrastructure.Repositories
                 .OrderBy(a => a.Code)
                 .ToListAsync();
 
-        public Task<Accommodation?> GetByIdAsync(int id) =>
+        public Task<Accommodation?> GetByIdAsync(Guid id) =>
             context.Accommodations
                 .AsNoTracking()
                 .Include(a => a.AccommodationType).ThenInclude(t => t.Photos)
@@ -44,7 +44,7 @@ namespace VakantiePark.Infrastructure.Repositories
                 .OrderBy(v => v.Name)
                 .ToListAsync();
 
-        public async Task<Dictionary<int, List<AccommodationCategory>>> GetAmenityCategoriesAsync()
+        public async Task<Dictionary<Guid, List<AccommodationCategory>>> GetAmenityCategoriesAsync()
         {
             var perAccommodation = await context.Accommodations
                 .Select(a => new

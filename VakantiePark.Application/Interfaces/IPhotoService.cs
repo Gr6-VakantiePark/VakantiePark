@@ -4,6 +4,6 @@ namespace VakantiePark.Application.Interfaces
 {
     public interface IPhotoService
     {
-        Task<PhotoFileDto> GetFileAsync(int id);
+        Task<PhotoFileDto> GetFileAsync(Guid id);
     }
 }

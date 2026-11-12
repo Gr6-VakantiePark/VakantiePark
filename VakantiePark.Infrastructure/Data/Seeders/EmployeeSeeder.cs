@@ -28,7 +28,7 @@ namespace VakantiePark.Infrastructure.Data.Seeders
 
                 context.Add(new Employee
                 {
-                    Id = Guid.NewGuid(),
+                    Id = SeedIds.Employee(seed.Email),
                     Email = seed.Email,
                     PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(seed.Password, 12),
                     FirstName = seed.FirstName,

@@ -2,7 +2,7 @@ namespace VakantiePark.Domain.Entities
 {
     public class Permission
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Code { get; set; } = string.Empty;
 

@@ -16,10 +16,10 @@ namespace VakantiePark.Application.Services
             return accommodations.Select(a => a.ToDto()).ToList();
         }
 
-        public async Task<AccommodationDetailDto> GetByIdAsync(int id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null)
+        public async Task<AccommodationDetailDto> GetByIdAsync(Guid id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null)
         {
-            if (id < 1)
-                throw new ArgumentException("Het id van de accommodatie moet minimaal 1 zijn.");
+            if (id == Guid.Empty)
+                throw new ArgumentException("Het id van de accommodatie ontbreekt.");
 
             bool hasStay = arrival is not null || departure is not null || persons is not null;
             if (hasStay)

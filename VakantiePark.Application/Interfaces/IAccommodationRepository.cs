@@ -8,7 +8,7 @@ namespace VakantiePark.Application.Interfaces
     {
         Task<List<Accommodation>> GetAllAsync();
 
-        Task<Accommodation?> GetByIdAsync(int id);
+        Task<Accommodation?> GetByIdAsync(Guid id);
 
         Task<List<AccommodationType>> GetTypesAsync();
 
@@ -16,7 +16,7 @@ namespace VakantiePark.Application.Interfaces
 
         Task<List<Amenity>> GetAmenitiesAsync();
 
-        Task<Dictionary<int, List<AccommodationCategory>>> GetAmenityCategoriesAsync();
+        Task<Dictionary<Guid, List<AccommodationCategory>>> GetAmenityCategoriesAsync();
 
         Task<(int MaxPersons, int MaxPets)> GetMaximumsAsync();
 

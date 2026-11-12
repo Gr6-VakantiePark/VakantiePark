@@ -35,11 +35,11 @@ namespace VakantiePark.API.Controllers
         public Task<IActionResult> GetPrice([FromQuery] PriceRequestDto request) =>
             this.RunAsync(() => priceService.CalculateAsync(request));
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:guid}")]
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status404NotFound)]
-        public Task<IActionResult> GetById(int id, [FromQuery] DateOnly? arrival, [FromQuery] DateOnly? departure, [FromQuery] int? persons) =>
+        public Task<IActionResult> GetById(Guid id, [FromQuery] DateOnly? arrival, [FromQuery] DateOnly? departure, [FromQuery] int? persons) =>
             this.RunAsync(() => service.GetByIdAsync(id, arrival, departure, persons));
     }
 }
