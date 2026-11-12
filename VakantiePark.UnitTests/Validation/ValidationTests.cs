@@ -19,7 +19,7 @@ namespace VakantiePark.UnitTests.Validation
             Password = "Zomer2027!Vakantie",
             FirstName = "Sanne",
             LastName = "de Vries",
-            Roles = ["reception"],
+            Permissions = ["guests.view"],
         };
 
         private static AccommodationSearchCriteria CreateCriteria() => new()
@@ -76,10 +76,37 @@ namespace VakantiePark.UnitTests.Validation
         }
 
         [Fact]
-        public void Validate_CreateEmployeeWithoutRoles_ThrowsArgumentException()
+        public void Validate_CreateEmployeeWithoutPermissions_DoesNotThrow()
         {
             var request = CreateEmployee();
-            request.Roles = [];
+            request.Permissions = [];
+
+            var exception = Record.Exception(() => request.Validate());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void Validate_CreateEmployeeWithEmptyPermission_ThrowsArgumentException()
+        {
+            var request = CreateEmployee();
+            request.Permissions = [" "];
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void Validate_NullUpdatePermissions_ThrowsArgumentException()
+        {
+            UpdateEmployeePermissionsDto? request = null;
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void Validate_UpdatePermissionsWithTooLongCode_ThrowsArgumentException()
+        {
+            var request = new UpdateEmployeePermissionsDto { Permissions = [new string('a', FieldLimits.PermissionCodeMaxLength + 1)] };
 
             Assert.Throws<ArgumentException>(() => request.Validate());
         }

@@ -8,7 +8,7 @@ namespace VakantiePark.API.Controllers
 {
     [ApiController]
     [Route("admin/employees")]
-    [Authorize(Policy = Permissions.ManageEmployees)]
+    [Authorize(Policy = Permissions.Owner)]
     public class EmployeesController(IEmployeeService employeeService) : ControllerBase
     {
         [HttpGet]
@@ -17,6 +17,13 @@ namespace VakantiePark.API.Controllers
         [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status403Forbidden)]
         public Task<IActionResult> GetAll() =>
             this.RunAsync(employeeService.GetAllAsync);
+
+        [HttpGet("permissions")]
+        [ProducesResponseType<ApiResponse<List<PermissionDto>>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status403Forbidden)]
+        public Task<IActionResult> GetPermissions() =>
+            this.RunAsync(employeeService.GetPermissionsAsync);
 
         [HttpPost]
         [ProducesResponseType<ApiResponse<EmployeeDto>>(StatusCodes.Status200OK)]
@@ -45,5 +52,16 @@ namespace VakantiePark.API.Controllers
             this.RunAsEmployeeAsync(
                 currentEmployeeId => employeeService.SetActiveAsync(id, request, currentEmployeeId),
                 employee => employee.IsActive ? "Medewerker is ingeschakeld." : "Medewerker is uitgeschakeld.");
+
+        [HttpPut("{id:guid}/permissions")]
+        [ProducesResponseType<ApiResponse<EmployeeDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ApiResponse<EmployeeDto>>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType<ApiResponse<EmployeeDto>>(StatusCodes.Status404NotFound)]
+        public Task<IActionResult> UpdatePermissions(Guid id, UpdateEmployeePermissionsDto request) =>
+            this.RunAsEmployeeAsync(
+                currentEmployeeId => employeeService.UpdatePermissionsAsync(id, request, currentEmployeeId),
+                _ => "Rechten zijn opgeslagen.");
     }
 }

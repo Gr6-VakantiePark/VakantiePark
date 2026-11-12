@@ -99,8 +99,9 @@ def plot(data, path):
     axes.plot(days, remaining, color="#5865f2", linewidth=2.5, label="Remaining hours")
     axes.fill_between(days, remaining, color="#5865f2", alpha=0.15)
 
-    if data["end"] and data["end"] > data["start"]:
-        axes.plot([data["start"], data["end"]], [data["scope"][-1], 0],
+    if ideal_today(data) is not None:
+        ideal_days = [data["start"] + timedelta(days=offset) for offset in range((data["end"] - data["start"]).days + 1)]
+        axes.plot(ideal_days, [ideal_on(data, day) for day in ideal_days],
                   color="#fee75c", linestyle="--", linewidth=1.5, label="Ideal")
         axes.set_xlim(data["start"], max(data["end"], days[-1]))
 
@@ -124,12 +125,20 @@ def plot(data, path):
     figure.savefig(path, facecolor=figure.get_facecolor())
 
 
-def ideal_today(data):
-    if not data["end"] or data["end"] <= data["start"]:
-        return None
-    total = (data["end"] - data["start"]).days
-    passed = min((data["days"][-1] - data["start"]).days, total)
+def workdays(first, last):
+    return sum(1 for offset in range((last - first).days) if (first + timedelta(days=offset)).weekday() < 5)
+
+
+def ideal_on(data, day):
+    total = workdays(data["start"], data["end"])
+    passed = min(workdays(data["start"], min(day, data["end"])), total)
     return data["scope"][-1] * (1 - passed / total)
+
+
+def ideal_today(data):
+    if not data["end"] or data["end"] <= data["start"] or workdays(data["start"], data["end"]) == 0:
+        return None
+    return ideal_on(data, data["days"][-1])
 
 
 def main():
@@ -154,7 +163,7 @@ def main():
         "unestimated": data["unestimated"],
         "ideal": round(ideal, 1) if ideal is not None else None,
         "end": data["end"].isoformat() if data["end"] else None,
-        "days_left": (data["end"] - today).days if data["end"] else None,
+        "days_left": workdays(today, data["end"]) if data["end"] and data["end"] > today else 0 if data["end"] else None,
     }
     with open(os.path.join(output, "burndown.json"), "w", encoding="utf-8") as file:
         json.dump(summary, file)

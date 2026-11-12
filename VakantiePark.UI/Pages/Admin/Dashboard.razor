@@ -32,10 +32,20 @@
                 <dl class="dashboard__account">
                     <div><dt>Naam</dt><dd>@_employee.FirstName @_employee.LastName</dd></div>
                     <div><dt>E-mailadres</dt><dd>@_employee.Email</dd></div>
-                    <div><dt>@(_employee.RoleNames.Count == 1 ? "Rol" : "Rollen")</dt><dd>@string.Join(", ", _employee.RoleNames)</dd></div>
                 </dl>
                 <h3>Je mag</h3>
-                <CheckList Items="_employee.PermissionNames.Select(name => new CheckListItem(name))" />
+                @if (_employee.IsOwner)
+                {
+                    <CheckList Items="OwnerItems" />
+                }
+                else if (_employee.PermissionNames.Count == 0)
+                {
+                    <p class="note">Je hebt nog geen rechten. Vraag een eigenaar om ze toe te kennen.</p>
+                }
+                else
+                {
+                    <CheckList Items="_employee.PermissionNames.Select(name => new CheckListItem(name))" />
+                }
             }
             <button class="button button--outline" type="button" @onclick="LogoutAsync">
                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Uitloggen
@@ -43,19 +53,19 @@
         </div>
         <div>
             <h2>Beheerfuncties</h2>
-            <AuthorizeView Policy="@Permissions.ManageEmployees">
+            <AuthorizeView Policy="@Permissions.Owner">
                 <Authorized>
                     <ul class="dashboard__links">
                         <li>
                             <a class="dashboard__link" href="beheer/medewerkers">
                                 <span class="dashboard__link-title"><i class="bi bi-people" aria-hidden="true"></i> Medewerkers</span>
-                                <span class="note">Bekijk wie toegang heeft tot de beheeromgeving.</span>
+                                <span class="note">Medewerkers beheren en per medewerker de rechten instellen.</span>
                             </a>
                         </li>
                     </ul>
                 </Authorized>
                 <NotAuthorized>
-                    <p>De beheerfuncties voor jouw rol komen hier zodra ze klaar zijn.</p>
+                    <p>De beheerfuncties voor jouw rechten komen hier zodra ze klaar zijn.</p>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
@@ -63,6 +73,8 @@
 </section>
 
 @code {
+    private static readonly IReadOnlyList<CheckListItem> OwnerItems = [new("Alles, als eigenaar")];
+
     private EmployeeDto? _employee;
     private string? _error;
 

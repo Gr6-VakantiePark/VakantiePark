@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\VakantiePark.Domain\VakantiePark.Domain.csproj" />
     <ProjectReference Include="..\VakantiePark.Infrastructure\VakantiePark.Infrastructure.csproj" />
+    <ProjectReference Include="..\VakantiePark.API\VakantiePark.API.csproj" />
   </ItemGroup>
 
 </Project>

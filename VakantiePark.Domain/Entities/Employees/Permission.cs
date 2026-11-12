@@ -8,6 +8,6 @@ namespace VakantiePark.Domain.Entities
 
         public string Name { get; set; } = string.Empty;
 
-        public ICollection<Role> Roles { get; set; } = new List<Role>();
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
     }
 }

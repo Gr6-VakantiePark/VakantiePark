@@ -30,11 +30,15 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 3. The summary step shows the stay, the party, the guest and the price breakdown, with “Gegevens aanpassen” and “Boeking bevestigen”.
 4. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; saving it in the API comes with US11.
 
-## Employees (US41)
+## Employees and rights (US41, US38)
 
-- `/beheer/medewerkers` lists all employees. **Bewerken** opens a form to change the first name, last name and email, and to switch the employee off (**Uitschakelen**, after a confirmation) or back on (**Inschakelen**).
-- `PUT /admin/employees/{id}` changes name and email (the email must stay unique). `PUT /admin/employees/{id}/active` with `{ "isActive": false }` switches an employee off. Both need the `ManageEmployees` permission.
-- A switched-off employee can't log in, and tokens they already have stop working on the next request. Nobody can switch off their own account.
+- There are no roles. Each employee is either an **owner** (`IsOwner`) or has their own set of rights (`EmployeePermissions`). The rights are seeded from `Data/Seed/permissions.json`: guests view/manage, reservations, accommodations and pool capacity. An owner may do everything, including managing employees.
+- Only owners can open `/beheer/medewerkers` and use `/admin/employees` (policy `Permissions.Owner`). **Bewerken** opens a form to change name and email, a **Rechten** section with a checkbox per right plus **Eigenaar**, and the status (**Uitschakelen** after a confirmation, or **Inschakelen**).
+- Endpoints: `PUT /admin/employees/{id}` (name and email, the email must stay unique), `PUT /admin/employees/{id}/active` (`{ "isActive": false }`), `GET /admin/employees/permissions` (all rights) and `PUT /admin/employees/{id}/permissions` (`{ "isOwner": false, "permissions": ["guests.view"] }`). `POST /admin/employees` takes `isOwner` and `permissions` instead of roles.
+- Every new endpoint must be `[AllowAnonymous]` or have `[Authorize(Policy = Permissions.X)]` (a right or `Permissions.Owner`); admin endpoints can never be public. Every page under `/beheer` (except the dashboard and the login page) needs `@attribute [Authorize(Policy = Permissions.X)]`, and the UI hides functions an employee has no right to. `AuthorizationRulesTests` fails the build when one of these is missing. Which right each feature needs is written in its user story.
+- Rights are checked against the database on every request, so a change works straight away, even for tokens that were already handed out. The UI shows the new rights after logging in again.
+- A switched-off employee can't log in, and tokens they already have stop working on the next request. Nobody can switch off their own account or take away their own owner rights.
+- Seed accounts: `beheerder@dropuut.example` is an owner, `receptie@dropuut.example` has guests and reservations, `zwembad@dropuut.example` has pool capacity. The `PermissionsPerEmployee` migration converts existing databases: rights from the old roles move to the employees, administrators become owners and the role tables are removed.
 
 ## API conventions
 
@@ -86,5 +90,5 @@ GitHub Actions post to the G6 Vakantiepark Discord server. Each workflow uses it
 
 Scheduled and `workflow_run` workflows only run from the default branch (`master`).
 
-The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line, which runs from the current total scope at the start date to 0 on that day; it is set to `2026-12-11`. `BURNDOWN_START_DATE` is the first day of the chart and is set to `2026-11-11`; without it the chart starts at the first issue.
+The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line, which runs from the current total scope at the start date to 0 on that day and only goes down on weekdays (Saturday and Sunday are flat); it is set to `2026-12-11`. `BURNDOWN_START_DATE` is the first day of the chart and is set to `2026-11-11`; without it the chart starts at the first issue.
 

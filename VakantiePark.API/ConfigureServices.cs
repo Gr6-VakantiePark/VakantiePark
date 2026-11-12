@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -141,12 +142,23 @@ namespace VakantiePark.API
                         OnTokenValidated = async context =>
                         {
                             var repository = context.HttpContext.RequestServices.GetRequiredService<IEmployeeRepository>();
-                            if (context.Principal is null
-                                || !context.Principal.TryGetUserId(out Guid userId)
-                                || !await repository.IsActiveAsync(userId))
+                            if (context.Principal?.Identity is not ClaimsIdentity identity
+                                || !context.Principal.TryGetUserId(out Guid userId))
                             {
                                 context.Fail(ApiMessages.NotLoggedIn);
+                                return;
                             }
+
+                            var employee = await repository.GetByIdAsync(userId);
+                            if (employee is null || !employee.IsActive)
+                            {
+                                context.Fail(ApiMessages.NotLoggedIn);
+                                return;
+                            }
+
+                            foreach (var claim in identity.Claims.Where(EmployeeClaims.IsRightsClaim).ToList())
+                                identity.RemoveClaim(claim);
+                            identity.AddClaims(EmployeeClaims.For(employee));
                         },
                         OnChallenge = async context =>
                         {
@@ -166,6 +178,7 @@ namespace VakantiePark.API
 
                 foreach (string permission in Permissions.All)
                     options.AddPolicy(permission, policy => policy.RequireClaim(Permissions.ClaimType, permission));
+                options.AddPolicy(Permissions.Owner, policy => policy.RequireClaim(Permissions.OwnerClaimType, "true"));
             });
 
             return services;

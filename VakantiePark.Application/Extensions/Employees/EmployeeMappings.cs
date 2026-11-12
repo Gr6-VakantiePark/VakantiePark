@@ -12,11 +12,16 @@ namespace VakantiePark.Application.Extensions
             FirstName = employee.FirstName,
             LastName = employee.LastName,
             IsActive = employee.IsActive,
+            IsOwner = employee.IsOwner,
             LastLoginAt = employee.LastLoginAt,
-            Roles = employee.Roles.Select(r => r.Code).Order().ToList(),
-            RoleNames = employee.Roles.Select(r => r.Name).Order().ToList(),
             Permissions = employee.Permissions.Select(p => p.Code).Order().ToList(),
             PermissionNames = employee.Permissions.Select(p => p.Name).Order().ToList(),
+        };
+
+        public static PermissionDto ToDto(this Permission permission) => new()
+        {
+            Code = permission.Code,
+            Name = permission.Name,
         };
 
         public static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();

@@ -1,5 +1,5 @@
 @page "/beheer/medewerkers"
-@attribute [Authorize(Policy = VakantiePark.Shared.Common.Permissions.ManageEmployees)]
+@attribute [Authorize(Policy = VakantiePark.Shared.Common.Permissions.Owner)]
 @using System.Globalization
 @using VakantiePark.Shared.Common
 @using VakantiePark.Shared.DTOs.Auth
@@ -75,6 +75,35 @@
                         </div>
                     </EditForm>
 
+                    <fieldset class="field employees__rights">
+                        <legend>Rechten</legend>
+                        <div class="employees__checks">
+                            <label class="employees__check" for="right-owner">
+                                <input id="right-owner" type="checkbox" checked="@_rightsOwner" disabled="@(_busy || _editing.Id == _currentEmployeeId)"
+                                       @onchange="e => _rightsOwner = e.Value is true" />
+                                <span>Eigenaar <span class="field__hint">Mag alles, ook medewerkers en hun rechten beheren</span></span>
+                            </label>
+                            @foreach (var permission in _permissions)
+                            {
+                                <label class="employees__check" for="@($"right-{permission.Code.Replace('.', '-')}")">
+                                    <input id="@($"right-{permission.Code.Replace('.', '-')}")" type="checkbox"
+                                           checked="@(_rightsOwner || _rights.Contains(permission.Code))" disabled="@(_busy || _rightsOwner)"
+                                           @onchange="e => ToggleRight(permission.Code, e.Value is true)" />
+                                    <span>@permission.Name</span>
+                                </label>
+                            }
+                        </div>
+                        @if (_editing.Id == _currentEmployeeId)
+                        {
+                            <p class="note">Je kunt je eigen eigenaarsrechten niet afnemen.</p>
+                        }
+                        <div>
+                            <button class="button button--outline" type="button" @onclick="SavePermissionsAsync" disabled="@_busy">
+                                <i class="bi bi-shield-check" aria-hidden="true"></i> Rechten opslaan
+                            </button>
+                        </div>
+                    </fieldset>
+
                     <div class="employees__status">
                         <h4>Status: @(_editing.IsActive ? "actief" : "uitgeschakeld")</h4>
                         @if (_editing.Id == _currentEmployeeId)
@@ -112,7 +141,7 @@
                         <tr>
                             <th scope="col">Naam</th>
                             <th scope="col">E-mailadres</th>
-                            <th scope="col">Rollen</th>
+                            <th scope="col">Rechten</th>
                             <th scope="col">Status</th>
                             <th scope="col">Laatst ingelogd</th>
                             <th scope="col"><span class="visually-hidden">Acties</span></th>
@@ -125,9 +154,20 @@
                                 <td>@employee.FirstName @employee.LastName</td>
                                 <td>@employee.Email</td>
                                 <td>
-                                    @foreach (var role in employee.RoleNames)
+                                    @if (employee.IsOwner)
                                     {
-                                        <span class="tag employees__role">@role</span>
+                                        <span class="tag employees__role">Eigenaar</span>
+                                    }
+                                    else if (employee.PermissionNames.Count == 0)
+                                    {
+                                        <span class="note">Geen</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var name in employee.PermissionNames)
+                                        {
+                                            <span class="tag employees__role">@name</span>
+                                        }
                                     }
                                 </td>
                                 <td>@(employee.IsActive ? "Actief" : "Uitgeschakeld")</td>
@@ -161,6 +201,9 @@
     private Guid _currentEmployeeId;
     private ElementReference _editorHeading;
     private bool _focusEditor;
+    private List<PermissionDto> _permissions = [];
+    private bool _rightsOwner;
+    private HashSet<string> _rights = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -173,6 +216,10 @@
         var current = await AccountService.GetCurrentEmployeeAsync();
         if (current.Succeeded && current.Value is not null)
             _currentEmployeeId = current.Value.Id;
+
+        var permissions = await AccountService.GetPermissionsAsync();
+        if (permissions.Succeeded && permissions.Value is not null)
+            _permissions = permissions.Value;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -188,6 +235,8 @@
     {
         _editing = employee;
         _form = new EmployeeForm { FirstName = employee.FirstName, LastName = employee.LastName, Email = employee.Email };
+        _rightsOwner = employee.IsOwner;
+        _rights = employee.Permissions.ToHashSet();
         _editError = null;
         _message = null;
         _confirmDeactivate = false;
@@ -252,6 +301,44 @@
         else
         {
             _editError = string.IsNullOrWhiteSpace(response.Message) ? "De status kon niet worden gewijzigd." : response.Message;
+        }
+    }
+
+    private void ToggleRight(string code, bool granted)
+    {
+        if (granted)
+            _rights.Add(code);
+        else
+            _rights.Remove(code);
+    }
+
+    private async Task SavePermissionsAsync()
+    {
+        if (_editing is null)
+            return;
+
+        _busy = true;
+        _editError = null;
+
+        var response = await AccountService.UpdateEmployeePermissionsAsync(_editing.Id, new UpdateEmployeePermissionsDto
+        {
+            IsOwner = _rightsOwner,
+            Permissions = _rights.ToList(),
+        });
+
+        _busy = false;
+
+        if (response.Succeeded && response.Value is not null)
+        {
+            Replace(response.Value);
+            _editing = response.Value;
+            _rightsOwner = response.Value.IsOwner;
+            _rights = response.Value.Permissions.ToHashSet();
+            _message = response.Message ?? "Rechten zijn opgeslagen.";
+        }
+        else
+        {
+            _editError = string.IsNullOrWhiteSpace(response.Message) ? "De rechten konden niet worden opgeslagen." : response.Message;
         }
     }
 

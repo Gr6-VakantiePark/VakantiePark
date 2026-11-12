@@ -19,7 +19,7 @@ namespace VakantiePark.UnitTests.Infrastructure
         [Fact]
         public void For_DifferentKind_ReturnsDifferentGuid()
         {
-            Assert.NotEqual(SeedIds.Role("pool"), SeedIds.Permission("pool"));
+            Assert.NotEqual(SeedIds.Employee("pool"), SeedIds.Permission("pool"));
         }
 
         [Fact]

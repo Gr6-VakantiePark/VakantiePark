@@ -4,26 +4,23 @@ namespace VakantiePark.UnitTests.Domain
 {
     public class EmployeeTests
     {
-        private static Employee CreateEmployee(params Role[] roles) => new() { Roles = roles.ToList() };
-
-        private static Role CreateRole(string code, params string[] permissions) => new()
+        private static Employee CreateEmployee(params string[] permissions) => new()
         {
-            Code = code,
             Permissions = permissions.Select(p => new Permission { Code = p }).ToList(),
         };
 
         [Fact]
-        public void HasPermission_IsTrueForAPermissionOfOneOfItsRoles()
+        public void HasPermission_IsTrueForAnAssignedPermission()
         {
-            var employee = CreateEmployee(CreateRole("pool", "pool.capacity.manage"));
+            var employee = CreateEmployee("pool.capacity.manage");
 
             Assert.True(employee.HasPermission("pool.capacity.manage"));
         }
 
         [Fact]
-        public void HasPermission_IsFalseForAPermissionNoRoleGives()
+        public void HasPermission_IsFalseForAPermissionThatIsNotAssigned()
         {
-            var employee = CreateEmployee(CreateRole("reception", "guests.view"));
+            var employee = CreateEmployee("guests.view");
 
             Assert.False(employee.HasPermission("pool.capacity.manage"));
         }
@@ -31,22 +28,29 @@ namespace VakantiePark.UnitTests.Domain
         [Fact]
         public void HasPermission_IsFalseForAnInactiveEmployee()
         {
-            var employee = CreateEmployee(CreateRole("pool", "pool.capacity.manage"));
+            var employee = CreateEmployee("pool.capacity.manage");
             employee.IsActive = false;
 
             Assert.False(employee.HasPermission("pool.capacity.manage"));
         }
 
         [Fact]
-        public void Permissions_CombinesRolesWithoutDuplicates()
+        public void HasPermission_IsTrueForAnyPermissionWhenOwner()
         {
-            var employee = CreateEmployee(
-                CreateRole("reception", "guests.view", "reservations.manage"),
-                CreateRole("pool", "pool.capacity.manage", "guests.view"));
+            var employee = CreateEmployee();
+            employee.IsOwner = true;
 
-            Assert.Equal(
-                ["guests.view", "reservations.manage", "pool.capacity.manage"],
-                employee.Permissions.Select(p => p.Code).ToArray());
+            Assert.True(employee.HasPermission("pool.capacity.manage"));
+        }
+
+        [Fact]
+        public void HasPermission_IsFalseForAnInactiveOwner()
+        {
+            var employee = CreateEmployee();
+            employee.IsOwner = true;
+            employee.IsActive = false;
+
+            Assert.False(employee.HasPermission("pool.capacity.manage"));
         }
     }
 }
