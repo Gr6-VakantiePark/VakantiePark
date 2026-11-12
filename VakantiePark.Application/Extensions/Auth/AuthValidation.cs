@@ -47,7 +47,7 @@ namespace VakantiePark.Application.Extensions
                 throw new ArgumentException("Een of meer rollen zijn ongeldig.");
         }
 
-        private static bool IsValidEmail(string email) =>
+        internal static bool IsValidEmail(string email) =>
             MailAddress.TryCreate(email, out var address) && address.Address == email;
     }
 }

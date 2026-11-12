@@ -7,5 +7,7 @@ namespace VakantiePark.Domain.Interfaces
     public interface IReservationRepository
     {
         Task<List<Reservation>> GetActiveAndFutureReservationsForAccomodation(ReservationAvailabilityRequest request);
+
+        Task<bool> BookingNumberExistsAsync(string bookingNumber);
     }
 }

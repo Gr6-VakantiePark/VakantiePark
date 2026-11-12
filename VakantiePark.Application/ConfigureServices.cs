@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Application.Services;
+using VakantiePark.Application.Interfaces.Booking;
+using VakantiePark.Application.Services.Booking;
 
 namespace VakantiePark.Application
 {
@@ -20,6 +22,7 @@ namespace VakantiePark.Application
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IAvailabilityService, AvailabilityService>();
+            services.AddScoped<IBookingService, BookingService>();
 
             return services;
         }
