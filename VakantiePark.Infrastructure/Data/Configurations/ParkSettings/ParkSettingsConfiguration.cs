@@ -13,6 +13,9 @@ namespace VakantiePark.Infrastructure.Data.Configurations
 
             builder.Property(i => i.CleaningFee).HasPrecision(10, 2);
             builder.Property(i => i.TouristTaxPerPersonPerNight).HasPrecision(10, 2);
+            builder.Property(i => i.TouristTaxMinimumAge).IsRequired();
+            builder.Property(i => i.WeekendSurchargePercentage).HasPrecision(5, 2);
+            builder.Property(i => i.PetFeePerNight).HasPrecision(10, 2);
             builder.Property(i => i.ArrivalTime).IsRequired();
             builder.Property(i => i.DepartureTime).IsRequired();
             builder.Property(i => i.MinimumNightsHighSeason).IsRequired();

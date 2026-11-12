@@ -19,6 +19,8 @@ namespace VakantiePark.Shared.DTOs.Accommodations
         public DateOnly Departure { get; set; }
         public int Persons { get; set; }
 
+        public int YoungChildren { get; set; }
+
         public string? Category { get; set; }
 
         public string? Type { get; set; }
@@ -68,14 +70,51 @@ namespace VakantiePark.Shared.DTOs.Accommodations
                 $"departure={Departure:yyyy-MM-dd}",
                 $"persons={Persons}",
             };
-            if (!string.IsNullOrWhiteSpace(Category)) parts.Add($"category={Uri.EscapeDataString(Category)}");
-            if (!string.IsNullOrWhiteSpace(Type)) parts.Add($"type={Uri.EscapeDataString(Type)}");
-            if (Pets > 0) parts.Add($"pets={Pets}");
-            if (!string.IsNullOrWhiteSpace(Amenities)) parts.Add($"amenities={Uri.EscapeDataString(Amenities)}");
-            if (OrderBy != DefaultOrderBy) parts.Add($"orderBy={OrderBy}");
-            if (OrderType != DefaultOrderType) parts.Add($"orderType={OrderType}");
-            if (PageNumber > 1) parts.Add($"pageNumber={PageNumber}");
-            if (PageSize != DefaultPageSize) parts.Add($"pageSize={PageSize}");
+            if (YoungChildren > 0)
+            {
+                parts.Add($"youngChildren={YoungChildren}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Category))
+            {
+                parts.Add($"category={Uri.EscapeDataString(Category)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Type))
+            {
+                parts.Add($"type={Uri.EscapeDataString(Type)}");
+            }
+
+            if (Pets > 0)
+            {
+                parts.Add($"pets={Pets}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Amenities))
+            {
+                parts.Add($"amenities={Uri.EscapeDataString(Amenities)}");
+            }
+
+            if (OrderBy != DefaultOrderBy)
+            {
+                parts.Add($"orderBy={OrderBy}");
+            }
+
+            if (OrderType != DefaultOrderType)
+            {
+                parts.Add($"orderType={OrderType}");
+            }
+
+            if (PageNumber > 1)
+            {
+                parts.Add($"pageNumber={PageNumber}");
+            }
+
+            if (PageSize != DefaultPageSize)
+            {
+                parts.Add($"pageSize={PageSize}");
+            }
+
             return string.Join("&", parts);
         }
 

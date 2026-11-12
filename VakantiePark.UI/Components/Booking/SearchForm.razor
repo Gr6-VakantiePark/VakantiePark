@@ -21,6 +21,10 @@
                 <InputNumber id="persons" @bind-Value="_form.Persons" min="1" max="@Options.MaxPersons" />
             </div>
             <div class="field">
+                <label for="young-children">Waarvan onder @Options.TouristTaxMinimumAge jaar</label>
+                <InputNumber id="young-children" @bind-Value="_form.YoungChildren" min="0" max="@Math.Max(0, _form.Persons - 1)" />
+            </div>
+            <div class="field">
                 <label for="pets">Huisdieren</label>
                 <InputNumber id="pets" @bind-Value="_form.Pets" min="0" max="@Options.MaxPets" />
             </div>
@@ -99,6 +103,7 @@
         public DateOnly? Arrival { get; set; }
         public DateOnly? Departure { get; set; }
         public int Persons { get; set; } = 1;
+        public int YoungChildren { get; set; }
         public int Pets { get; set; }
         public string Category { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
@@ -150,6 +155,7 @@
             Arrival = Current.Arrival == default ? null : Current.Arrival,
             Departure = Current.Departure == default ? null : Current.Departure,
             Persons = Math.Max(1, Current.Persons),
+            YoungChildren = Current.YoungChildren,
             Pets = Current.Pets,
             Category = Current.Category ?? string.Empty,
             Type = Current.Type ?? string.Empty,
@@ -176,7 +182,7 @@
 
     private void ClearFilters()
     {
-        _form = new SearchFormModel { Arrival = _form.Arrival, Departure = _form.Departure, Persons = _form.Persons };
+        _form = new SearchFormModel { Arrival = _form.Arrival, Departure = _form.Departure, Persons = _form.Persons, YoungChildren = _form.YoungChildren };
         _selectedAmenities.Clear();
         _errors.Clear();
     }
@@ -186,33 +192,61 @@
         _errors.Clear();
 
         if (_form.Arrival is null)
+        {
             _errors.Add("Kies een aankomstdatum.");
+        }
         else if (_form.Arrival < _today)
+        {
             _errors.Add("De aankomstdatum mag niet in het verleden liggen.");
+        }
 
         if (_form.Departure is null)
+        {
             _errors.Add("Kies een vertrekdatum.");
+        }
         else if (_form.Arrival is not null && _form.Departure <= _form.Arrival)
+        {
             _errors.Add("De vertrekdatum moet na de aankomstdatum liggen.");
+        }
 
         if (_form.Persons < 1)
+        {
             _errors.Add("Kies minimaal 1 persoon.");
+        }
         else if (_form.Persons > Options.MaxPersons)
+        {
             _errors.Add($"Het grootste verblijf is voor {Options.MaxPersons} personen.");
+        }
+
+        if (_form.YoungChildren < 0)
+        {
+            _errors.Add("Het aantal kinderen kan niet negatief zijn.");
+        }
+        else if (_form.YoungChildren >= _form.Persons)
+        {
+            _errors.Add($"Er moet minimaal 1 persoon van {Options.TouristTaxMinimumAge} jaar of ouder meegaan.");
+        }
 
         if (_form.Pets < 0)
+        {
             _errors.Add("Het aantal huisdieren kan niet negatief zijn.");
+        }
         else if (_form.Pets > Options.MaxPets)
+        {
             _errors.Add($"Er zijn maximaal {Options.MaxPets} huisdieren toegestaan.");
+        }
 
         if (_errors.Count > 0)
+        {
             return;
+        }
 
         var criteria = new AccommodationSearchCriteria
         {
             Arrival = _form.Arrival!.Value,
             Departure = _form.Departure!.Value,
             Persons = _form.Persons,
+            YoungChildren = _form.YoungChildren,
             Pets = _form.Pets,
             Category = _form.Category == string.Empty ? null : _form.Category,
             Type = _form.Type == string.Empty ? null : _form.Type,

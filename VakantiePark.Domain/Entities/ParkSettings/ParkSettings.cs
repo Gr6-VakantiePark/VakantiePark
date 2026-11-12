@@ -8,6 +8,12 @@ namespace VakantiePark.Domain.Entities
 
         public decimal TouristTaxPerPersonPerNight { get; set; }
 
+        public int TouristTaxMinimumAge { get; set; }
+
+        public decimal WeekendSurchargePercentage { get; set; }
+
+        public decimal PetFeePerNight { get; set; }
+
         public TimeOnly ArrivalTime { get; set; }
 
         public TimeOnly DepartureTime { get; set; }
