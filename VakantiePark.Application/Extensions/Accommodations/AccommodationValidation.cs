@@ -1,8 +1,9 @@
 using VakantiePark.Domain.Enums;
 using VakantiePark.Shared.Common;
+using VakantiePark.Shared.Common.Pagination;
 using VakantiePark.Shared.DTOs.Accommodations;
 
-namespace VakantiePark.Application.Extensions
+namespace VakantiePark.Application.Extensions.Accommodations
 {
     public static class AccommodationValidation
     {

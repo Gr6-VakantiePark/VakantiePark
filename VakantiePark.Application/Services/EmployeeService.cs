@@ -1,6 +1,7 @@
 using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Auth;
 

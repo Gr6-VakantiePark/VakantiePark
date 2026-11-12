@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Infrastructure.Data;
 using VakantiePark.Infrastructure.Repositories;
 using VakantiePark.Infrastructure.Security;
@@ -24,6 +24,8 @@ namespace VakantiePark.Infrastructure
             services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
             services.AddSingleton<ITokenService, JwtTokenService>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IReservationRepository, ReservationRepository>();
+            services.AddScoped<IUnrentablePeriodRepository, UnrentablePeriodRepository>();
 
 
             return services;

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VakantiePark.Shared\VakantiePark.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

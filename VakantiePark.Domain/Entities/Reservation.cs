@@ -1,0 +1,16 @@
+﻿using System;
+using VakantiePark.Domain.Enums;
+
+namespace VakantiePark.Domain.Entities
+{
+    public class Reservation
+    {
+        public Guid Id { get; set; }
+        public Guid AccommodationId { get; set; }
+        public Accommodation Accommodation { get; set; } = default!;
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int NumberOfGuests { get; set; }
+        public ReservationStatus Status { get; set; }
+    }
+}

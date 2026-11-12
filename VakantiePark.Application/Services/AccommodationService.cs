@@ -1,8 +1,10 @@
 using VakantiePark.Application.Calculators;
 using VakantiePark.Application.Extensions;
+using VakantiePark.Application.Extensions.Accommodations;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
-using VakantiePark.Shared.Common;
+using VakantiePark.Domain.Interfaces;
+using VakantiePark.Shared.Common.Pagination;
 using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.Shared.DTOs.Prices;
 

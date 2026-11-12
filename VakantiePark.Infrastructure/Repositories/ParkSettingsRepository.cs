@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Infrastructure.Data;
 
 namespace VakantiePark.Infrastructure.Repositories

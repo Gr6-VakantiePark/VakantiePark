@@ -1,4 +1,4 @@
-using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Interfaces;
 
 namespace VakantiePark.Infrastructure.Security
 {

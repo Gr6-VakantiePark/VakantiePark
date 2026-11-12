@@ -4,8 +4,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using VakantiePark.Application.Common;
-using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.Common;
 
 namespace VakantiePark.Infrastructure.Security

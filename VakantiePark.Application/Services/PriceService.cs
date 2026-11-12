@@ -1,6 +1,7 @@
 using VakantiePark.Application.Calculators;
 using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Prices;
 
 namespace VakantiePark.Application.Services

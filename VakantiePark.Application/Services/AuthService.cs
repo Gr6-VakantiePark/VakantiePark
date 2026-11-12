@@ -1,5 +1,6 @@
 using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Auth;
 
 namespace VakantiePark.Application.Services

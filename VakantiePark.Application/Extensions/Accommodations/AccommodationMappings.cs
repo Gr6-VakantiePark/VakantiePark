@@ -1,7 +1,7 @@
 using VakantiePark.Domain.Entities;
 using VakantiePark.Shared.DTOs.Accommodations;
 
-namespace VakantiePark.Application.Extensions
+namespace VakantiePark.Application.Extensions.Accommodations
 {
     public static class AccommodationMappings
     {
