@@ -57,5 +57,50 @@ namespace VakantiePark.Application.Services
 
             return employee.ToDto();
         }
+
+        public async Task<EmployeeDto> UpdateAsync(Guid id, UpdateEmployeeDto request)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("Het id van de medewerker ontbreekt.");
+
+            request.Validate();
+
+            var employee = await repository.GetForUpdateAsync(id)
+                ?? throw new KeyNotFoundException("Medewerker is niet gevonden.");
+
+            string email = EmployeeMappings.NormalizeEmail(request.Email);
+
+            if (await repository.EmailExistsAsync(email, id))
+                throw new ArgumentException("Er is al een medewerker met dit e-mailadres.");
+
+            employee.Email = email;
+            employee.FirstName = request.FirstName.Trim();
+            employee.LastName = request.LastName.Trim();
+
+            await employees.SaveChangesAsync();
+
+            return employee.ToDto();
+        }
+
+        public async Task<EmployeeDto> SetActiveAsync(Guid id, SetEmployeeActiveDto request, Guid currentEmployeeId)
+        {
+            if (id == Guid.Empty)
+                throw new ArgumentException("Het id van de medewerker ontbreekt.");
+            if (request is null)
+                throw new ArgumentException("De status van de medewerker ontbreekt.");
+            if (!request.IsActive && id == currentEmployeeId)
+                throw new ArgumentException("Je kunt je eigen account niet uitschakelen.");
+
+            var employee = await repository.GetForUpdateAsync(id)
+                ?? throw new KeyNotFoundException("Medewerker is niet gevonden.");
+
+            if (employee.IsActive != request.IsActive)
+            {
+                employee.IsActive = request.IsActive;
+                await employees.SaveChangesAsync();
+            }
+
+            return employee.ToDto();
+        }
     }
 }

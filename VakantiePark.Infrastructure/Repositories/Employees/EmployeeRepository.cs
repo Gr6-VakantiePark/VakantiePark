@@ -16,6 +16,9 @@ namespace VakantiePark.Infrastructure.Repositories
         public Task<Employee?> GetByIdAsync(Guid id) =>
             WithRoles.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
 
+        public Task<Employee?> GetForUpdateAsync(Guid id) =>
+            WithRoles.FirstOrDefaultAsync(e => e.Id == id);
+
         public Task<List<Employee>> GetAllAsync() =>
             WithRoles.AsNoTracking()
                 .OrderBy(e => e.LastName)
@@ -29,6 +32,9 @@ namespace VakantiePark.Infrastructure.Repositories
 
         public Task<bool> EmailExistsAsync(string normalizedEmail) =>
             context.Employees.AnyAsync(e => e.Email == normalizedEmail);
+
+        public Task<bool> EmailExistsAsync(string normalizedEmail, Guid excludedEmployeeId) =>
+            context.Employees.AnyAsync(e => e.Email == normalizedEmail && e.Id != excludedEmployeeId);
 
         public Task<List<Role>> GetRolesAsync(IEnumerable<string> codes)
         {

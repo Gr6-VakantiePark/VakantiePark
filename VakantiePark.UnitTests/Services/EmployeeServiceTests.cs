@@ -108,5 +108,123 @@ namespace VakantiePark.UnitTests.Services
 
             _repository.Verify(r => r.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
         }
+
+        private static Employee CreateEmployee(bool isActive = true) => new()
+        {
+            Id = Guid.NewGuid(),
+            Email = "oud@example.com",
+            FirstName = "Oud",
+            LastName = "Naam",
+            IsActive = isActive,
+        };
+
+        private static UpdateEmployeeDto UpdateRequest() => new()
+        {
+            Email = " Nieuw@Example.com ",
+            FirstName = " Sanne ",
+            LastName = "de Vries",
+        };
+
+        [Fact]
+        public async Task UpdateAsync_ValidRequest_UpdatesEmployeeAndSavesOnce()
+        {
+            var employee = CreateEmployee();
+            _repository.Setup(r => r.GetForUpdateAsync(employee.Id)).ReturnsAsync(employee);
+            _repository.Setup(r => r.EmailExistsAsync("nieuw@example.com", employee.Id)).ReturnsAsync(false);
+
+            var result = await _sut.UpdateAsync(employee.Id, UpdateRequest());
+
+            Assert.Equal("nieuw@example.com", employee.Email);
+            Assert.Equal("Sanne", employee.FirstName);
+            Assert.Equal("de Vries", result.LastName);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_EmailUsedByOtherEmployee_ThrowsArgumentException()
+        {
+            var employee = CreateEmployee();
+            _repository.Setup(r => r.GetForUpdateAsync(employee.Id)).ReturnsAsync(employee);
+            _repository.Setup(r => r.EmailExistsAsync("nieuw@example.com", employee.Id)).ReturnsAsync(true);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.UpdateAsync(employee.Id, UpdateRequest()));
+
+            Assert.Equal("oud@example.com", employee.Email);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_NotFound_ThrowsKeyNotFoundException()
+        {
+            _repository.Setup(r => r.GetForUpdateAsync(It.IsAny<Guid>())).ReturnsAsync((Employee?)null);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.UpdateAsync(Guid.NewGuid(), UpdateRequest()));
+        }
+
+        [Fact]
+        public async Task UpdateAsync_InvalidEmail_ThrowsBeforeRepositoryIsUsed()
+        {
+            var request = UpdateRequest();
+            request.Email = "geen-e-mailadres";
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.UpdateAsync(Guid.NewGuid(), request));
+
+            _repository.Verify(r => r.GetForUpdateAsync(It.IsAny<Guid>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetActiveAsync_Deactivate_SetsInactiveAndSavesOnce()
+        {
+            var employee = CreateEmployee();
+            _repository.Setup(r => r.GetForUpdateAsync(employee.Id)).ReturnsAsync(employee);
+
+            var result = await _sut.SetActiveAsync(employee.Id, new SetEmployeeActiveDto { IsActive = false }, Guid.NewGuid());
+
+            Assert.False(employee.IsActive);
+            Assert.False(result.IsActive);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task SetActiveAsync_Activate_SetsActive()
+        {
+            var employee = CreateEmployee(isActive: false);
+            _repository.Setup(r => r.GetForUpdateAsync(employee.Id)).ReturnsAsync(employee);
+
+            await _sut.SetActiveAsync(employee.Id, new SetEmployeeActiveDto { IsActive = true }, Guid.NewGuid());
+
+            Assert.True(employee.IsActive);
+        }
+
+        [Fact]
+        public async Task SetActiveAsync_DeactivateOwnAccount_ThrowsArgumentException()
+        {
+            var employee = CreateEmployee();
+
+            await Assert.ThrowsAsync<ArgumentException>(() =>
+                _sut.SetActiveAsync(employee.Id, new SetEmployeeActiveDto { IsActive = false }, employee.Id));
+
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetActiveAsync_SameStatus_DoesNotSave()
+        {
+            var employee = CreateEmployee();
+            _repository.Setup(r => r.GetForUpdateAsync(employee.Id)).ReturnsAsync(employee);
+
+            await _sut.SetActiveAsync(employee.Id, new SetEmployeeActiveDto { IsActive = true }, Guid.NewGuid());
+
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task SetActiveAsync_NotFound_ThrowsKeyNotFoundException()
+        {
+            _repository.Setup(r => r.GetForUpdateAsync(It.IsAny<Guid>())).ReturnsAsync((Employee?)null);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+                _sut.SetActiveAsync(Guid.NewGuid(), new SetEmployeeActiveDto { IsActive = false }, Guid.NewGuid()));
+        }
     }
 }

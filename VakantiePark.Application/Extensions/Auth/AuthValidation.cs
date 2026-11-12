@@ -23,18 +23,7 @@ namespace VakantiePark.Application.Extensions
             if (request is null)
                 throw new ArgumentException("De gegevens van de medewerker ontbreken.");
 
-            string email = EmployeeMappings.NormalizeEmail(request.Email ?? string.Empty);
-            if (email.Length > FieldLimits.EmailMaxLength)
-                throw new ArgumentException($"Het e-mailadres mag maximaal {FieldLimits.EmailMaxLength} tekens hebben.");
-            if (!IsValidEmail(email))
-                throw new ArgumentException("Vul een geldig e-mailadres in.");
-
-            if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-                throw new ArgumentException("Vul een voor- en achternaam in.");
-            if (request.FirstName.Trim().Length > FieldLimits.FirstNameMaxLength)
-                throw new ArgumentException($"De voornaam mag maximaal {FieldLimits.FirstNameMaxLength} tekens hebben.");
-            if (request.LastName.Trim().Length > FieldLimits.LastNameMaxLength)
-                throw new ArgumentException($"De achternaam mag maximaal {FieldLimits.LastNameMaxLength} tekens hebben.");
+            ValidateEmployeeDetails(request.Email, request.FirstName, request.LastName);
 
             if (string.IsNullOrEmpty(request.Password) || request.Password.Length < FieldLimits.PasswordMinLength)
                 throw new ArgumentException($"Het wachtwoord moet minimaal {FieldLimits.PasswordMinLength} tekens hebben.");
@@ -45,6 +34,30 @@ namespace VakantiePark.Application.Extensions
                 throw new ArgumentException("Kies minimaal één rol.");
             if (request.Roles.Any(role => string.IsNullOrWhiteSpace(role) || role.Trim().Length > FieldLimits.RoleCodeMaxLength))
                 throw new ArgumentException("Een of meer rollen zijn ongeldig.");
+        }
+
+        public static void Validate(this UpdateEmployeeDto? request)
+        {
+            if (request is null)
+                throw new ArgumentException("De gegevens van de medewerker ontbreken.");
+
+            ValidateEmployeeDetails(request.Email, request.FirstName, request.LastName);
+        }
+
+        private static void ValidateEmployeeDetails(string? rawEmail, string? firstName, string? lastName)
+        {
+            string email = EmployeeMappings.NormalizeEmail(rawEmail ?? string.Empty);
+            if (email.Length > FieldLimits.EmailMaxLength)
+                throw new ArgumentException($"Het e-mailadres mag maximaal {FieldLimits.EmailMaxLength} tekens hebben.");
+            if (!IsValidEmail(email))
+                throw new ArgumentException("Vul een geldig e-mailadres in.");
+
+            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+                throw new ArgumentException("Vul een voor- en achternaam in.");
+            if (firstName.Trim().Length > FieldLimits.FirstNameMaxLength)
+                throw new ArgumentException($"De voornaam mag maximaal {FieldLimits.FirstNameMaxLength} tekens hebben.");
+            if (lastName.Trim().Length > FieldLimits.LastNameMaxLength)
+                throw new ArgumentException($"De achternaam mag maximaal {FieldLimits.LastNameMaxLength} tekens hebben.");
         }
 
         private static bool IsValidEmail(string email) =>

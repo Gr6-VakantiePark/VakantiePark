@@ -84,6 +84,36 @@ namespace VakantiePark.UnitTests.Validation
             Assert.Throws<ArgumentException>(() => request.Validate());
         }
 
+        [Theory]
+        [InlineData("", "Sanne", "de Vries")]
+        [InlineData("geen-e-mailadres", "Sanne", "de Vries")]
+        [InlineData("nieuw@example.com", " ", "de Vries")]
+        [InlineData("nieuw@example.com", "Sanne", "")]
+        public void Validate_InvalidUpdateEmployee_ThrowsArgumentException(string email, string firstName, string lastName)
+        {
+            var request = new UpdateEmployeeDto { Email = email, FirstName = firstName, LastName = lastName };
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void Validate_ValidUpdateEmployee_DoesNotThrow()
+        {
+            var request = new UpdateEmployeeDto { Email = "nieuw@example.com", FirstName = "Sanne", LastName = "de Vries" };
+
+            var exception = Record.Exception(() => request.Validate());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void Validate_UpdateEmployeeNameTooLong_ThrowsArgumentException()
+        {
+            var request = new UpdateEmployeeDto { Email = "nieuw@example.com", FirstName = new string('a', FieldLimits.FirstNameMaxLength + 1), LastName = "de Vries" };
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
         [Fact]
         public void Validate_NullCreateEmployee_ThrowsArgumentException()
         {
