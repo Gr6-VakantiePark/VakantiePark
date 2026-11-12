@@ -66,4 +66,15 @@ De sleutel waarmee de API inlogtokens ondertekent staat niet in de repo.
 
 ## Discord notifications
 
-`.github/workflows/discord-pr.yml` posts a message to Discord when a pull request is opened (not as draft), reopened, marked ready for review, merged or closed. The message shows the status, branches, changes, linked issues (`Resolves #…`), reviewers, labels and who merged it. Set the webhook URL as the repository secret `DISCORD_WEBHOOK`; without it the workflow skips the message.
+GitHub Actions post to the G6 Vakantiepark Discord server. Each workflow uses its own webhook, stored as a repository secret; without the secret the workflow skips the message.
+
+| Workflow | Trigger | Channel | Secret |
+|---|---|---|---|
+| `discord-pr.yml` | Pull request opened (not as draft), reopened, ready for review, merged or closed | #pull-requests | `DISCORD_WEBHOOK` |
+| `discord-issues.yml` | Issue opened, closed, reopened or labelled `bug`; issues with the `bug` label go to #bug-alerts, all others to #issues | #issues / #bug-alerts | `DISCORD_WEBHOOK_ISSUES`, `DISCORD_WEBHOOK_BUGS` |
+| `discord-bug-report.yml` | Weekdays at 08:30 Amsterdam time (also summer time), or by hand via *Run workflow*; lists open `bug` issues with age and assignee, plus new and closed bugs of the last 24 hours | #bug-report | `DISCORD_WEBHOOK_BUG_REPORT` |
+| `discord-commits.yml` | Push to `master`; lists the pushed commits | #commits | `DISCORD_WEBHOOK_COMMITS` |
+| `discord-ci.yml` | *CI + build and test* finished; shows passed/failed, branch, commit and duration | #ci-builds | `DISCORD_WEBHOOK_CI` |
+
+Scheduled and `workflow_run` workflows only run from the default branch (`master`).
+

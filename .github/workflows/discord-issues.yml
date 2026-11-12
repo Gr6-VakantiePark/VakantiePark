@@ -1,0 +1,113 @@
+name: Discord Issue Notifications
+
+on:
+  issues:
+    types:
+      - opened
+      - closed
+      - reopened
+      - labeled
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    if: github.event.action != 'labeled' || github.event.label.name == 'bug'
+
+    steps:
+      - name: Notify Discord
+        env:
+          ISSUES_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_ISSUES }}
+          BUGS_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BUGS }}
+          ACTION: ${{ github.event.action }}
+          ISSUE_JSON: ${{ toJSON(github.event.issue) }}
+          SENDER: ${{ github.event.sender.login }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          IS_BUG=$(jq -r '[.labels[]?.name] | index("bug") != null' <<< "$ISSUE_JSON")
+
+          if [ "$ACTION" = "labeled" ]; then
+            CREATED=$(jq -r '.created_at | fromdateiso8601' <<< "$ISSUE_JSON")
+            if [ $(( $(date +%s) - CREATED )) -lt 60 ]; then
+              echo "Label added while opening the issue, the opened event already covers it."
+              exit 0
+            fi
+          fi
+
+          if [ "$IS_BUG" = "true" ]; then
+            WEBHOOK="$BUGS_WEBHOOK"
+          else
+            WEBHOOK="$ISSUES_WEBHOOK"
+          fi
+
+          if [ -z "$WEBHOOK" ]; then
+            echo "::warning::Discord webhook secret is not set, skipping notification."
+            exit 0
+          fi
+
+          STATE_REASON=$(jq -r '.state_reason // ""' <<< "$ISSUE_JSON")
+
+          case "$ACTION" in
+            opened)   if [ "$IS_BUG" = "true" ]; then STATUS="🐛 New bug"; COLOR=15548997; else STATUS="🆕 Opened"; COLOR=3447003; fi ;;
+            reopened) STATUS="🔁 Reopened"; COLOR=15105570 ;;
+            labeled)  STATUS="🐛 Marked as bug"; COLOR=15548997 ;;
+            closed)
+              if [ "$STATE_REASON" = "not_planned" ]; then
+                STATUS="🚫 Closed as not planned"; COLOR=9807270
+              else
+                STATUS="✅ Closed as completed"; COLOR=5763719
+              fi ;;
+            *)        STATUS="$ACTION"; COLOR=9807270 ;;
+          esac
+
+          jq -n \
+            --argjson issue "$ISSUE_JSON" \
+            --arg status "$STATUS" \
+            --argjson color "$COLOR" \
+            --arg action "$ACTION" \
+            --arg sender "$SENDER" \
+            --arg repo "$REPOSITORY" \
+            '
+            def trimmed($max):
+              if . == null or . == "" then "_No description._"
+              else (gsub("<!--.*?-->"; ""; "s") | gsub("\r"; "") | gsub("\n{3,}"; "\n\n") | ltrimstr("\n") | rtrimstr("\n"))
+                | if length > $max then .[0:$max] + "…" else . end
+              end;
+
+            ([$issue.labels[]?.name] | join(", ")) as $labels
+            | ([$issue.assignees[]?.login] | join(", ")) as $assignees
+            | {
+                username: "GitHub",
+                embeds: [{
+                  author: {
+                    name: $issue.user.login,
+                    url: $issue.user.html_url,
+                    icon_url: $issue.user.avatar_url
+                  },
+                  title: ("#" + ($issue.number | tostring) + " " + $issue.title)[0:256],
+                  url: $issue.html_url,
+                  description: (if $action == "opened" or $action == "labeled" then ($issue.body | trimmed(400)) else null end),
+                  color: $color,
+                  fields: (
+                    [ { name: "Status", value: $status, inline: true } ]
+                    + (if $action != "opened" then [{ name: "By", value: $sender, inline: true }] else [] end)
+                    + (if $assignees != "" then [{ name: "Assignees", value: $assignees, inline: true }] else [] end)
+                    + (if $labels != "" then [{ name: "Labels", value: $labels, inline: true }] else [] end)
+                    + (if $issue.milestone != null then [{ name: "Milestone", value: $issue.milestone.title, inline: true }] else [] end)
+                  ),
+                  footer: { text: $repo },
+                  timestamp: (if $action == "closed" then ($issue.closed_at // $issue.updated_at) else $issue.updated_at end)
+                } | del(.description | select(. == null))]
+              }
+            ' > payload.json
+
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 2 --retry-all-errors \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @payload.json \
+            "$WEBHOOK"
