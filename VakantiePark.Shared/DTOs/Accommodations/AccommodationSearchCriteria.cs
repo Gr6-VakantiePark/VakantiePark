@@ -1,4 +1,4 @@
-using VakantiePark.Shared.Common;
+using VakantiePark.Shared.Common.Pagination;
 
 namespace VakantiePark.Shared.DTOs.Accommodations
 {

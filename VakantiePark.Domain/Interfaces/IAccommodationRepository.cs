@@ -2,7 +2,7 @@ using VakantiePark.Domain.Entities;
 using VakantiePark.Domain.Enums;
 using VakantiePark.Shared.DTOs.Accommodations;
 
-namespace VakantiePark.Application.Interfaces
+namespace VakantiePark.Domain.Interfaces
 {
     public interface IAccommodationRepository
     {

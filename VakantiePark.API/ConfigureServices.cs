@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using VakantiePark.Application.Common;
 using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Infrastructure.Security;
 using VakantiePark.Shared.Common;
 

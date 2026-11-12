@@ -1,6 +1,6 @@
 using VakantiePark.Domain.Entities;
 
-namespace VakantiePark.Application.Interfaces
+namespace VakantiePark.Domain.Interfaces
 {
     public interface ITokenService
     {

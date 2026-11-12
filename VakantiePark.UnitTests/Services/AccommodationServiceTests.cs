@@ -1,7 +1,7 @@
 using Moq;
-using VakantiePark.Application.Interfaces;
 using VakantiePark.Application.Services;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.UnitTests.Services

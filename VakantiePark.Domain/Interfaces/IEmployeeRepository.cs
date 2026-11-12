@@ -1,6 +1,6 @@
 using VakantiePark.Domain.Entities;
 
-namespace VakantiePark.Application.Interfaces
+namespace VakantiePark.Domain.Interfaces
 {
     public interface IEmployeeRepository
     {
@@ -17,9 +17,5 @@ namespace VakantiePark.Application.Interfaces
         Task<bool> EmailExistsAsync(string normalizedEmail);
 
         Task<List<Role>> GetRolesAsync(IEnumerable<string> codes);
-
-        Task AddAsync(Employee employee);
-
-        Task SaveChangesAsync();
     }
 }

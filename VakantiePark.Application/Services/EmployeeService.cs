@@ -1,12 +1,13 @@
 using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Auth;
 
 namespace VakantiePark.Application.Services
 {
-    public class EmployeeService(IEmployeeRepository repository, IPasswordHasher passwordHasher) : IEmployeeService
+    public class EmployeeService(IEmployeeRepository repository, IRepository<Employee> employees, IPasswordHasher passwordHasher) : IEmployeeService
     {
         public async Task<List<EmployeeDto>> GetAllAsync()
         {
@@ -51,8 +52,8 @@ namespace VakantiePark.Application.Services
                 Roles = roles,
             };
 
-            await repository.AddAsync(employee);
-            await repository.SaveChangesAsync();
+            employees.Add(employee);
+            await employees.SaveChangesAsync();
 
             return employee.ToDto();
         }

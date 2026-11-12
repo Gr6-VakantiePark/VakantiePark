@@ -1,3 +1,4 @@
+using VakantiePark.Application.Extensions.Accommodations;
 using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Prices;
 

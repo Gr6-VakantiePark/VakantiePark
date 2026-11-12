@@ -1,4 +1,4 @@
-namespace VakantiePark.Shared.Common
+namespace VakantiePark.Shared.Common.Pagination
 {
     public abstract class PaginationBase
     {

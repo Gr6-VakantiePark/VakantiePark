@@ -1,4 +1,5 @@
 using VakantiePark.Shared.Common;
+using VakantiePark.Shared.Common.Pagination;
 using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.UI.Interfaces;
 

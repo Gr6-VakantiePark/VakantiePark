@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace VakantiePark.Shared.Common
+namespace VakantiePark.Shared.Common.Pagination
 {
     public enum AccommodationOrderBy
     {

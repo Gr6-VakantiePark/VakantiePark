@@ -2,6 +2,7 @@ using Moq;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Application.Services;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Auth;
 
 namespace VakantiePark.UnitTests.Services
@@ -9,12 +10,13 @@ namespace VakantiePark.UnitTests.Services
     public class EmployeeServiceTests
     {
         private readonly Mock<IEmployeeRepository> _repository = new();
+        private readonly Mock<IRepository<Employee>> _employees = new();
         private readonly Mock<IPasswordHasher> _passwordHasher = new();
         private readonly EmployeeService _sut;
 
         public EmployeeServiceTests()
         {
-            _sut = new EmployeeService(_repository.Object, _passwordHasher.Object);
+            _sut = new EmployeeService(_repository.Object, _employees.Object, _passwordHasher.Object);
             _passwordHasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hash");
         }
 
@@ -35,7 +37,7 @@ namespace VakantiePark.UnitTests.Services
             Employee? added = null;
             _repository.Setup(r => r.EmailExistsAsync("nieuw@example.com")).ReturnsAsync(false);
             _repository.Setup(r => r.GetRolesAsync(It.IsAny<IEnumerable<string>>())).ReturnsAsync([CreateRole()]);
-            _repository.Setup(r => r.AddAsync(It.IsAny<Employee>())).Callback<Employee>(e => added = e).Returns(Task.CompletedTask);
+            _employees.Setup(r => r.Add(It.IsAny<Employee>())).Callback<Employee>(e => added = e);
 
             var result = await _sut.CreateAsync(CreateRequest());
 
@@ -44,8 +46,8 @@ namespace VakantiePark.UnitTests.Services
             Assert.Equal("Sanne", added.FirstName);
             Assert.Equal("hash", added.PasswordHash);
             Assert.Equal(new[] { "reception" }, result.Roles);
-            _repository.Verify(r => r.AddAsync(It.IsAny<Employee>()), Times.Once);
-            _repository.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _employees.Verify(r => r.Add(It.IsAny<Employee>()), Times.Once);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
@@ -67,7 +69,7 @@ namespace VakantiePark.UnitTests.Services
 
             await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateAsync(CreateRequest()));
 
-            _repository.Verify(r => r.AddAsync(It.IsAny<Employee>()), Times.Never);
+            _employees.Verify(r => r.Add(It.IsAny<Employee>()), Times.Never);
         }
 
         [Fact]
@@ -77,7 +79,7 @@ namespace VakantiePark.UnitTests.Services
 
             await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateAsync(CreateRequest()));
 
-            _repository.Verify(r => r.SaveChangesAsync(), Times.Never);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
         [Fact]

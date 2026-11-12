@@ -338,6 +338,34 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("PhotoFiles", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccommodationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccommodationId");
+
+                    b.ToTable("Reservations", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -364,6 +392,32 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Roles", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.UnrentablePeriod", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccommodationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccommodationId");
+
+                    b.ToTable("UnrentablePeriods", (string)null);
                 });
 
             modelBuilder.Entity("AccommodationAmenity", b =>
@@ -442,6 +496,28 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Photo");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Accommodation", "Accommodation")
+                        .WithMany()
+                        .HasForeignKey("AccommodationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Accommodation");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.UnrentablePeriod", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.Accommodation", "Accommodation")
+                        .WithMany()
+                        .HasForeignKey("AccommodationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Accommodation");
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.AccommodationType", b =>

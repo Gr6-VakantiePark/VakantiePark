@@ -1,4 +1,5 @@
 using VakantiePark.Application.Interfaces;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Photos;
 
 namespace VakantiePark.Application.Services

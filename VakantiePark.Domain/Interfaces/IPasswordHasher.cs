@@ -1,4 +1,4 @@
-namespace VakantiePark.Application.Interfaces
+namespace VakantiePark.Domain.Interfaces
 {
     public interface IPasswordHasher
     {

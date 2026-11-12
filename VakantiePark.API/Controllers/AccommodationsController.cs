@@ -2,15 +2,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Shared.Common;
+using VakantiePark.Shared.Common.Pagination;
 using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.Shared.DTOs.Prices;
+using VakantiePark.Shared.DTOs.Reservations;
 
 namespace VakantiePark.API.Controllers
 {
     [ApiController]
     [AllowAnonymous]
     [Route("accommodations")]
-    public class AccommodationsController(IAccommodationService service, IPriceService priceService) : ControllerBase
+    public class AccommodationsController(IAccommodationService service, IPriceService priceService, IAvailabilityService availabilityService) : ControllerBase
     {
         [HttpGet]
         [ProducesResponseType<ApiResponse<List<AccommodationDto>>>(StatusCodes.Status200OK)]
@@ -41,5 +43,12 @@ namespace VakantiePark.API.Controllers
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status404NotFound)]
         public Task<IActionResult> GetById(Guid id, [FromQuery] DateOnly? arrival, [FromQuery] DateOnly? departure, [FromQuery] int? persons) =>
             this.RunAsync(() => service.GetByIdAsync(id, arrival, departure, persons));
+
+        [HttpGet("availability")]
+        [ProducesResponseType<ApiResponse<bool>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ApiResponse<bool>>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<ApiResponse<bool>>(StatusCodes.Status404NotFound)]
+        public Task<IActionResult> CheckAvailability([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] Guid accommodationId, [FromQuery] int amountOfPeople) =>
+            this.RunAsync(() => availabilityService.CheckForPeriodAvailability(new ReservationAvailabilityRequest(start, end, accommodationId, amountOfPeople)));
     }
 }
