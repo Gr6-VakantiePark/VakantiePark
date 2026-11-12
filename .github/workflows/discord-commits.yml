@@ -1,0 +1,63 @@
+name: Discord Commit Notifications
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    if: github.event.commits[0] != null
+
+    steps:
+      - name: Notify Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_COMMITS }}
+          EVENT_JSON: ${{ toJSON(github.event) }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::warning::DISCORD_WEBHOOK_COMMITS secret is not set, skipping notification."
+            exit 0
+          fi
+
+          jq -n \
+            --argjson event "$EVENT_JSON" \
+            --arg repo "$REPOSITORY" \
+            --arg branch "$BRANCH" \
+            '
+            ($event.commits) as $commits
+            | ($commits | map(
+                "[`\(.id[0:7])`](\(.url)) \(.message | split("\n")[0] | .[0:90]) · \(.author.username // .author.name)"
+              )) as $lines
+            | {
+                username: "GitHub",
+                embeds: [{
+                  author: {
+                    name: $event.sender.login,
+                    url: $event.sender.html_url,
+                    icon_url: $event.sender.avatar_url
+                  },
+                  title: ("📦 \($commits | length) new commit" + (if ($commits | length) == 1 then "" else "s" end) + " on " + $branch),
+                  url: $event.compare,
+                  description: (($lines[0:10] | join("\n"))
+                    + (if ($lines | length) > 10 then "\n…and \(($lines | length) - 10) more" else "" end))[0:4000],
+                  color: 7506394,
+                  footer: { text: $repo },
+                  timestamp: ($event.head_commit.timestamp // null)
+                }]
+              }
+            ' > payload.json
+
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 2 --retry-all-errors \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @payload.json \
+            "$WEBHOOK"
