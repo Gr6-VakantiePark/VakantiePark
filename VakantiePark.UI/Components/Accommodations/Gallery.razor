@@ -1,0 +1,25 @@
+@namespace VakantiePark.UI.Components
+<section class="gallery-section" aria-label="Foto's">
+    <div class="container gallery @(Images.Count == 3 ? "gallery--three" : null)">
+        @for (var i = 0; i < Images.Count; i++)
+        {
+            var image = Images[i];
+            if (i == 0)
+            {
+                <img class="gallery__main" src="@image.Src" alt="@image.Alt" width="1600" height="1000">
+            }
+            else
+            {
+                <img class="@(LastIsFloorPlan && i == Images.Count - 1 ? "gallery__plan" : null)" src="@image.Src" alt="@image.Alt" width="800" height="600" loading="lazy">
+            }
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<GalleryImage> Images { get; set; } = [];
+
+    [Parameter]
+    public bool LastIsFloorPlan { get; set; }
+}

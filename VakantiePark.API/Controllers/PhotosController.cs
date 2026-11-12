@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Shared.Common;
 
@@ -7,14 +8,15 @@ namespace VakantiePark.API.Controllers
 {
     [ApiController]
     [AllowAnonymous]
+    [DisableRateLimiting]
     [Route("photos")]
     public class PhotosController(IPhotoService service) : ControllerBase
     {
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:guid}")]
         [ResponseCache(Duration = 86400)]
         [ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> Get(Guid id)
         {
             try
             {

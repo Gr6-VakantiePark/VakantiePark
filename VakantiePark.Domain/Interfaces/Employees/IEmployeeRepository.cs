@@ -1,0 +1,21 @@
+using VakantiePark.Domain.Entities;
+
+namespace VakantiePark.Domain.Interfaces
+{
+    public interface IEmployeeRepository
+    {
+        Task<Employee?> GetByEmailAsync(string normalizedEmail);
+
+        Task<Employee?> GetByIdAsync(Guid id);
+
+        Task<List<Employee>> GetAllAsync();
+
+        Task<bool> IsActiveAsync(Guid id);
+
+        Task<bool> AnyAsync();
+
+        Task<bool> EmailExistsAsync(string normalizedEmail);
+
+        Task<List<Role>> GetRolesAsync(IEnumerable<string> codes);
+    }
+}

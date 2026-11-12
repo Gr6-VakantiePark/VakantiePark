@@ -1,0 +1,12 @@
+@namespace VakantiePark.UI.Components
+<dl class="key-facts">
+    @foreach (var fact in Facts)
+    {
+        <div @key="fact.Label"><dt>@fact.Label</dt><dd>@fact.Value</dd></div>
+    }
+</dl>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<KeyFact> Facts { get; set; } = [];
+}

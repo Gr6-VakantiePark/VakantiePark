@@ -1,10 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Application.Services;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Text;
 
 namespace VakantiePark.Application
 {
@@ -23,6 +19,7 @@ namespace VakantiePark.Application
             services.AddScoped<IPriceService, PriceService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IAvailabilityService, AvailabilityService>();
 
             return services;
         }

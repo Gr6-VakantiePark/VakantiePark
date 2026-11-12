@@ -16,12 +16,12 @@
                 <DataAnnotationsValidator />
                 <div class="field">
                     <label for="name">Naam</label>
-                    <InputText id="name" @bind-Value="_message.Name" autocomplete="name" />
+                    <InputText id="name" @bind-Value="_message.Name" autocomplete="name" maxlength="@ContactMessage.NameMaxLength" />
                     <ValidationMessage For="() => _message.Name" />
                 </div>
                 <div class="field">
                     <label for="email">E-mailadres</label>
-                    <InputText id="email" type="email" @bind-Value="_message.Email" autocomplete="email" />
+                    <InputText id="email" type="email" @bind-Value="_message.Email" autocomplete="email" maxlength="@ContactMessage.EmailMaxLength" />
                     <ValidationMessage For="() => _message.Email" />
                 </div>
                 <div class="field">
@@ -35,11 +35,11 @@
                 </div>
                 <div class="field">
                     <label for="reservation-number">Reserveringsnummer <span class="field__hint">Alleen als je al geboekt hebt</span></label>
-                    <InputText id="reservation-number" @bind-Value="_message.ReservationNumber" />
+                    <InputText id="reservation-number" @bind-Value="_message.ReservationNumber" maxlength="@ContactMessage.ReservationNumberMaxLength" />
                 </div>
                 <div class="field">
                     <label for="message">Bericht</label>
-                    <InputTextArea id="message" @bind-Value="_message.Message" />
+                    <InputTextArea id="message" @bind-Value="_message.Message" maxlength="@ContactMessage.MessageMaxLength" />
                     <ValidationMessage For="() => _message.Message" />
                 </div>
                 <div><button class="button" type="submit">Verstuur bericht</button></div>

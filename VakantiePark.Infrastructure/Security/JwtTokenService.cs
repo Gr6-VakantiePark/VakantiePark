@@ -1,19 +1,24 @@
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using VakantiePark.Application.Common;
-using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.Common;
 
 namespace VakantiePark.Infrastructure.Security
 {
-    public class JwtTokenService(JwtSettings settings) : ITokenService
+    public class JwtTokenService(IOptions<JwtSettings> options) : ITokenService
     {
+        private readonly JwtSettings _settings = options.Value;
+
         public (string Token, DateTime ExpiresAt) CreateToken(Employee employee)
         {
-            DateTime expiresAt = DateTime.UtcNow.AddMinutes(settings.ExpiryMinutes);
+            ArgumentNullException.ThrowIfNull(employee);
+
+            DateTime expiresAt = DateTime.UtcNow.AddMinutes(_settings.ExpiryMinutes);
 
             var claims = new List<Claim>
             {
@@ -30,10 +35,10 @@ namespace VakantiePark.Infrastructure.Security
             var descriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Issuer = settings.Issuer,
-                Audience = settings.EffectiveAudience,
+                Issuer = _settings.Issuer,
+                Audience = _settings.EffectiveAudience,
                 Expires = expiresAt,
-                SigningCredentials = new SigningCredentials(CreateSigningKey(settings), SecurityAlgorithms.HmacSha256),
+                SigningCredentials = new SigningCredentials(CreateSigningKey(_settings), SecurityAlgorithms.HmacSha256),
             };
 
             return (new JsonWebTokenHandler().CreateToken(descriptor), expiresAt);
@@ -41,8 +46,10 @@ namespace VakantiePark.Infrastructure.Security
 
         public static SymmetricSecurityKey CreateSigningKey(JwtSettings settings)
         {
+            ArgumentNullException.ThrowIfNull(settings);
+
             byte[] key = Encoding.UTF8.GetBytes(settings.Key ?? string.Empty);
-            if (key.Length < 32)
+            if (key.Length < JwtSettings.MinimumKeyLength)
                 throw new InvalidOperationException(
                     "JWT:Key ontbreekt of is korter dan 32 tekens. Zet de sleutel in user-secrets "
                     + "(dotnet user-secrets set \"JWT:Key\" \"<sleutel>\" --project VakantiePark.API) "
