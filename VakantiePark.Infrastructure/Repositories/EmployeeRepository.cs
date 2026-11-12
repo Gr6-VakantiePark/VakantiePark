@@ -40,13 +40,5 @@ namespace VakantiePark.Infrastructure.Repositories
                 .Where(r => normalized.Contains(r.Code))
                 .ToListAsync();
         }
-
-        public async Task AddAsync(Employee employee)
-        {
-            ArgumentNullException.ThrowIfNull(employee);
-            await context.Employees.AddAsync(employee);
-        }
-
-        public Task SaveChangesAsync() => context.SaveChangesAsync();
     }
 }

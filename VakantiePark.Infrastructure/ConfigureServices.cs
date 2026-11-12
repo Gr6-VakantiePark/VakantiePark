@@ -26,6 +26,7 @@ namespace VakantiePark.Infrastructure
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IReservationRepository, ReservationRepository>();
             services.AddScoped<IUnrentablePeriodRepository, UnrentablePeriodRepository>();
+            services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
 
             return services;

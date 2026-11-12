@@ -10,13 +10,14 @@ namespace VakantiePark.UnitTests.Services
     public class AuthServiceTests
     {
         private readonly Mock<IEmployeeRepository> _repository = new();
+        private readonly Mock<IRepository<Employee>> _employees = new();
         private readonly Mock<IPasswordHasher> _passwordHasher = new();
         private readonly Mock<ITokenService> _tokenService = new();
         private readonly AuthService _sut;
 
         public AuthServiceTests()
         {
-            _sut = new AuthService(_repository.Object, _passwordHasher.Object, _tokenService.Object);
+            _sut = new AuthService(_repository.Object, _employees.Object, _passwordHasher.Object, _tokenService.Object);
         }
 
         private static Employee CreateEmployee(bool isActive = true) => new()
@@ -49,7 +50,7 @@ namespace VakantiePark.UnitTests.Services
             Assert.Equal("token", result.Token);
             Assert.Equal(expiresAt, result.ExpiresAt);
             Assert.NotNull(employee.LastLoginAt);
-            _repository.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Theory]
@@ -76,7 +77,7 @@ namespace VakantiePark.UnitTests.Services
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.LoginAsync(CreateRequest()));
 
-            _repository.Verify(r => r.SaveChangesAsync(), Times.Never);
+            _employees.Verify(r => r.SaveChangesAsync(), Times.Never);
         }
 
         [Fact]

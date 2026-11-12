@@ -1,5 +1,4 @@
-﻿using System;
-using VakantiePark.Application.Interfaces;
+﻿using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
 using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Reservations;
@@ -8,7 +7,7 @@ namespace VakantiePark.Application.Services
 {
     public class AvailabilityService(IReservationRepository reservationRepository,
                                     IUnrentablePeriodRepository unrentablePeriodRepository,
-                                    IAccommodationRepository accommodationRepository) : IAvailabilityService
+                                    IRepository<Accommodation> accommodationRepository) : IAvailabilityService
     {
         public async Task<bool> CheckForPeriodAvailability(ReservationAvailabilityRequest request)
         {
@@ -23,7 +22,7 @@ namespace VakantiePark.Application.Services
                 throw new ArgumentException("De startdatum moet voor de einddatum liggen.");
 
 
-            Accommodation accommodation = await accommodationRepository.GetByIdAsync(request.AccommodationId);
+            Accommodation? accommodation = await accommodationRepository.GetAsync(request.AccommodationId);
 
             if (request.AccommodationId == Guid.Empty || accommodation == null)
                 throw new KeyNotFoundException("De accommodatie-id is verplicht en moet een geldige accommodatie zijn.");

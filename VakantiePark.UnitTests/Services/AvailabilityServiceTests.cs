@@ -12,14 +12,14 @@ namespace VakantiePark.UnitTests.Services
 
         private readonly Mock<IReservationRepository> _reservationRepository = new();
         private readonly Mock<IUnrentablePeriodRepository> _unrentablePeriodRepository = new();
-        private readonly Mock<IAccommodationRepository> _accommodationRepository = new();
+        private readonly Mock<IRepository<Accommodation>> _accommodationRepository = new();
         private readonly AvailabilityService _sut;
 
         public AvailabilityServiceTests()
         {
             _sut = new AvailabilityService(_reservationRepository.Object, _unrentablePeriodRepository.Object, _accommodationRepository.Object);
 
-            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId))
+            _accommodationRepository.Setup(r => r.GetAsync(AccommodationId))
                 .ReturnsAsync(new Accommodation { Id = AccommodationId, MaxPersons = 4 });
             _reservationRepository.Setup(r => r.GetActiveAndFutureReservationsForAccomodation(It.IsAny<ReservationAvailabilityRequest>()))
                 .ReturnsAsync([]);
@@ -71,7 +71,7 @@ namespace VakantiePark.UnitTests.Services
         public async Task CheckForPeriodAvailability_AccommodationNotFound_ThrowsKeyNotFoundException()
         {
             var unknownId = Guid.NewGuid();
-            _accommodationRepository.Setup(r => r.GetByIdAsync(unknownId)).ReturnsAsync((Accommodation?)null);
+            _accommodationRepository.Setup(r => r.GetAsync(unknownId)).ReturnsAsync((Accommodation?)null);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.CheckForPeriodAvailability(CreateRequest(accommodationId: unknownId)));
         }
