@@ -1,12 +1,3 @@
 .booking-summary {
   position: static;
 }
-
-.booking-summary__total {
-  font-size: var(--text-md);
-}
-
-.booking-summary__total dt {
-  color: var(--ink);
-  font-weight: 700;
-}

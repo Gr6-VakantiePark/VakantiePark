@@ -1,0 +1,8 @@
+.price-breakdown__total {
+  font-size: var(--text-md);
+}
+
+.price-breakdown__total dt {
+  color: var(--ink);
+  font-weight: 700;
+}
