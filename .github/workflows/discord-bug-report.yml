@@ -1,0 +1,94 @@
+name: Discord Daily Bug Report
+
+on:
+  schedule:
+    - cron: "30 6 * * 1-5"
+    - cron: "30 7 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  report:
+    name: Send Bug Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post open bugs to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BUG_REPORT }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::warning::DISCORD_WEBHOOK_BUG_REPORT secret is not set, skipping report."
+            exit 0
+          fi
+
+          if [ "$EVENT" = "schedule" ]; then
+            OFFSET=$(TZ=Europe/Amsterdam date +%z)
+            if { [ "$OFFSET" = "+0100" ] && [ "$SCHEDULE" != "30 7 * * 1-5" ]; } || \
+               { [ "$OFFSET" = "+0200" ] && [ "$SCHEDULE" != "30 6 * * 1-5" ]; }; then
+              echo "Not 08:30 in Amsterdam for this schedule, skipping."
+              exit 0
+            fi
+          fi
+
+          SINCE=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+
+          gh api --paginate "repos/$REPOSITORY/issues?labels=bug&state=open&per_page=100" \
+            | jq -s '[.[][] | select(.pull_request == null)]' > open.json
+          gh api --paginate "repos/$REPOSITORY/issues?labels=bug&state=closed&since=$SINCE&per_page=100" \
+            | jq -s --arg since "$SINCE" '[.[][] | select(.pull_request == null and .closed_at >= $since)]' > closed.json
+
+          jq -n \
+            --slurpfile open open.json \
+            --slurpfile closed closed.json \
+            --arg since "$SINCE" \
+            --arg repo "$REPOSITORY" \
+            --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '
+            ($open[0] | sort_by(.created_at)) as $bugs
+            | ($closed[0]) as $fixed
+            | ([$bugs[] | select(.created_at >= $since)] | length) as $new
+            | ($now | fromdateiso8601) as $nowSec
+            | def age: ((($nowSec - (.created_at | fromdateiso8601)) / 86400) | floor) as $d
+                | if $d == 0 then "today" elif $d == 1 then "1 day" else "\($d) days" end;
+              def line: "[#\(.number)](\(.html_url)) \(.title | .[0:80]) · \(age)"
+                + (if (.assignees | length) > 0 then " · " + ([.assignees[].login] | join(", ")) else " · _unassigned_" end);
+            ($bugs | map(line)) as $lines
+            | {
+                username: "GitHub",
+                embeds: [{
+                  title: "📊 Daily bug report",
+                  url: "https://github.com/\($repo)/issues?q=is%3Aissue+is%3Aopen+label%3Abug",
+                  color: (if ($bugs | length) == 0 then 5763719 elif ($bugs | length) < 5 then 16776960 else 15548997 end),
+                  description: (
+                    if ($bugs | length) == 0 then "🎉 No open bugs."
+                    else ($lines[0:20] | join("\n"))
+                      + (if ($lines | length) > 20 then "\n…and \(($lines | length) - 20) more" else "" end)
+                    end
+                  )[0:4000],
+                  fields: ([
+                    { name: "Open", value: ($bugs | length | tostring), inline: true },
+                    { name: "New (24h)", value: ($new | tostring), inline: true },
+                    { name: "Closed (24h)", value: ($fixed | length | tostring), inline: true },
+                    { name: "Unassigned", value: ([$bugs[] | select((.assignees | length) == 0)] | length | tostring), inline: true }
+                  ]
+                  + (if ($fixed | length) > 0 then [{ name: "Fixed since yesterday", value: ([$fixed[] | "[#\(.number)](\(.html_url)) \(.title | .[0:60])"] | join("\n"))[0:1024], inline: false }] else [] end)),
+                  footer: { text: $repo },
+                  timestamp: $now
+                }]
+              }
+            ' > payload.json
+
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 2 --retry-all-errors \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @payload.json \
+            "$WEBHOOK"
