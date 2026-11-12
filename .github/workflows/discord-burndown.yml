@@ -59,11 +59,11 @@ jobs:
       - name: Post to Discord
         if: steps.time.outputs.run == 'true'
         env:
-          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BUG_REPORT }}
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BURNDOWN }}
           REPOSITORY: ${{ github.repository }}
         run: |
           if [ -z "$WEBHOOK" ]; then
-            echo "::warning::DISCORD_WEBHOOK_BUG_REPORT secret is not set, skipping burndown."
+            echo "::warning::DISCORD_WEBHOOK_BURNDOWN secret is not set, skipping burndown."
             exit 0
           fi
 
