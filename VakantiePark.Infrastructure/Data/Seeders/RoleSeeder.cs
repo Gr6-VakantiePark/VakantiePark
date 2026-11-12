@@ -28,14 +28,14 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                 if (permissions.ContainsKey(code))
                     continue;
 
-                var permission = new Permission { Code = code, Name = name };
+                var permission = new Permission { Id = SeedIds.Permission(code), Code = code, Name = name };
                 context.Add(permission);
                 permissions[code] = permission;
             }
 
             foreach (var seed in file.Roles)
             {
-                var role = new Role { Code = seed.Code, Name = seed.Name, Description = seed.Description };
+                var role = new Role { Id = SeedIds.Role(seed.Code), Code = seed.Code, Name = seed.Name, Description = seed.Description };
 
                 foreach (string code in seed.Permissions)
                 {

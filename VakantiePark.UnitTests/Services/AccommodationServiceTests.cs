@@ -12,6 +12,7 @@ namespace VakantiePark.UnitTests.Services
         private readonly Mock<IParkSettingsRepository> _settingsRepository = new();
         private readonly AccommodationService _sut;
 
+        private static readonly Guid AccommodationId = Guid.NewGuid();
         private static readonly DateOnly Arrival = new(2030, 7, 1);
         private static readonly DateOnly Departure = new(2030, 7, 4);
 
@@ -30,7 +31,7 @@ namespace VakantiePark.UnitTests.Services
 
         private static Accommodation CreateAccommodation(decimal pricePerNight = 100m) => new()
         {
-            Id = 1,
+            Id = AccommodationId,
             Code = "B4-01",
             Name = "Berk 4 nr. 1",
             MaxPersons = 4,
@@ -41,9 +42,9 @@ namespace VakantiePark.UnitTests.Services
         [Fact]
         public async Task GetByIdAsync_WithStay_ReturnsPrice()
         {
-            _accommodationRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(CreateAccommodation());
+            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId)).ReturnsAsync(CreateAccommodation());
 
-            var dto = await _sut.GetByIdAsync(1, Arrival, Departure, 2);
+            var dto = await _sut.GetByIdAsync(AccommodationId, Arrival, Departure, 2);
 
             Assert.NotNull(dto.Price);
             Assert.Equal(390m, dto.Price.Total);
@@ -52,9 +53,9 @@ namespace VakantiePark.UnitTests.Services
         [Fact]
         public async Task GetByIdAsync_WithoutStay_ReturnsNoPrice()
         {
-            _accommodationRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(CreateAccommodation());
+            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId)).ReturnsAsync(CreateAccommodation());
 
-            var dto = await _sut.GetByIdAsync(1);
+            var dto = await _sut.GetByIdAsync(AccommodationId);
 
             Assert.Null(dto.Price);
         }
@@ -62,24 +63,24 @@ namespace VakantiePark.UnitTests.Services
         [Fact]
         public async Task GetByIdAsync_TooManyPersons_ThrowsArgumentException()
         {
-            _accommodationRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(CreateAccommodation());
+            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId)).ReturnsAsync(CreateAccommodation());
 
-            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(1, Arrival, Departure, 5));
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(AccommodationId, Arrival, Departure, 5));
         }
 
         [Fact]
         public async Task GetByIdAsync_IncompleteStay_ThrowsArgumentException()
         {
-            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(1, Arrival, null, 2));
-            _accommodationRepository.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(AccommodationId, Arrival, null, 2));
+            _accommodationRepository.Verify(r => r.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
         }
 
         [Fact]
         public async Task GetByIdAsync_NotFound_ThrowsKeyNotFoundException()
         {
-            _accommodationRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Accommodation?)null);
+            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId)).ReturnsAsync((Accommodation?)null);
 
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.GetByIdAsync(1, Arrival, Departure, 2));
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.GetByIdAsync(AccommodationId, Arrival, Departure, 2));
         }
 
         [Fact]

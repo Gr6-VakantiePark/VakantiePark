@@ -39,6 +39,7 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                 string slug = type.Value.GetProperty("slug").GetString()!;
                 var created = new AccommodationType
                 {
+                    Id = SeedIds.AccommodationType(slug),
                     Name = type.Name,
                     Slug = slug,
                     Category = ParseCategory(type.Value.GetProperty("category").GetString()),
@@ -62,7 +63,7 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                 if (amenities.ContainsKey(code))
                     continue;
 
-                var created = new Amenity { Code = code, Name = name };
+                var created = new Amenity { Id = SeedIds.Amenity(code), Code = code, Name = name };
                 context.Add(created);
                 amenities[code] = created;
             }
@@ -87,9 +88,11 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                 if (!types.TryGetValue(typeName, out var type))
                     throw new InvalidOperationException($"Onbekend accommodatietype '{typeName}' in accommodations.json.");
 
+                string code = item.GetProperty("code").GetString()!;
                 var accommodation = new Accommodation
                 {
-                    Code = item.GetProperty("code").GetString()!,
+                    Id = SeedIds.Accommodation(code),
+                    Code = code,
                     Name = item.GetProperty("name").GetString()!,
                     MaxPersons = item.GetProperty("maxPersons").GetInt32(),
                     Zone = item.GetProperty("zone").GetString()!,
@@ -145,13 +148,15 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                     if (!File.Exists(path))
                         throw new InvalidOperationException($"Foto '{files[i]}' uit photos.json staat niet in Data/Seed/photos.");
 
+                    var photoId = SeedIds.Photo(slug, files[i]);
                     context.Add(new Photo
                     {
+                        Id = photoId,
                         FileName = files[i],
                         ContentType = GetContentType(path),
                         SortOrder = i,
                         AccommodationType = type,
-                        File = new PhotoFile { Data = File.ReadAllBytes(path) },
+                        File = new PhotoFile { PhotoId = photoId, Data = File.ReadAllBytes(path) },
                     });
                 }
             }

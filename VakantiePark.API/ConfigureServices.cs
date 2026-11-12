@@ -1,10 +1,13 @@
 ﻿using System.Security.Cryptography;
-using System.Text.Json;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using VakantiePark.Application.Common;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Infrastructure.Security;
@@ -14,8 +17,30 @@ namespace VakantiePark.API
 {
     public static class ConfigureServices
     {
+        public const int RequestsPerMinute = 50;
+
         public static IServiceCollection RegisterAPIServices(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(environment);
+
+            services.RegisterControllers();
+            services.RegisterSwagger();
+            services.RegisterCors(configuration);
+            services.RegisterAuthentication(configuration, environment);
+            services.RegisterRateLimiter();
+            services.RegisterExceptionHandler();
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterControllers(this IServiceCollection services)
+        {
+            services.AddHttpClient();
+            services.AddControllers()
+                .AddJsonOptions(options => JsonDefaults.Configure(options.JsonSerializerOptions));
+            services.AddEndpointsApiExplorer();
+
             services.PostConfigure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>
@@ -29,24 +54,73 @@ namespace VakantiePark.API
                 };
             });
 
-            services.RegisterAuthentication(configuration, environment);
+            return services;
+        }
+
+        private static IServiceCollection RegisterSwagger(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "VakantiePark API",
+                });
+
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Enter your JWT token"
+                });
+
+                options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+                });
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterCors(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddOptions<CorsSettings>()
+                .Bind(configuration.GetSection(CorsSettings.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+            services.AddCors();
+            services.AddOptions<CorsOptions>()
+                .Configure<IOptions<CorsSettings>>((options, settings) =>
+                    options.AddPolicy(CorsSettings.PolicyName, policy =>
+                        policy.WithOrigins(settings.Value.AllowedOrigins)
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()));
 
             return services;
         }
 
         private static IServiceCollection RegisterAuthentication(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
-            var settings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
-                ?? throw new InvalidOperationException("De JWT-instellingen ontbreken in appsettings.json.");
-
-            if (string.IsNullOrWhiteSpace(settings.Key) && environment.IsDevelopment())
-                settings.Key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-
-            services.AddSingleton(settings);
+            services.AddOptions<JwtSettings>()
+                .Bind(configuration.GetSection(JwtSettings.SectionName))
+                .PostConfigure(settings =>
+                {
+                    if (string.IsNullOrWhiteSpace(settings.Key) && environment.IsDevelopment())
+                        settings.Key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+                })
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+                .AddJwtBearer();
+
+            services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+                .Configure<IOptions<JwtSettings>>((options, jwtOptions) =>
                 {
+                    var settings = jwtOptions.Value;
+
                     options.MapInboundClaims = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -96,11 +170,43 @@ namespace VakantiePark.API
             return services;
         }
 
+        private static IServiceCollection RegisterRateLimiter(this IServiceCollection services)
+        {
+            services.AddRateLimiter(options =>
+            {
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                {
+                    string partition = context.User.TryGetUserId(out Guid userId)
+                        ? $"user:{userId}"
+                        : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(partition, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = RequestsPerMinute,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                    });
+                });
+
+                options.OnRejected = (context, _) =>
+                    new ValueTask(WriteFailureAsync(context.HttpContext.Response, StatusCodes.Status429TooManyRequests, ApiMessages.TooManyRequests));
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterExceptionHandler(this IServiceCollection services)
+        {
+            services.AddExceptionHandler<GlobalExceptionHandler>();
+            services.AddProblemDetails();
+
+            return services;
+        }
+
         private static Task WriteFailureAsync(HttpResponse response, int statusCode, string message)
         {
             response.StatusCode = statusCode;
-            response.ContentType = "application/json";
-            return response.WriteAsync(JsonSerializer.Serialize(ApiResponse<object>.Fail(message), JsonSerializerOptions.Web));
+            return response.WriteAsJsonAsync(ApiResponse<object>.Fail(message), JsonDefaults.Options);
         }
     }
 }

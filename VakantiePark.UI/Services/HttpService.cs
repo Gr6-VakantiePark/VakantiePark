@@ -8,7 +8,7 @@ namespace VakantiePark.UI.Services
 	public class HttpService : IHttpService
 	{
 		private readonly HttpClient _httpClient;
-		private const string Error = "An error occurred while processing the request.";
+		private const string Error = "Er ging iets mis bij het verwerken van je verzoek. Probeer het opnieuw.";
 
 		public HttpService(HttpClient httpClient)
 		{
@@ -32,7 +32,7 @@ namespace VakantiePark.UI.Services
 		{
 			try
 			{
-				var response = await _httpClient.PostAsJsonAsync(url, request);
+				var response = await _httpClient.PostAsJsonAsync(url, request, JsonDefaults.Options);
 				return await ReadAnswer<TResponse>(response);
 			}
 			catch (Exception)
@@ -45,7 +45,7 @@ namespace VakantiePark.UI.Services
 		{
 			try
 			{
-				var response = await _httpClient.PutAsJsonAsync(url, request);
+				var response = await _httpClient.PutAsJsonAsync(url, request, JsonDefaults.Options);
 				return await ReadAnswer<TResponse>(response);
 			}
 			catch (Exception)
@@ -88,7 +88,7 @@ namespace VakantiePark.UI.Services
 		{
 			try
 			{
-				var result = await response.Content.ReadFromJsonAsync<ApiResponse<TResponse>>();
+				var result = await response.Content.ReadFromJsonAsync<ApiResponse<TResponse>>(JsonDefaults.Options);
 				if (result is not null)
 					return result;
 			}

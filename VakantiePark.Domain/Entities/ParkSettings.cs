@@ -2,7 +2,7 @@ namespace VakantiePark.Domain.Entities
 {
     public class ParkSettings
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public decimal CleaningFee { get; set; }
 

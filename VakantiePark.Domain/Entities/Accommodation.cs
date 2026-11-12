@@ -2,7 +2,7 @@ namespace VakantiePark.Domain.Entities
 {
     public class Accommodation
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Code { get; set; } = string.Empty;
 
@@ -28,7 +28,7 @@ namespace VakantiePark.Domain.Entities
 
         public string? WifiCoverage { get; set; }
 
-        public int AccommodationTypeId { get; set; }
+        public Guid AccommodationTypeId { get; set; }
         public AccommodationType AccommodationType { get; set; } = null!;
 
         public ICollection<Amenity> Amenities { get; set; } = new List<Amenity>();

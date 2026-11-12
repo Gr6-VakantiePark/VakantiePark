@@ -14,7 +14,7 @@ public static class BookingQuery
 
     private const string DateFormat = "yyyy-MM-dd";
 
-    public static string For(int accommodationId, AccommodationSearchCriteria criteria) =>
+    public static string For(Guid accommodationId, AccommodationSearchCriteria criteria) =>
         $"{Page}?{Accommodation}={accommodationId}" +
         $"&{Arrival}={criteria.Arrival.ToString(DateFormat, CultureInfo.InvariantCulture)}" +
         $"&{Departure}={criteria.Departure.ToString(DateFormat, CultureInfo.InvariantCulture)}" +
@@ -33,7 +33,7 @@ public static class BookingQuery
     {
         request = null;
 
-        if (!TryParseCount(accommodation, out var accommodationId) || accommodationId < 1)
+        if (!Guid.TryParse(accommodation, out var accommodationId) || accommodationId == Guid.Empty)
         {
             error = "Kies eerst een verblijf.";
             return false;

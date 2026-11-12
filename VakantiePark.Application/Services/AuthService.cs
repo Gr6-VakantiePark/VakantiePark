@@ -13,8 +13,7 @@ namespace VakantiePark.Application.Services
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrEmpty(request.Password))
-                throw new ArgumentException("Vul je e-mailadres en wachtwoord in.");
+            request.Validate();
 
             var employee = await repository.GetByEmailAsync(EmployeeMappings.NormalizeEmail(request.Email));
 

@@ -1,4 +1,5 @@
 @page "/beheer/inloggen"
+@using VakantiePark.Shared.Common
 @using VakantiePark.Shared.DTOs.Auth
 @using VakantiePark.UI.Interfaces
 @using VakantiePark.UI.Models
@@ -20,12 +21,12 @@
             <DataAnnotationsValidator />
             <div class="field">
                 <label for="email">E-mailadres</label>
-                <InputText id="email" type="email" @bind-Value="_form.Email" autocomplete="username" />
+                <InputText id="email" type="email" @bind-Value="_form.Email" autocomplete="username" maxlength="@FieldLimits.EmailMaxLength" />
                 <ValidationMessage For="() => _form.Email" />
             </div>
             <div class="field">
                 <label for="password">Wachtwoord</label>
-                <InputText id="password" type="password" @bind-Value="_form.Password" autocomplete="current-password" />
+                <InputText id="password" type="password" @bind-Value="_form.Password" autocomplete="current-password" maxlength="@FieldLimits.PasswordMaxLength" />
                 <ValidationMessage For="() => _form.Password" />
             </div>
 

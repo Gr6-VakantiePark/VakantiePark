@@ -29,6 +29,15 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 3. The summary step shows the stay, the party, the guest and the price breakdown, with “Gegevens aanpassen” and “Boeking bevestigen”.
 4. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; saving it in the API comes with US11.
 
+## API conventions
+
+- Every endpoint returns `ApiResponse<T>`. Services throw `ArgumentException` (400), `KeyNotFoundException` (404) or `UnauthorizedAccessException` (401); controllers wrap the call with `RunAsync`.
+- Each request DTO has a `Validate()` extension in `Application/Extensions` (`AuthValidation`, `AccommodationValidation`, `PriceValidation`) that the service calls first. Lengths and limits come from `Shared/Common/FieldLimits.cs`, which the UI also uses for `maxlength`.
+- Unexpected errors are logged by `GlobalExceptionHandler` and return a generic 500 message.
+- Rate limiting: 50 requests per minute per logged-in employee, otherwise per IP address. Photos are excluded. Over the limit the API returns 429 with an `ApiResponse`.
+- JSON (API and UI) uses `JsonDefaults.Options`: camelCase, enums as text, `null` values left out and `DateTime` always as UTC (`yyyy-MM-ddTHH:mm:ss.fffZ`).
+- Settings use the options pattern and are checked at startup: `JWT` (`JwtSettings`), `Cors` (`CorsSettings`) and `DataSource`/`DataFolder` (`DatabaseSettings`). A missing or invalid value stops the API with a clear message.
+
 ## Database
 
 The API applies all migrations in `Data/Migrations` and runs the seeders at startup. For a later model change:
@@ -36,6 +45,10 @@ The API applies all migrations in `Data/Migrations` and runs the seeders at star
 ```
 dotnet ef migrations add <Name> --project VakantiePark.Infrastructure --startup-project VakantiePark.API --output-dir Data/Migrations
 ```
+
+All ids are `Guid`s. Seeded rows get fixed ids from `SeedIds` (derived from the code, slug or email), so an accommodation has the same id on every machine and after a reseed.
+
+The `GuidIds` migration switched the old `int` ids to `Guid`. It drops and recreates the tables, after which the seeders fill them again; employees that were added by hand are gone after this migration.
 
 ## Tests
 
@@ -50,3 +63,7 @@ De sleutel waarmee de API inlogtokens ondertekent staat niet in de repo.
 - **Development:** zonder ingestelde sleutel maakt de API bij elke start een willekeurige sleutel aan. Na een herstart moet je opnieuw inloggen. Wil je dat niet, zet dan een vaste sleutel in user-secrets:
   `dotnet user-secrets set "JWT:Key" "<minimaal 32 willekeurige tekens>" --project VakantiePark.API`
 - **Andere omgevingen:** zet de sleutel in de omgevingsvariabele `JWT__Key`. Zonder sleutel start de API niet.
+
+## Discord notifications
+
+`.github/workflows/discord-pr.yml` posts a message to Discord when a pull request is opened (not as draft), reopened, marked ready for review, merged or closed. The message shows the status, branches, changes, linked issues (`Resolves #…`), reviewers, labels and who merged it. Set the webhook URL as the repository secret `DISCORD_WEBHOOK`; without it the workflow skips the message.

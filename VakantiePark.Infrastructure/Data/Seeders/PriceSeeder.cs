@@ -27,6 +27,7 @@ namespace VakantiePark.Infrastructure.Data.Seeders
             {
                 context.Add(new ParkSettings
                 {
+                    Id = SeedIds.ParkSettings,
                     CleaningFee = 75m,
                     TouristTaxPerPersonPerNight = 2.50m,
                     ArrivalTime = new TimeOnly(15, 0),

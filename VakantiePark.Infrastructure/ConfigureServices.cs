@@ -3,6 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Infrastructure.Data;
 using VakantiePark.Infrastructure.Repositories;
@@ -14,6 +15,8 @@ namespace VakantiePark.Infrastructure
     {
         public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services, IConfiguration configuration, string root)
         {
+            ArgumentNullException.ThrowIfNull(configuration);
+
             services.RegisterDatabaseServices(configuration, root);
             services.AddScoped<IAccommodationRepository, AccommodationRepository>();
             services.AddScoped<IPhotoRepository, PhotoRepository>();
@@ -28,19 +31,19 @@ namespace VakantiePark.Infrastructure
 
         public static IServiceCollection RegisterDatabaseServices(this IServiceCollection services, IConfiguration configuration, string root)
         {
-            string? configuredFolder = configuration["DataFolder"];
-            string folder = string.IsNullOrWhiteSpace(configuredFolder)
-                ? Path.GetFullPath(Path.Combine(root, "..", "VakantiePark.Infrastructure", "Data"))
-                : Path.GetFullPath(configuredFolder);
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentException.ThrowIfNullOrWhiteSpace(root);
 
-            if (!Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
+            services.AddOptions<DatabaseSettings>()
+                .Bind(configuration)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
-            string dataSource = configuration["DataSource"] ?? "app.db";
-            string connectionString = $"Data Source={Path.Combine(folder, dataSource)}";
-
-            services.AddDbContext<ApplicationDBContext>(options =>
-                options.UseSqlite(connectionString));
+            services.AddDbContext<ApplicationDBContext>((provider, options) =>
+            {
+                var settings = provider.GetRequiredService<IOptions<DatabaseSettings>>().Value;
+                options.UseSqlite(settings.CreateConnectionString(root));
+            });
 
             return services;
         }

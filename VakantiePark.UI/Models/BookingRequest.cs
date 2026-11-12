@@ -1,7 +1,7 @@
 namespace VakantiePark.UI.Models;
 
 public sealed record BookingRequest(
-    int AccommodationId,
+    Guid AccommodationId,
     DateOnly ArrivalDate,
     DateOnly DepartureDate,
     int Persons,

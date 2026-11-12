@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.ComponentModel.Design;
 using VakantiePark.Shared.Common;
-using VakantiePark.UI;
 using VakantiePark.UI.Authentication;
 using VakantiePark.UI.Interfaces;
 using VakantiePark.UI.Services;
 
-namespace StockFlow.ManagementApp
+namespace VakantiePark.UI
 {
     public class Program
     {
