@@ -9,5 +9,9 @@ namespace VakantiePark.Application.Interfaces
         Task<EmployeeDto> GetByIdAsync(Guid id);
 
         Task<EmployeeDto> CreateAsync(CreateEmployeeDto request);
+
+        Task<EmployeeDto> UpdateAsync(Guid id, UpdateEmployeeDto request);
+
+        Task<EmployeeDto> SetActiveAsync(Guid id, SetEmployeeActiveDto request, Guid currentEmployeeId);
     }
 }

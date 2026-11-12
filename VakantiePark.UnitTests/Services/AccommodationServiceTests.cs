@@ -1,6 +1,7 @@
 using Moq;
 using VakantiePark.Application.Services;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Enums;
 using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Accommodations;
 
@@ -23,6 +24,9 @@ namespace VakantiePark.UnitTests.Services
             {
                 CleaningFee = 75m,
                 TouristTaxPerPersonPerNight = 2.50m,
+                TouristTaxMinimumAge = 3,
+                WeekendSurchargePercentage = 10m,
+                PetFeePerNight = 10m,
                 ArrivalTime = new TimeOnly(15, 0),
                 DepartureTime = new TimeOnly(10, 0),
                 MinimumNightsHighSeason = 7,
@@ -36,7 +40,7 @@ namespace VakantiePark.UnitTests.Services
             Name = "Berk 4 nr. 1",
             MaxPersons = 4,
             MaxPets = 2,
-            AccommodationType = new AccommodationType { Name = "Berk 4", Slug = "berk-4", PricePerNight = pricePerNight },
+            AccommodationType = new AccommodationType { Name = "Berk 4", Slug = "berk-4", Category = AccommodationCategory.HolidayHome, PricePerNight = pricePerNight },
         };
 
         [Fact]
@@ -48,6 +52,27 @@ namespace VakantiePark.UnitTests.Services
 
             Assert.NotNull(dto.Price);
             Assert.Equal(390m, dto.Price.Total);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_WithPetsAndYoungChildren_ReturnsPriceWithRules()
+        {
+            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId)).ReturnsAsync(CreateAccommodation());
+
+            var dto = await _sut.GetByIdAsync(AccommodationId, Arrival, Departure, 3, 1, 1);
+
+            Assert.NotNull(dto.Price);
+            Assert.Equal(30m, dto.Price.PetFee);
+            Assert.Equal(15m, dto.Price.TouristTax);
+            Assert.Equal(420m, dto.Price.Total);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_TooManyPets_ThrowsArgumentException()
+        {
+            _accommodationRepository.Setup(r => r.GetByIdAsync(AccommodationId)).ReturnsAsync(CreateAccommodation());
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(AccommodationId, Arrival, Departure, 2, 0, 3));
         }
 
         [Fact]

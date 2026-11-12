@@ -16,11 +16,12 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 
 ## Prices (US08)
 
-- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
-- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and gives every type with price 0 a **temporary example price** per night. Replace these with the real amounts from the client.
-- `PriceCalculator` (Application) calculates: nights × price per night + cleaning fee + tourist tax (all persons × nights × tax).
-- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}`. Without those three query values the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
-- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
+- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, tourist tax minimum age, weekend surcharge percentage, pet fee per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
+- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50 from 3 years, weekend surcharge 10%, € 10 per pet per night, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and sets the prices per night agreed with the client (Berk 4 € 100, Berk 6 € 125, Beuk 8 € 175, Bosvilla 10 € 250, Eik 6 € 175, Eik 6 luxe € 200, Wilg € 100). Existing databases still on the old example prices are updated at start-up. Camping pitches keep their example prices until the client confirms them.
+- `PriceCalculator` (Application) calculates: nights × price per night + weekend surcharge (percentage of the price per night for every Friday and Saturday night) + pets × nights × pet fee + cleaning fee (holiday homes only) + tourist tax ((persons − young children) × nights × tax).
+- `persons` is the total group including young children, so young children count towards the maximum number of persons. `youngChildren` is the number of those under the tourist tax minimum age; at least one person must be older.
+- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}&youngChildren={n}&pets={n}`. Without arrival, departure and persons the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
+- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=&youngChildren=&pets=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
 
 ## Booking (US09)
 
@@ -28,6 +29,12 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 2. `/boeken` checks the query, loads the accommodation with its price from the API, checks persons and pets against that accommodation and asks for the guest’s name, email, phone and address.
 3. The summary step shows the stay, the party, the guest and the price breakdown, with “Gegevens aanpassen” and “Boeking bevestigen”.
 4. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; saving it in the API comes with US11.
+
+## Employees (US41)
+
+- `/beheer/medewerkers` lists all employees. **Bewerken** opens a form to change the first name, last name and email, and to switch the employee off (**Uitschakelen**, after a confirmation) or back on (**Inschakelen**).
+- `PUT /admin/employees/{id}` changes name and email (the email must stay unique). `PUT /admin/employees/{id}/active` with `{ "isActive": false }` switches an employee off. Both need the `ManageEmployees` permission.
+- A switched-off employee can't log in, and tokens they already have stop working on the next request. Nobody can switch off their own account.
 
 ## API conventions
 
@@ -79,5 +86,5 @@ GitHub Actions post to the G6 Vakantiepark Discord server. Each workflow uses it
 
 Scheduled and `workflow_run` workflows only run from the default branch (`master`).
 
-The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line; it is set to `2026-12-11`. The optional `BURNDOWN_START_DATE` changes where the chart starts (default: the first issue).
+The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line, which runs from the current total scope at the start date to 0 on that day; it is set to `2026-12-11`. `BURNDOWN_START_DATE` is the first day of the chart and is set to `2026-11-11`; without it the chart starts at the first issue.
 

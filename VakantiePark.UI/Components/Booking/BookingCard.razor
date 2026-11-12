@@ -39,6 +39,11 @@
             <ValidationMessage For="() => _choice.Persons" />
         </div>
         <div class="field">
+            <label for="book-young-children">Waarvan onder @_touristTaxMinimumAge jaar</label>
+            <InputNumber id="book-young-children" @bind-Value="_choice.YoungChildren" min="0" />
+            <ValidationMessage For="() => _choice.YoungChildren" />
+        </div>
+        <div class="field">
             <label for="book-pets">Huisdieren</label>
             <InputNumber id="book-pets" @bind-Value="_choice.Pets" min="0" />
             <ValidationMessage For="() => _choice.Pets" />
@@ -57,11 +62,21 @@
     private readonly StayChoice _choice = new();
     private string? _message;
     private bool _busy;
+    private int _touristTaxMinimumAge = SearchOptionsDto.DefaultTouristTaxMinimumAge;
 
     [Parameter, EditorRequired]
     public AccommodationType Type { get; set; } = default!;
 
     private bool IsHolidayHome => Type.Category == AccommodationCategory.HolidayHome;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await SearchService.GetSearchOptionsAsync();
+        if (response.Succeeded && response.Value is not null)
+        {
+            _touristTaxMinimumAge = response.Value.TouristTaxMinimumAge;
+        }
+    }
 
     private async Task BookAsync()
     {
@@ -82,11 +97,18 @@
             return;
         }
 
+        if (_choice.YoungChildren >= _choice.Persons)
+        {
+            _message = $"Er moet minimaal 1 persoon van {_touristTaxMinimumAge} jaar of ouder meegaan.";
+            return;
+        }
+
         var criteria = new AccommodationSearchCriteria
         {
             Arrival = arrival,
             Departure = departure,
             Persons = _choice.Persons,
+            YoungChildren = _choice.YoungChildren,
             Pets = _choice.Pets,
             Type = Type.Slug,
             PageSize = 1,

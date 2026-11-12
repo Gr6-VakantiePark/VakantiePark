@@ -143,6 +143,7 @@
     [SupplyParameterFromQuery(Name = "aankomst")] public string? ArrivalValue { get; set; }
     [SupplyParameterFromQuery(Name = "vertrek")] public string? DepartureValue { get; set; }
     [SupplyParameterFromQuery(Name = "personen")] public int? PersonsValue { get; set; }
+    [SupplyParameterFromQuery(Name = "kleine-kinderen")] public int? YoungChildrenValue { get; set; }
     [SupplyParameterFromQuery(Name = "soort")] public string? CategoryValue { get; set; }
     [SupplyParameterFromQuery(Name = "type")] public string? TypeSlug { get; set; }
     [SupplyParameterFromQuery(Name = "huisdieren")] public int? PetsValue { get; set; }
@@ -194,31 +195,55 @@
         var criteria = new AccommodationSearchCriteria();
 
         if (!DateOnly.TryParseExact(ArrivalValue, "yyyy-MM-dd", out var arrival))
+        {
             _errors.Add("Kies een geldige aankomstdatum.");
+        }
         else if (arrival < DateOnly.FromDateTime(DateTime.Today))
+        {
             _errors.Add("De aankomstdatum mag niet in het verleden liggen.");
+        }
         criteria.Arrival = arrival;
 
         if (!DateOnly.TryParseExact(DepartureValue, "yyyy-MM-dd", out var departure))
+        {
             _errors.Add("Kies een geldige vertrekdatum.");
+        }
         criteria.Departure = departure;
 
         if (arrival != default && departure != default && departure <= arrival)
+        {
             _errors.Add("De vertrekdatum moet na de aankomstdatum liggen.");
+        }
 
         if (PersonsValue is null or < 1)
+        {
             _errors.Add("Kies minimaal 1 persoon.");
+        }
         criteria.Persons = PersonsValue ?? 0;
 
+        if (YoungChildrenValue is < 0)
+        {
+            _errors.Add("Het aantal kinderen kan niet negatief zijn.");
+        }
+        else if (YoungChildrenValue >= criteria.Persons && criteria.Persons > 0)
+        {
+            _errors.Add("Er moet minimaal 1 persoon meegaan die geen klein kind is.");
+        }
+        criteria.YoungChildren = YoungChildrenValue ?? 0;
+
         if (PetsValue is < 0)
+        {
             _errors.Add("Het aantal huisdieren kan niet negatief zijn.");
+        }
         criteria.Pets = PetsValue ?? 0;
 
         if (!string.IsNullOrWhiteSpace(CategoryValue))
         {
             criteria.Category = SearchUrl.CategoryFromSlug(CategoryValue);
             if (criteria.Category is null)
+            {
                 _errors.Add($"Onbekende soort verblijf ‘{CategoryValue}’.");
+            }
         }
 
         criteria.Type = string.IsNullOrWhiteSpace(TypeSlug) ? null : TypeSlug;
@@ -227,21 +252,31 @@
         if (OrderByValue is not null)
         {
             if (SearchUrl.OrderByFromSlug(OrderByValue) is { } orderBy)
+            {
                 criteria.OrderBy = orderBy;
+            }
             else
+            {
                 _errors.Add($"Op ‘{OrderByValue}’ kan niet gesorteerd worden.");
+            }
         }
 
         if (OrderTypeValue is not null)
         {
             if (SearchUrl.OrderTypeFromSlug(OrderTypeValue) is { } orderType)
+            {
                 criteria.OrderType = orderType;
+            }
             else
+            {
                 _errors.Add($"Onbekende sorteervolgorde ‘{OrderTypeValue}’.");
+            }
         }
 
         if (PageValue is < 1)
+        {
             _errors.Add("Het paginanummer moet minimaal 1 zijn.");
+        }
         criteria.PageNumber = PageValue ?? 1;
 
         return criteria;

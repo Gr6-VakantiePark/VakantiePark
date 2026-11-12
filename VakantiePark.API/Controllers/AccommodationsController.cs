@@ -41,8 +41,8 @@ namespace VakantiePark.API.Controllers
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<ApiResponse<AccommodationDetailDto>>(StatusCodes.Status404NotFound)]
-        public Task<IActionResult> GetById(Guid id, [FromQuery] DateOnly? arrival, [FromQuery] DateOnly? departure, [FromQuery] int? persons) =>
-            this.RunAsync(() => service.GetByIdAsync(id, arrival, departure, persons));
+        public Task<IActionResult> GetById(Guid id, [FromQuery] DateOnly? arrival, [FromQuery] DateOnly? departure, [FromQuery] int? persons, [FromQuery] int youngChildren = 0, [FromQuery] int pets = 0) =>
+            this.RunAsync(() => service.GetByIdAsync(id, arrival, departure, persons, youngChildren, pets));
 
         [HttpGet("availability")]
         [ProducesResponseType<ApiResponse<bool>>(StatusCodes.Status200OK)]

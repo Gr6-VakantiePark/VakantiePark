@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Application.Services;
+using VakantiePark.Application.Services.Prices;
 
 namespace VakantiePark.Application
 {

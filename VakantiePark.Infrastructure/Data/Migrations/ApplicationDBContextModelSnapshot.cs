@@ -262,8 +262,19 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Property<int>("MinimumNightsHighSeason")
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("PetFeePerNight")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TouristTaxMinimumAge")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("TouristTaxPerPersonPerNight")
                         .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("WeekendSurchargePercentage")
+                        .HasPrecision(5, 2)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

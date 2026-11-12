@@ -27,6 +27,18 @@ namespace VakantiePark.Shared.DTOs.Auth
         public List<string> PermissionNames { get; set; } = new();
     }
 
+    public class UpdateEmployeeDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+    }
+
+    public class SetEmployeeActiveDto
+    {
+        public bool IsActive { get; set; }
+    }
+
     public class CreateEmployeeDto
     {
         public string Email { get; set; } = string.Empty;
