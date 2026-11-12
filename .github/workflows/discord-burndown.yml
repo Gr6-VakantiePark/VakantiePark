@@ -1,0 +1,107 @@
+name: Discord Burndown Chart
+
+on:
+  schedule:
+    - cron: "30 6 * * 1-5"
+    - cron: "30 7 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  burndown:
+    name: Send Burndown Chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check time
+        id: time
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          RUN=true
+          if [ "$EVENT" = "schedule" ]; then
+            OFFSET=$(TZ=Europe/Amsterdam date +%z)
+            if { [ "$OFFSET" = "+0100" ] && [ "$SCHEDULE" != "30 7 * * 1-5" ]; } || \
+               { [ "$OFFSET" = "+0200" ] && [ "$SCHEDULE" != "30 6 * * 1-5" ]; }; then
+              echo "Not 08:30 in Amsterdam for this schedule, skipping."
+              RUN=false
+            fi
+          fi
+          echo "run=$RUN" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout scripts
+        if: steps.time.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Setup Python
+        if: steps.time.outputs.run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Draw burndown chart
+        if: steps.time.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BURNDOWN_START_DATE: ${{ vars.BURNDOWN_START_DATE }}
+          BURNDOWN_END_DATE: ${{ vars.BURNDOWN_END_DATE }}
+        run: |
+          pip install --quiet matplotlib
+          python .github/scripts/burndown.py "$RUNNER_TEMP"
+
+      - name: Post to Discord
+        if: steps.time.outputs.run == 'true'
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_BUG_REPORT }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::warning::DISCORD_WEBHOOK_BUG_REPORT secret is not set, skipping burndown."
+            exit 0
+          fi
+
+          jq -n \
+            --slurpfile summary "$RUNNER_TEMP/burndown.json" \
+            --arg repo "$REPOSITORY" \
+            --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '
+            ($summary[0]) as $s
+            | def h: (. * 10 | round / 10 | tostring) + " h";
+            {
+              username: "GitHub",
+              embeds: [{
+                title: "📉 Burndown — all issues",
+                url: "https://github.com/\($repo)/issues",
+                color: (if $s.ideal == null or $s.remaining <= $s.ideal then 5763719 else 15105570 end),
+                image: { url: "attachment://burndown.png" },
+                fields: (
+                  [
+                    { name: "Remaining", value: ($s.remaining | h), inline: true },
+                    { name: "Done", value: (($s.done | h) + " of " + ($s.scope | h)), inline: true },
+                    { name: "Since yesterday", value: ((if $s.change > 0 then "+" else "" end) + ($s.change | h)), inline: true },
+                    { name: "Open issues", value: ($s.open_items | tostring), inline: true }
+                  ]
+                  + (if $s.ideal != null then [
+                      { name: "Ideal today", value: ($s.ideal | h), inline: true },
+                      { name: "Deadline", value: ($s.end + " (" + ($s.days_left | tostring) + " days)"), inline: true }
+                    ] else [] end)
+                  + (if $s.unestimated > 0 then [{ name: "Without hours", value: ($s.unestimated | tostring), inline: true }] else [] end)
+                ),
+                footer: { text: $repo },
+                timestamp: $now
+              }]
+            }
+            ' > "$RUNNER_TEMP/payload.json"
+
+          curl --silent --show-error --fail-with-body \
+            --retry 3 --retry-delay 2 --retry-all-errors \
+            -F "payload_json=<$RUNNER_TEMP/payload.json" \
+            -F "files[0]=@$RUNNER_TEMP/burndown.png;type=image/png;filename=burndown.png" \
+            "$WEBHOOK"
