@@ -1,0 +1,117 @@
+@using System.Globalization
+@using VakantiePark.Shared.DTOs.Accommodations
+@using VakantiePark.UI.Interfaces
+@using VakantiePark.UI.Models
+@inject ISearchService SearchService
+@inject NavigationManager Navigation
+@namespace VakantiePark.UI.Components
+
+<aside class="sidebar-card" aria-labelledby="heading-booking">
+    <h2 id="heading-booking">@Type.Name</h2>
+    <dl>
+        <div><dt>Soort</dt><dd>@(IsHolidayHome ? "Vakantiehuis" : "Kampeerplaats")</dd></div>
+        <div><dt>Personen</dt><dd>@Type.Persons</dd></div>
+        <div><dt>@(IsHolidayHome ? "Aantal huizen" : "Aantal plaatsen")</dt><dd>@Type.UnitCount</dd></div>
+    </dl>
+    <h3>Te vinden in</h3>
+    <dl>
+        @foreach (var zone in Type.Zones.OrderByDescending(zone => zone.UnitCount))
+        {
+            <div @key="zone.Zone"><dt>@zone.Zone</dt><dd>@zone.UnitCount</dd></div>
+        }
+    </dl>
+    <h3 id="heading-book">Boeken</h3>
+    <EditForm class="form booking-card__form" Model="_choice" OnValidSubmit="BookAsync" FormName="book-type">
+        <DataAnnotationsValidator />
+        <div class="field">
+            <label for="book-arrival">Aankomst</label>
+            <InputDate id="book-arrival" @bind-Value="_choice.Arrival" min="@ToIso(_today)" />
+            <ValidationMessage For="() => _choice.Arrival" />
+        </div>
+        <div class="field">
+            <label for="book-departure">Vertrek</label>
+            <InputDate id="book-departure" @bind-Value="_choice.Departure" min="@ToIso((_choice.Arrival ?? _today).AddDays(1))" />
+            <ValidationMessage For="() => _choice.Departure" />
+        </div>
+        <div class="field">
+            <label for="book-persons">Personen</label>
+            <InputNumber id="book-persons" @bind-Value="_choice.Persons" min="1" />
+            <ValidationMessage For="() => _choice.Persons" />
+        </div>
+        <div class="field">
+            <label for="book-pets">Huisdieren</label>
+            <InputNumber id="book-pets" @bind-Value="_choice.Pets" min="0" />
+            <ValidationMessage For="() => _choice.Pets" />
+        </div>
+        @if (_message is not null)
+        {
+            <p class="validation-message" role="alert">@_message</p>
+        }
+        <button class="button" type="submit" disabled="@_busy">@(_busy ? "Bezig…" : "Boeken")</button>
+    </EditForm>
+    <p class="sidebar-card__note">Je ziet de prijs en vult je gegevens in voordat je bevestigt.</p>
+</aside>
+
+@code {
+    private readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private readonly StayChoice _choice = new();
+    private string? _message;
+    private bool _busy;
+
+    [Parameter, EditorRequired]
+    public AccommodationType Type { get; set; } = default!;
+
+    private bool IsHolidayHome => Type.Category == AccommodationCategory.HolidayHome;
+
+    private async Task BookAsync()
+    {
+        _message = null;
+
+        if (_choice.Arrival is not { } arrival || _choice.Departure is not { } departure)
+            return;
+
+        if (arrival < _today)
+        {
+            _message = "Je aankomstdatum ligt in het verleden.";
+            return;
+        }
+
+        if (departure <= arrival)
+        {
+            _message = "Je vertrekdatum moet na je aankomstdatum liggen.";
+            return;
+        }
+
+        var criteria = new AccommodationSearchCriteria
+        {
+            Arrival = arrival,
+            Departure = departure,
+            Persons = _choice.Persons,
+            Pets = _choice.Pets,
+            Type = Type.Slug,
+            PageSize = 1,
+        };
+
+        _busy = true;
+        var response = await SearchService.SearchAsync(criteria);
+        _busy = false;
+
+        if (!response.Succeeded || response.Value is null)
+        {
+            _message = string.IsNullOrWhiteSpace(response.Message) ? "Er ging iets mis. Probeer het opnieuw." : response.Message;
+            return;
+        }
+
+        if (response.Value.Items.FirstOrDefault() is not { } accommodation)
+        {
+            _message = $"Er is geen {Type.Name} vrij voor {_choice.Persons} {(_choice.Persons == 1 ? "persoon" : "personen")}"
+                + (_choice.Pets > 0 ? $" met {_choice.Pets} {(_choice.Pets == 1 ? "huisdier" : "huisdieren")}" : string.Empty)
+                + " in deze periode.";
+            return;
+        }
+
+        Navigation.NavigateTo(BookingQuery.For(accommodation.Id, criteria));
+    }
+
+    private static string ToIso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
