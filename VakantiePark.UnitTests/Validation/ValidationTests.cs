@@ -4,7 +4,6 @@ using VakantiePark.Shared.Common;
 using VakantiePark.Shared.Common.Pagination;
 using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.Shared.DTOs.Auth;
-using VakantiePark.Shared.DTOs.Prices;
 
 namespace VakantiePark.UnitTests.Validation
 {
@@ -183,20 +182,6 @@ namespace VakantiePark.UnitTests.Validation
             Assert.Throws<ArgumentException>(() => criteria.Validate());
         }
 
-        [Fact]
-        public void Validate_PriceRequestTypeTooLong_ThrowsArgumentException()
-        {
-            var request = new PriceRequestDto
-            {
-                Type = new string('a', FieldLimits.SlugMaxLength + 1),
-                Arrival = Arrival,
-                Departure = Departure,
-                Persons = 2,
-            };
-
-            Assert.Throws<ArgumentException>(() => request.Validate());
-        }
-
         [Theory]
         [InlineData(-1)]
         [InlineData(2)]
@@ -219,19 +204,12 @@ namespace VakantiePark.UnitTests.Validation
             Assert.Null(exception);
         }
 
-        [Fact]
-        public void Validate_PriceRequestTooManyPets_ThrowsArgumentException()
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(FieldLimits.MaxPets + 1)]
+        public void ValidateStay_InvalidPets_ThrowsArgumentException(int pets)
         {
-            var request = new PriceRequestDto
-            {
-                Type = "berk-4",
-                Arrival = Arrival,
-                Departure = Departure,
-                Persons = 2,
-                Pets = FieldLimits.MaxPets + 1,
-            };
-
-            Assert.Throws<ArgumentException>(() => request.Validate());
+            Assert.Throws<ArgumentException>(() => AccommodationValidation.ValidateStay(Arrival, Departure, 2, 0, pets));
         }
 
         [Fact]

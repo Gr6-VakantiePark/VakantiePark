@@ -114,7 +114,6 @@ namespace VakantiePark.UnitTests.Calculators
 
             Assert.Equal(4, price.Persons);
             Assert.Equal(2, price.YoungChildren);
-            Assert.Equal(2, price.TaxedPersons);
             Assert.Equal(15m, price.TouristTax);
         }
 
@@ -123,7 +122,6 @@ namespace VakantiePark.UnitTests.Calculators
         {
             var price = PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(3), 4, 0, 0, CreateSettings());
 
-            Assert.Equal(4, price.TaxedPersons);
             Assert.Equal(30m, price.TouristTax);
         }
 
@@ -132,7 +130,6 @@ namespace VakantiePark.UnitTests.Calculators
         {
             var price = PriceCalculator.Calculate(CreatePitch(), Monday, Monday.AddDays(2), 2, 0, 0, CreateSettings());
 
-            Assert.False(price.IncludesCleaningFee);
             Assert.Equal(0m, price.CleaningFee);
             Assert.Equal(60m, price.Total);
         }
@@ -142,7 +139,6 @@ namespace VakantiePark.UnitTests.Calculators
         {
             var price = PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(2), 2, 0, 0, CreateSettings());
 
-            Assert.True(price.IncludesCleaningFee);
             Assert.Equal(75m, price.CleaningFee);
         }
 
@@ -157,38 +153,6 @@ namespace VakantiePark.UnitTests.Calculators
             Assert.Equal(75m, price.CleaningFee);
             Assert.Equal(30m, price.TouristTax);
             Assert.Equal(695m, price.Total);
-        }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-1)]
-        public void Calculate_NoNights_ThrowsArgumentException(int nights)
-        {
-            Assert.Throws<ArgumentException>(() => PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(nights), 2, 0, 0, CreateSettings()));
-        }
-
-        [Fact]
-        public void Calculate_NoPersons_ThrowsArgumentException()
-        {
-            Assert.Throws<ArgumentException>(() => PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(2), 0, 0, 0, CreateSettings()));
-        }
-
-        [Fact]
-        public void Calculate_OnlyYoungChildren_ThrowsArgumentException()
-        {
-            Assert.Throws<ArgumentException>(() => PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(2), 2, 2, 0, CreateSettings()));
-        }
-
-        [Fact]
-        public void Calculate_NegativeYoungChildren_ThrowsArgumentException()
-        {
-            Assert.Throws<ArgumentException>(() => PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(2), 2, -1, 0, CreateSettings()));
-        }
-
-        [Fact]
-        public void Calculate_NegativePets_ThrowsArgumentException()
-        {
-            Assert.Throws<ArgumentException>(() => PriceCalculator.Calculate(CreateHouse(), Monday, Monday.AddDays(2), 2, 0, -1, CreateSettings()));
         }
 
         [Fact]

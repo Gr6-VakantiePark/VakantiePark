@@ -21,7 +21,6 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 - `PriceCalculator` (Application) calculates: nights × price per night + weekend surcharge (percentage of the price per night for every Friday and Saturday night) + pets × nights × pet fee + cleaning fee (holiday homes only) + tourist tax ((persons − young children) × nights × tax).
 - `persons` is the total group including young children, so young children count towards the maximum number of persons. `youngChildren` is the number of those under the tourist tax minimum age; at least one person must be older.
 - The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}&youngChildren={n}&pets={n}`. Without arrival, departure and persons the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
-- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=&youngChildren=&pets=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
 
 ## Booking (US09)
 
@@ -39,7 +38,7 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 ## API conventions
 
 - Every endpoint returns `ApiResponse<T>`. Services throw `ArgumentException` (400), `KeyNotFoundException` (404) or `UnauthorizedAccessException` (401); controllers wrap the call with `RunAsync`.
-- Each request DTO has a `Validate()` extension in `Application/Extensions` (`AuthValidation`, `AccommodationValidation`, `PriceValidation`) that the service calls first. Lengths and limits come from `Shared/Common/FieldLimits.cs`, which the UI also uses for `maxlength`.
+- Each request DTO has a `Validate()` extension in `Application/Extensions` (`AuthValidation`, `AccommodationValidation`) that the service calls first. Lengths and limits come from `Shared/Common/FieldLimits.cs`, which the UI also uses for `maxlength`.
 - Unexpected errors are logged by `GlobalExceptionHandler` and return a generic 500 message.
 - Rate limiting: 50 requests per minute per logged-in employee, otherwise per IP address. Photos are excluded. Over the limit the API returns 429 with an `ApiResponse`.
 - JSON (API and UI) uses `JsonDefaults.Options`: camelCase, enums as text, `null` values left out and `DateTime` always as UTC (`yyyy-MM-ddTHH:mm:ss.fffZ`).
