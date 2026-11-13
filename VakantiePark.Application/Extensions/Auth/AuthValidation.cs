@@ -30,10 +30,23 @@ namespace VakantiePark.Application.Extensions
             if (request.Password.Length > FieldLimits.PasswordMaxLength)
                 throw new ArgumentException($"Het wachtwoord mag maximaal {FieldLimits.PasswordMaxLength} tekens hebben.");
 
-            if (request.Roles is null || request.Roles.Count == 0)
-                throw new ArgumentException("Kies minimaal één rol.");
-            if (request.Roles.Any(role => string.IsNullOrWhiteSpace(role) || role.Trim().Length > FieldLimits.RoleCodeMaxLength))
-                throw new ArgumentException("Een of meer rollen zijn ongeldig.");
+            ValidatePermissionCodes(request.Permissions);
+        }
+
+        public static void Validate(this UpdateEmployeePermissionsDto? request)
+        {
+            if (request is null)
+                throw new ArgumentException("De rechten van de medewerker ontbreken.");
+
+            ValidatePermissionCodes(request.Permissions);
+        }
+
+        private static void ValidatePermissionCodes(List<string>? codes)
+        {
+            if (codes is null)
+                throw new ArgumentException("De rechten van de medewerker ontbreken.");
+            if (codes.Any(code => string.IsNullOrWhiteSpace(code) || code.Trim().Length > FieldLimits.PermissionCodeMaxLength))
+                throw new ArgumentException("Een of meer rechten zijn ongeldig.");
         }
 
         public static void Validate(this UpdateEmployeeDto? request)

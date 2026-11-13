@@ -18,6 +18,8 @@ namespace VakantiePark.Domain.Interfaces
 
         Task<bool> EmailExistsAsync(string normalizedEmail, Guid excludedEmployeeId);
 
-        Task<List<Role>> GetRolesAsync(IEnumerable<string> codes);
+        Task<List<Permission>> GetPermissionsAsync(IEnumerable<string> codes);
+
+        Task<List<Permission>> GetAllPermissionsAsync();
     }
 }

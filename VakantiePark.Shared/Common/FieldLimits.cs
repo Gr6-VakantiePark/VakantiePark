@@ -7,7 +7,7 @@ namespace VakantiePark.Shared.Common
         public const int PasswordMaxLength = 128;
         public const int FirstNameMaxLength = 100;
         public const int LastNameMaxLength = 100;
-        public const int RoleCodeMaxLength = 50;
+        public const int PermissionCodeMaxLength = 100;
         public const int SlugMaxLength = 100;
         public const int AmenitiesMaxLength = 1000;
         public const int MaxPersons = 50;

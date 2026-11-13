@@ -21,6 +21,7 @@ namespace VakantiePark.UI
             {
                 foreach (string permission in Permissions.All)
                     options.AddPolicy(permission, policy => policy.RequireClaim(Permissions.ClaimType, permission));
+                options.AddPolicy(Permissions.Owner, policy => policy.RequireClaim(Permissions.OwnerClaimType, "true"));
             });
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<SessionStorageService>();

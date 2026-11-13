@@ -14,16 +14,15 @@ namespace VakantiePark.Domain.Entities
 
         public bool IsActive { get; set; } = true;
 
+        public bool IsOwner { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime? LastLoginAt { get; set; }
 
-        public ICollection<Role> Roles { get; set; } = new List<Role>();
-
-        public IEnumerable<Permission> Permissions =>
-            Roles.SelectMany(role => role.Permissions).DistinctBy(permission => permission.Code);
+        public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
 
         public bool HasPermission(string code) =>
-            IsActive && Permissions.Any(permission => permission.Code == code);
+            IsActive && (IsOwner || Permissions.Any(permission => permission.Code == code));
     }
 }

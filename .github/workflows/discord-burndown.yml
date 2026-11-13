@@ -90,7 +90,7 @@ jobs:
                   ]
                   + (if $s.ideal != null then [
                       { name: "Ideal today", value: ($s.ideal | h), inline: true },
-                      { name: "Deadline", value: ($s.end + " (" + ($s.days_left | tostring) + " days)"), inline: true }
+                      { name: "Deadline", value: ($s.end + " (" + ($s.days_left | tostring) + " workdays)"), inline: true }
                     ] else [] end)
                   + (if $s.unestimated > 0 then [{ name: "Without hours", value: ($s.unestimated | tostring), inline: true }] else [] end)
                 ),

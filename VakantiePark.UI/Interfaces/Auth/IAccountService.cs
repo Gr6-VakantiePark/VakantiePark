@@ -16,5 +16,9 @@ namespace VakantiePark.UI.Interfaces
         Task<ApiResponse<EmployeeDto>> UpdateEmployeeAsync(Guid id, UpdateEmployeeDto request);
 
         Task<ApiResponse<EmployeeDto>> SetEmployeeActiveAsync(Guid id, bool isActive);
+
+        Task<ApiResponse<List<PermissionDto>>> GetPermissionsAsync();
+
+        Task<ApiResponse<EmployeeDto>> UpdateEmployeePermissionsAsync(Guid id, UpdateEmployeePermissionsDto request);
     }
 }
