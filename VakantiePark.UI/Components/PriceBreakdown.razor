@@ -6,17 +6,17 @@
         <div><dt>Verblijf (@price.Nights × @Formatting.Euro(price.PricePerNight))</dt><dd>@Formatting.Euro(price.Stay)</dd></div>
         @if (price.WeekendNights > 0)
         {
-            <div><dt>Weekendtoeslag (@price.WeekendSurchargePercentage.ToString("0.##")% × @price.WeekendNights @(price.WeekendNights == 1 ? "nacht" : "nachten"))</dt><dd>@Formatting.Euro(price.WeekendSurcharge)</dd></div>
+            <div><dt>Weekendtoeslag (@price.WeekendSurchargePercentage.ToString("0.##")% × @NightsLabel(price.WeekendNights))</dt><dd>@Formatting.Euro(price.WeekendSurcharge)</dd></div>
         }
         @if (price.Pets > 0)
         {
-            <div><dt>Huisdieren (@price.Pets × @price.Nights @(price.Nights == 1 ? "nacht" : "nachten") × @Formatting.Euro(price.PetFeePerNight))</dt><dd>@Formatting.Euro(price.PetFee)</dd></div>
+            <div><dt>Huisdieren (@price.Pets × @NightsLabel(price.Nights) × @Formatting.Euro(price.PetFeePerNight))</dt><dd>@Formatting.Euro(price.PetFee)</dd></div>
         }
-        @if (price.IncludesCleaningFee)
+        @if (price.CleaningFee > 0m)
         {
             <div><dt>Eindschoonmaak</dt><dd>@Formatting.Euro(price.CleaningFee)</dd></div>
         }
-        <div><dt>Toeristenbelasting (@price.TaxedPersons pers. × @price.Nights @(price.Nights == 1 ? "nacht" : "nachten") × @Formatting.Euro(price.TouristTaxPerPersonPerNight))</dt><dd>@Formatting.Euro(price.TouristTax)</dd></div>
+        <div><dt>Toeristenbelasting (@(price.Persons - price.YoungChildren) pers. × @NightsLabel(price.Nights) × @Formatting.Euro(price.TouristTaxPerPersonPerNight))</dt><dd>@Formatting.Euro(price.TouristTax)</dd></div>
         @if (price.YoungChildren > 0)
         {
             <div class="price-breakdown__note"><dt>@price.YoungChildren @(price.YoungChildren == 1 ? "kind" : "kinderen") onder @price.TouristTaxMinimumAge jaar, geen toeristenbelasting</dt><dd>@Formatting.Euro(0m)</dd></div>
@@ -32,4 +32,9 @@ else
 @code {
     [Parameter]
     public PriceDto? Price { get; set; }
+
+    private static string NightsLabel(int nights)
+    {
+        return nights == 1 ? "1 nacht" : $"{nights} nachten";
+    }
 }

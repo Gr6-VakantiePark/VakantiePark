@@ -14,8 +14,6 @@ namespace VakantiePark.Domain.Interfaces
 
         Task<bool> IsActiveAsync(Guid id);
 
-        Task<bool> AnyAsync();
-
         Task<bool> EmailExistsAsync(string normalizedEmail);
 
         Task<bool> EmailExistsAsync(string normalizedEmail, Guid excludedEmployeeId);

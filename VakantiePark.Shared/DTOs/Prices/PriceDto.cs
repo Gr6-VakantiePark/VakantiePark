@@ -12,11 +12,9 @@ namespace VakantiePark.Shared.DTOs.Prices
         public int Pets { get; set; }
         public decimal PetFeePerNight { get; set; }
         public decimal PetFee { get; set; }
-        public bool IncludesCleaningFee { get; set; }
         public decimal CleaningFee { get; set; }
         public int YoungChildren { get; set; }
         public int TouristTaxMinimumAge { get; set; }
-        public int TaxedPersons { get; set; }
         public decimal TouristTaxPerPersonPerNight { get; set; }
         public decimal TouristTax { get; set; }
         public decimal Total { get; set; }

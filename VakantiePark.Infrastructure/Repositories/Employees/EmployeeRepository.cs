@@ -28,8 +28,6 @@ namespace VakantiePark.Infrastructure.Repositories
         public Task<bool> IsActiveAsync(Guid id) =>
             context.Employees.AnyAsync(e => e.Id == id && e.IsActive);
 
-        public Task<bool> AnyAsync() => context.Employees.AnyAsync();
-
         public Task<bool> EmailExistsAsync(string normalizedEmail) =>
             context.Employees.AnyAsync(e => e.Email == normalizedEmail);
 
