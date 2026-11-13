@@ -1,0 +1,103 @@
+@using System.Globalization
+@using VakantiePark.Shared.DTOs.Pool
+@using VakantiePark.UI.Interfaces
+@inject IPoolService PoolService
+@namespace VakantiePark.UI.Components
+
+<div class="time-slots">
+    <div class="time-slots__toolbar">
+        <div class="field">
+            <label for="pool-date">Dag</label>
+            <input id="pool-date" type="date" min="@ToIso(_today)" @bind="_date" @bind:after="LoadAsync" />
+        </div>
+        @if (_day is not null)
+        {
+            <p class="count" role="status">@Summary(_day)</p>
+        }
+    </div>
+
+    @if (_error is not null)
+    {
+        <p class="time-slots__message" role="alert">De zwemmomenten konden niet worden geladen: @_error</p>
+    }
+    else if (_day is null)
+    {
+        <LoadingIndicator Text="Zwemmomenten laden…" />
+    }
+    else if (_day.TimeSlots.Count > 0)
+    {
+        <ul class="time-slots__list">
+            @foreach (var timeSlot in _day.TimeSlots)
+            {
+                <li @key="timeSlot.Id" class="time-slot @(timeSlot.IsFull ? "time-slot--full" : string.Empty)">
+                    <span class="time-slot__time">@Formatting.Time(timeSlot.StartTime) – @Formatting.Time(timeSlot.EndTime)</span>
+                    @if (timeSlot.IsFull)
+                    {
+                        <span class="time-slot__places"><i class="bi bi-x-circle" aria-hidden="true"></i> Vol</span>
+                    }
+                    else
+                    {
+                        <span class="time-slot__places"><i class="bi bi-people" aria-hidden="true"></i> @timeSlot.AvailablePlaces van @timeSlot.Capacity plekken vrij</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _date;
+    private PoolDayDto? _day;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _date = _today;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_date < _today)
+        {
+            _date = _today;
+        }
+
+        var date = _date;
+        _day = null;
+        _error = null;
+
+        var response = await PoolService.GetTimeSlotsAsync(date);
+        if (date != _date)
+        {
+            return;
+        }
+
+        if (response.Succeeded && response.Value is not null)
+        {
+            _day = response.Value;
+        }
+        else
+        {
+            _error = string.IsNullOrWhiteSpace(response.Message) ? "onbekende fout." : response.Message;
+        }
+    }
+
+    private static string Summary(PoolDayDto day)
+    {
+        var date = Formatting.Date(day.Date);
+        if (day.TimeSlots.Count == 0)
+        {
+            return $"Geen zwemmomenten op {date}";
+        }
+
+        var moments = day.TimeSlots.Count == 1 ? "zwemmoment" : "zwemmomenten";
+        var full = day.TimeSlots.Count(t => t.IsFull);
+        var fullText = full == 0 ? string.Empty : $", waarvan {full} vol";
+
+        return $"{day.TimeSlots.Count} {moments} op {date}{fullText}";
+    }
+
+    private static string ToIso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+}

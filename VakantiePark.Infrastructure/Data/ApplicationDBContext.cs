@@ -16,6 +16,8 @@ namespace VakantiePark.Infrastructure.Data
         public DbSet<ParkSettings> ParkSettings => Set<ParkSettings>();
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<Permission> Permissions => Set<Permission>();
+        public DbSet<PoolTimeSlot> PoolTimeSlots => Set<PoolTimeSlot>();
+        public DbSet<PoolReservation> PoolReservations => Set<PoolReservation>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,6 +34,7 @@ namespace VakantiePark.Infrastructure.Data
                 context.UsePriceSeeder();
                 context.UsePermissionSeeder();
                 context.UseEmployeeSeeder();
+                context.UsePoolSeeder();
             });
 
             optionsBuilder.UseAsyncSeeding((context, _, _) =>
@@ -40,6 +43,7 @@ namespace VakantiePark.Infrastructure.Data
                 context.UsePriceSeeder();
                 context.UsePermissionSeeder();
                 context.UseEmployeeSeeder();
+                context.UsePoolSeeder();
                 return Task.CompletedTask;
             });
 

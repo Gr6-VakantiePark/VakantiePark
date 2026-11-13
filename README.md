@@ -39,6 +39,13 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 - A switched-off employee can't log in, and tokens they already have stop working on the next request. Nobody can switch off their own account or take away their own owner rights.
 - Seed accounts: `beheerder@dropuut.example` is an owner, `receptie@dropuut.example` has guests and reservations, `zwembad@dropuut.example` has pool capacity. The `PermissionsPerEmployee` migration converts existing databases: rights from the old roles move to the employees, administrators become owners and the role tables are removed.
 
+## Pool time slots
+
+- `PoolTimeSlots` holds the weekly swim schedule: one row per day of the week and start time, each with its own `Capacity`. `PoolSeeder` fills it with time slots of one hour within the opening hours on `/zwembad` (Monday to Friday 09:00–21:00, Saturday and Sunday 08:00–21:00) and 50 places per time slot.
+- `PoolReservations` holds the places that are taken per time slot and date. Available places are the capacity minus the reserved persons, never below 0 (`PoolTimeSlot.AvailablePlaces`). A time slot without available places is full.
+- `GET /pool/time-slots?date=yyyy-MM-dd` (public) returns the date and its time slots ordered by start time, each with `startTime`, `endTime`, `capacity`, `availablePlaces` and `isFull`. Without `date` it uses today; a date in the past returns 400.
+- The pool page (`/zwembad`) shows these time slots under **Zwemmomenten** (`PoolTimeSlots` component). It opens on today, and the guest picks another day with the date field. Each time slot shows how many places are free; a full time slot is marked with a dashed border and **Vol**.
+
 ## API conventions
 
 - Every endpoint returns `ApiResponse<T>`. Services throw `ArgumentException` (400), `KeyNotFoundException` (404) or `UnauthorizedAccessException` (401); controllers wrap the call with `RunAsync`.

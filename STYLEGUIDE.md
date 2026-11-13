@@ -468,6 +468,7 @@ The accommodation page layout is `<div class="container detail">`: the content c
 | `.feature` | homepage | Teal feature block (pool teaser). One per page at most |
 | `.zones`, `.zone-dot--houses`, `.zone-dot--camping` | homepage | Zone tiles. Green means houses, sand means camping |
 | `.hours`, `.pools`, `.pool`, `.pool__size` | pool page | Opening hours and pool tiles |
+| `.time-slots*`, `.time-slot`, `.time-slot--full` | pool time slots component | Swim times of one day with a date field and a tile per time slot. A full time slot gets a dashed `--ink-soft` border, muted text and the text "Vol" |
 | `.form`, `.field`, `.field__hint`, `.validation-message` | global | Forms (section 11) |
 | `.sidebar-card`, `.sidebar-card__note` | global | Bordered summary card with `dl` rows. Used by `BookingCard` and `BookingSummary` |
 | `.contact-details`, `.contact-details__note` | contact page | Address block |

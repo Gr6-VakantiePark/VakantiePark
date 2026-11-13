@@ -3,7 +3,7 @@
 
 <PageTitle>Zwembad | Vakantiepark D’r op Uut</PageTitle>
 <HeadContent>
-    <meta name="description" content="Openingstijden en baden van het zwembad.">
+    <meta name="description" content="Openingstijden, zwemmomenten en baden van het zwembad.">
 </HeadContent>
 
 <PageHeader Title="Het zwembad" Intro="Overdekt zwemmen midden in het park, gratis voor gasten." />
@@ -30,7 +30,17 @@
     </div>
 </section>
 
-<section class="section section--mist" aria-labelledby="heading-pools">
+<section class="section section--mist" aria-labelledby="heading-time-slots">
+    <div class="container">
+        <div class="section__header">
+            <h2 id="heading-time-slots">Zwemmomenten</h2>
+            <p>Zie per dag hoeveel plekken er nog vrij zijn en kies een rustig moment.</p>
+        </div>
+        <PoolTimeSlots />
+    </div>
+</section>
+
+<section class="section" aria-labelledby="heading-pools">
     <div class="container">
         <div class="section__header">
             <h2 id="heading-pools">De baden</h2>

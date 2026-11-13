@@ -9,4 +9,6 @@ public static class Formatting
     public static string Euro(decimal amount) => amount.ToString("C", Dutch);
 
     public static string Date(DateOnly date) => date.ToString("dddd d MMMM yyyy", Dutch);
+
+    public static string Time(TimeOnly time) => time.ToString("HH:mm", Dutch);
 }

@@ -1,0 +1,66 @@
+.time-slots__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.time-slots__toolbar .field {
+  width: min(16rem, 100%);
+}
+
+.time-slots__toolbar .count {
+  margin: 0;
+  white-space: normal;
+}
+
+.time-slots__message {
+  max-width: none;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--error);
+  background: var(--white);
+  color: var(--error);
+  font-weight: 700;
+}
+
+.time-slots__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.time-slot {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.9rem 1.1rem;
+  border: 2px solid var(--water);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+}
+
+.time-slot__time {
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  color: var(--forest);
+}
+
+.time-slot__places {
+  font-weight: 700;
+}
+
+.time-slot--full {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+.time-slot--full .time-slot__time {
+  color: var(--ink-soft);
+}

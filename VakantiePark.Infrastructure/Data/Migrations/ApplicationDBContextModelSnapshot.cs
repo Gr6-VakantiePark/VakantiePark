@@ -339,6 +339,56 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("PhotoFiles", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PoolReservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Persons")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("PoolTimeSlotId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PoolTimeSlotId", "Date");
+
+                    b.ToTable("PoolReservations", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PoolTimeSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DayOfWeek", "StartTime")
+                        .IsUnique();
+
+                    b.ToTable("PoolTimeSlots", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.Reservation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -456,6 +506,17 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Navigation("Photo");
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PoolReservation", b =>
+                {
+                    b.HasOne("VakantiePark.Domain.Entities.PoolTimeSlot", "PoolTimeSlot")
+                        .WithMany("Reservations")
+                        .HasForeignKey("PoolTimeSlotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PoolTimeSlot");
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.Reservation", b =>
                 {
                     b.HasOne("VakantiePark.Domain.Entities.Accommodation", "Accommodation")
@@ -489,6 +550,11 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                 {
                     b.Navigation("File")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PoolTimeSlot", b =>
+                {
+                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }
