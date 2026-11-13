@@ -1,5 +1,3 @@
-@using System.Globalization
-@using VakantiePark.Shared.DTOs.Accommodations
 @namespace VakantiePark.UI.Components
 
 <li>
@@ -34,12 +32,12 @@
             <p class="result-card__price">
                 @if (Accommodation.Price is { } price)
                 {
-                    <strong>@price.Total.ToString("C", Dutch)</strong>
+                    <strong>@Formatting.Euro(price.Total)</strong>
                     <span class="note">totaal voor @Nights @(Nights == 1 ? "nacht" : "nachten"), incl. eindschoonmaak en toeristenbelasting</span>
                 }
                 else if (Accommodation.PricePerNight > 0)
                 {
-                    <strong>@((Accommodation.PricePerNight * Nights).ToString("C", Dutch))</strong>
+                    <strong>@Formatting.Euro(Accommodation.PricePerNight * Nights)</strong>
                     <span class="note">voor @Nights @(Nights == 1 ? "nacht" : "nachten")</span>
                 }
                 else
@@ -54,7 +52,6 @@
 </li>
 
 @code {
-    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
 
     [Parameter, EditorRequired]
     public AccommodationDetailDto Accommodation { get; set; } = default!;
@@ -70,13 +67,13 @@
 
     private IEnumerable<(string Label, string Value)> Facts()
     {
-        yield return ("Personen", Accommodation.MaxPersons.ToString(Dutch));
+        yield return ("Personen", Accommodation.MaxPersons.ToString(Formatting.Dutch));
 
         if (Accommodation.Bedrooms is not null)
         {
-            yield return ("Slaapkamers", Accommodation.Bedrooms.Value.ToString(Dutch));
-            yield return ("Badkamers", (Accommodation.Bathrooms ?? 0).ToString(Dutch));
-            yield return ("Bedden", (Accommodation.Beds ?? 0).ToString(Dutch));
+            yield return ("Slaapkamers", Accommodation.Bedrooms.Value.ToString(Formatting.Dutch));
+            yield return ("Badkamers", (Accommodation.Bathrooms ?? 0).ToString(Formatting.Dutch));
+            yield return ("Bedden", (Accommodation.Beds ?? 0).ToString(Formatting.Dutch));
         }
         else
         {
@@ -84,7 +81,7 @@
                 yield return ("Ondergrond", Accommodation.Surface);
             yield return ("Stroom", Accommodation.ElectricityAmps > 0 ? $"{Accommodation.ElectricityAmps} A" : "Geen");
             if ((Accommodation.MaxVehicleLengthMeters ?? Accommodation.MaxCaravanLengthMeters) is decimal length)
-                yield return ("Max. lengte", $"{length.ToString("0.#", Dutch)} m");
+                yield return ("Max. lengte", $"{length.ToString("0.#", Formatting.Dutch)} m");
             if (Accommodation.Shade is not null)
                 yield return ("Schaduw", Accommodation.Shade);
             if (Accommodation.WifiCoverage is not null)

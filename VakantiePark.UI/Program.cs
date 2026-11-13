@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System.ComponentModel.Design;
 using VakantiePark.Shared.Common;
 using VakantiePark.UI.Authentication;
 using VakantiePark.UI.Interfaces;

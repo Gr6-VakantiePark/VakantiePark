@@ -1,5 +1,4 @@
-﻿using System;
-using VakantiePark.Domain.Entities;
+﻿using VakantiePark.Domain.Entities;
 using VakantiePark.Shared.DTOs.Reservations;
 
 namespace VakantiePark.Domain.Interfaces

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VakantiePark.Domain.Entities;
+using VakantiePark.Infrastructure.Security;
 using VakantiePark.Shared.Common;
 
 namespace VakantiePark.Infrastructure.Data.Seeders
@@ -29,7 +30,7 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                 {
                     Id = SeedIds.Employee(seed.Email),
                     Email = seed.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(seed.Password, 12),
+                    PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(seed.Password, BCryptPasswordHasher.WorkFactor),
                     FirstName = seed.FirstName,
                     LastName = seed.LastName,
                     IsOwner = seed.IsOwner,

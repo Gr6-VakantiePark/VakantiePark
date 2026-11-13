@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace VakantiePark.Domain.Entities
+﻿namespace VakantiePark.Domain.Entities
 {
     public class UnrentablePeriod
     {

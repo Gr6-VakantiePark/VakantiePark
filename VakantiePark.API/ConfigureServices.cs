@@ -10,7 +10,6 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using VakantiePark.Application.Common;
-using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Interfaces;
 using VakantiePark.Infrastructure.Security;
 using VakantiePark.Shared.Common;
@@ -38,7 +37,6 @@ namespace VakantiePark.API
 
         private static IServiceCollection RegisterControllers(this IServiceCollection services)
         {
-            services.AddHttpClient();
             services.AddControllers()
                 .AddJsonOptions(options => JsonDefaults.Configure(options.JsonSerializerOptions));
             services.AddEndpointsApiExplorer();

@@ -2,25 +2,6 @@
   margin: 1.5rem 0 0;
 }
 
-.search-message {
-  max-width: none;
-  margin: 0;
-  padding: 1rem 1.25rem;
-  border-left: 4px solid var(--error);
-  background: var(--white);
-  color: var(--error);
-  font-weight: 700;
-}
-
-.search-message p {
-  margin: 0 0 0.5rem;
-}
-
-.search-message ul {
-  margin: 0;
-  padding-left: 1.25rem;
-}
-
 .empty-state {
   padding: clamp(1.5rem, 4vw, 2.5rem);
   border: 2px solid var(--forest);

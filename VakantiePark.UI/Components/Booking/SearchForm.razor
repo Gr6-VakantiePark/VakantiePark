@@ -1,5 +1,3 @@
-@using VakantiePark.Shared.DTOs.Accommodations
-@using VakantiePark.UI.Services
 @inject NavigationManager Navigation
 @namespace VakantiePark.UI.Components
 
@@ -10,11 +8,11 @@
         <div class="form__row">
             <div class="field">
                 <label for="arrival">Aankomst</label>
-                <InputDate id="arrival" @ref="_arrivalInput" @bind-Value="_form.Arrival" min="@ToIso(_today)" />
+                <InputDate id="arrival" @ref="_arrivalInput" @bind-Value="_form.Arrival" min="@Formatting.Iso(_today)" />
             </div>
             <div class="field">
                 <label for="departure">Vertrek</label>
-                <InputDate id="departure" @bind-Value="_form.Departure" min="@ToIso((_form.Arrival ?? _today).AddDays(1))" />
+                <InputDate id="departure" @bind-Value="_form.Departure" min="@Formatting.Iso((_form.Arrival ?? _today).AddDays(1))" />
             </div>
             <div class="field">
                 <label for="persons">Personen</label>
@@ -261,6 +259,4 @@
 
         Navigation.NavigateTo(SearchUrl.For(criteria));
     }
-
-    private static string ToIso(DateOnly date) => date.ToString("yyyy-MM-dd");
 }

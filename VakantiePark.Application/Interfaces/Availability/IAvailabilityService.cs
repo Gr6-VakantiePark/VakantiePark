@@ -1,5 +1,4 @@
-﻿using System;
-using VakantiePark.Shared.DTOs.Reservations;
+﻿using VakantiePark.Shared.DTOs.Reservations;
 
 namespace VakantiePark.Application.Interfaces
 {

@@ -1,12 +1,4 @@
 @page "/zoek-en-boek"
-@using System.ComponentModel.DataAnnotations
-@using System.Globalization
-@using System.Reflection
-@using VakantiePark.Shared.Common.Pagination
-@using VakantiePark.Shared.DTOs.Accommodations
-@using VakantiePark.UI.Interfaces
-@using VakantiePark.UI.Models
-@using VakantiePark.UI.Services
 @inject ISearchService SearchService
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -49,7 +41,7 @@
             <div class="section__header">
                 <h2 id="heading-results">Resultaten</h2>
                 <p>
-                    @FormatDate(_criteria.Arrival) – @FormatDate(_criteria.Departure),
+                    @Formatting.Date(_criteria.Arrival) – @Formatting.Date(_criteria.Departure),
                     @_criteria.Nights @(_criteria.Nights == 1 ? "nacht" : "nachten"),
                     @_criteria.Persons @(_criteria.Persons == 1 ? "persoon" : "personen")
                 </p>
@@ -80,7 +72,7 @@
                 <div class="empty-state" role="status">
                     <h3>Geen verblijven beschikbaar</h3>
                     <p>
-                        Er is geen verblijf vrij van @FormatDate(_criteria.Arrival) tot @FormatDate(_criteria.Departure)
+                        Er is geen verblijf vrij van @Formatting.Date(_criteria.Arrival) tot @Formatting.Date(_criteria.Departure)
                         voor @_criteria.Persons @(_criteria.Persons == 1 ? "persoon" : "personen")@(_criteria.HasFilters ? " met de gekozen filters" : string.Empty).
                         Probeer andere data, minder personen of minder filters.
                     </p>
@@ -137,7 +129,6 @@
 }
 
 @code {
-    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
     private static readonly OrderType[] SortDirections = [OrderType.Ascending, OrderType.Descending];
 
     [SupplyParameterFromQuery(Name = "aankomst")] public string? ArrivalValue { get; set; }
@@ -311,7 +302,6 @@
         }
     }
 
-    private static string FormatDate(DateOnly date) => date.ToString("dddd d MMMM yyyy", Dutch);
 
     private string? PhotoUrl(string? path) =>
         string.IsNullOrWhiteSpace(path) || Http.BaseAddress is null ? null : new Uri(Http.BaseAddress, path).ToString();

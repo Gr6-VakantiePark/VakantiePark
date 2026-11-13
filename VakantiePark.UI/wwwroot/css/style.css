@@ -361,6 +361,25 @@ a:hover {
   color: var(--error);
 }
 
+.search-message {
+  max-width: none;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--error);
+  background: var(--white);
+  color: var(--error);
+  font-weight: 700;
+}
+
+.search-message p {
+  margin: 0 0 0.5rem;
+}
+
+.search-message ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
 .tag {
   display: inline-block;
   padding: 0.15rem 0.7rem;
