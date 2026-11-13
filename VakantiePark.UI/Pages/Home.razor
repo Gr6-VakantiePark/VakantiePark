@@ -1,6 +1,5 @@
 @page "/"
-
-@* TODO: Accommodation types and zones come from the static ParkData class for now. Load them from VakantiePark.API once its endpoints exist. *@
+@inject ISearchService SearchService
 
 <PageTitle>Home | Vakantiepark D’r op Uut</PageTitle>
 <HeadContent>
@@ -22,46 +21,66 @@
     <WaveDivider />
 </section>
 
-<section class="section" aria-labelledby="heading-houses">
-    <div class="container">
-        <div class="section__header">
-            <h2 id="heading-houses">Vakantiehuizen</h2>
-            <p>Van een huis voor vier tot een bosvilla voor tien.</p>
+@if (_error != null)
+{
+    <section class="section" aria-labelledby="heading-error">
+        <div class="container">
+            <p id="heading-error" class="search-message" role="alert">De accommodaties konden niet worden geladen: @_error</p>
         </div>
-        <TypeCardList Types="ParkData.GetByCategory(AccommodationCategory.HolidayHome)" />
-    </div>
-</section>
+    </section>
+}
+else if (_isLoading)
+{
+    <section class="section">
+        <div class="container">
+            <LoadingIndicator Text="Accommodaties laden…" />
+        </div>
+    </section>
+}
+else
+{
+    <section class="section" aria-labelledby="heading-houses">
+        <div class="container">
+            <div class="section__header">
+                <h2 id="heading-houses">Vakantiehuizen</h2>
+                <p>Van een huis voor vier tot een bosvilla voor tien.</p>
+            </div>
+            <TypeCardList Types="_holidayHomes" />
+        </div>
+    </section>
 
-<section class="section section--mist" aria-labelledby="heading-camping">
-    <div class="container">
-        <div class="section__header">
-            <h2 id="heading-camping">Kamperen</h2>
-            <p>Met tent, caravan of camper.</p>
+    <section class="section section--mist" aria-labelledby="heading-camping">
+        <div class="container">
+            <div class="section__header">
+                <h2 id="heading-camping">Kamperen</h2>
+                <p>Met tent, caravan of camper.</p>
+            </div>
+            <TypeCardList Types="_campingPitches" />
         </div>
-        <TypeCardList Types="ParkData.GetByCategory(AccommodationCategory.CampingPitch)" />
-    </div>
-</section>
+    </section>
 
-<section class="section" id="zones" aria-labelledby="heading-zones">
-    <div class="container">
-        <div class="section__header">
-            <h2 id="heading-zones">Het park in 9 zones</h2>
-            <p class="zones__legend">
-                <span><span class="zone-dot zone-dot--houses"></span>Vakantiehuizen</span>
-                <span><span class="zone-dot zone-dot--camping"></span>Kampeerplaatsen</span>
-            </p>
+    <section class="section" id="zones" aria-labelledby="heading-zones">
+        <div class="container">
+            <div class="section__header">
+                <h2 id="heading-zones">Het park in @_zones.Count zones</h2>
+                <p class="zones__legend">
+                    <span><span class="zone-dot zone-dot--houses"></span>Vakantiehuizen</span>
+                    <span><span class="zone-dot zone-dot--camping"></span>Kampeerplaatsen</span>
+                </p>
+            </div>
+            <ul class="zones">
+                @foreach (var zone in _zones)
+                {
+                    var isCamping = AccommodationTypeMappings.ParseCategory(zone.Category) == AccommodationCategory.CampingPitch;
+                    <li @key="zone.Name">
+                        <h3><span class="zone-dot @(isCamping ? "zone-dot--camping" : "zone-dot--houses")"></span>@zone.Name</h3>
+                        <p>@zone.UnitCount @(isCamping ? "kampeerplaatsen" : "vakantiehuizen")</p>
+                    </li>
+                }
+            </ul>
         </div>
-        <ul class="zones">
-            @foreach (var zone in ParkData.Zones)
-            {
-                <li @key="zone.Name">
-                    <h3><span class="zone-dot @(zone.Category == AccommodationCategory.CampingPitch ? "zone-dot--camping" : "zone-dot--houses")"></span>@zone.Name</h3>
-                    <p>@zone.UnitCount @(zone.Category == AccommodationCategory.CampingPitch ? "kampeerplaatsen" : "vakantiehuizen")</p>
-                </li>
-            }
-        </ul>
-    </div>
-</section>
+    </section>
+}
 
 <section class="section section--flush-top" aria-labelledby="heading-pool">
     <div class="container">
@@ -79,3 +98,44 @@
         </div>
     </div>
 </section>
+
+@code {
+    private List<AccommodationType> _holidayHomes = new();
+    private List<AccommodationType> _campingPitches = new();
+    private List<ZoneDto> _zones = new();
+    private string? _error;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var typesResponse = await SearchService.GetTypesAsync();
+            if (!typesResponse.Succeeded || typesResponse.Value == null)
+            {
+                _error = string.IsNullOrWhiteSpace(typesResponse.Message) ? "onbekende fout." : typesResponse.Message;
+                return;
+            }
+
+            var zonesResponse = await SearchService.GetZonesAsync();
+            if (!zonesResponse.Succeeded || zonesResponse.Value == null)
+            {
+                _error = string.IsNullOrWhiteSpace(zonesResponse.Message) ? "onbekende fout." : zonesResponse.Message;
+                return;
+            }
+
+            var types = typesResponse.Value.Select(type => type.ToAccommodationType()).ToList();
+            _holidayHomes = types.Where(type => type.Category == AccommodationCategory.HolidayHome).ToList();
+            _campingPitches = types.Where(type => type.Category == AccommodationCategory.CampingPitch).ToList();
+            _zones = zonesResponse.Value;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

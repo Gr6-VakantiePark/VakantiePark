@@ -12,6 +12,10 @@ namespace VakantiePark.Domain.Interfaces
 
         Task<List<AccommodationType>> GetTypesAsync();
 
+        Task<List<AccommodationType>> GetTypesWithAccommodationsAsync();
+
+        Task<AccommodationType?> GetTypeBySlugAsync(string slug);
+
         Task<List<Amenity>> GetAmenitiesAsync();
 
         Task<Dictionary<Guid, List<AccommodationCategory>>> GetAmenityCategoriesAsync();

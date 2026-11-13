@@ -8,6 +8,12 @@ namespace VakantiePark.UI.Interfaces
     {
         Task<ApiResponse<SearchOptionsDto>> GetSearchOptionsAsync();
 
+        Task<ApiResponse<List<AccommodationTypeSummaryDto>>> GetTypesAsync();
+
+        Task<ApiResponse<AccommodationTypeDetailDto>> GetTypeAsync(string slug);
+
+        Task<ApiResponse<List<ZoneDto>>> GetZonesAsync();
+
         Task<ApiResponse<PaginatedResult<AccommodationDetailDto>>> SearchAsync(AccommodationSearchCriteria criteria);
     }
 }

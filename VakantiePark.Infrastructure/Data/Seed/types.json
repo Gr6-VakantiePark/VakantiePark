@@ -2,61 +2,85 @@
   "Berk 4": {
     "slug": "berk-4",
     "count": 32,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Twee slaapkamers",
+    "description": "Compact vakantiehuis voor vier personen, met twee slaapkamers. Fijn voor een stel of een klein gezin."
   },
   "Berk 6": {
     "slug": "berk-6",
     "count": 26,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Drie slaapkamers",
+    "description": "Ruim huis voor zes personen met drie slaapkamers en een vaatwasser in elk huis."
   },
   "Eik 6": {
     "slug": "eik-6",
     "count": 24,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Drie slaapkamers, soms sauna",
+    "description": "Huis voor zes personen met drie slaapkamers. Een deel van de huizen heeft twee badkamers of een sauna."
   },
   "Eik Luxe 6": {
     "slug": "eik-luxe-6",
     "count": 18,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Sauna en twee badkamers",
+    "description": "Luxe huis voor zes personen met twee badkamers, overdekt terras en bijna altijd een sauna."
   },
   "Beuk 8": {
     "slug": "beuk-8",
     "count": 20,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Vier slaapkamers",
+    "description": "Groot huis voor acht personen met vier slaapkamers en twee of drie badkamers."
   },
   "Wilg 4 Mindervalide": {
     "slug": "wilg-4-mindervalide",
     "count": 12,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Rolstoeltoegankelijk",
+    "description": "Gelijkvloers huis voor vier personen, drempelvrij, met verbrede deuren en een aangepaste badkamer."
   },
   "Bosvilla 10": {
     "slug": "bosvilla-10",
     "count": 18,
-    "category": "holiday_home"
+    "category": "holiday_home",
+    "tagline": "Vijf slaapkamers en openhaard",
+    "description": "Villa voor tien personen met vijf slaapkamers, openhaard en in de meeste gevallen een sauna."
   },
   "Tentplaats Basis": {
     "slug": "tentplaats-basis",
     "count": 12,
-    "category": "camping_pitch"
+    "category": "camping_pitch",
+    "tagline": "Gras, zonder aansluitingen",
+    "description": "Grasveld voor je tent, zonder aansluitingen. Een deel van de plaatsen heeft stroom."
   },
   "Tentplaats Comfort": {
     "slug": "tentplaats-comfort",
     "count": 10,
-    "category": "camping_pitch"
+    "category": "camping_pitch",
+    "tagline": "Met stroom",
+    "description": "Tentplaats met stroom en meestal een wateraansluiting. Enkele plaatsen hebben eigen sanitair."
   },
   "Caravanplaats": {
     "slug": "caravanplaats",
     "count": 12,
-    "category": "camping_pitch"
+    "category": "camping_pitch",
+    "tagline": "Stroom, meestal water",
+    "description": "Plaats voor caravan en auto, met stroom. De meeste plaatsen hebben water en afvoer."
   },
   "Camperplaats": {
     "slug": "camperplaats",
     "count": 10,
-    "category": "camping_pitch"
+    "category": "camping_pitch",
+    "tagline": "Verhard, water en afvoer",
+    "description": "Verharde plaats voor campers tot ongeveer 8,5 meter, met stroom, water en afvoer."
   },
   "Camperplaats XL": {
     "slug": "camperplaats-xl",
     "count": 6,
-    "category": "camping_pitch"
+    "category": "camping_pitch",
+    "tagline": "Extra breed, tot 11 meter",
+    "description": "Extra brede, verharde plaats voor grote campers tot 11 meter, met 16 ampère stroom."
   }
 }

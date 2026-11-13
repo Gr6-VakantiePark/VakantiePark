@@ -1,5 +1,5 @@
 @page "/accommodaties"
-@inject IHttpService Http
+@inject ISearchService SearchService
 @namespace VakantiePark.UI.Pages
 
 <PageTitle>Accommodaties | Vakantiepark D’r op Uut</PageTitle>
@@ -49,47 +49,23 @@ else
 }
 
 @code {
-    private List<AccommodationType> _holidayHomes = [];
-    private List<AccommodationType> _campingPitches = [];
+    private List<AccommodationType> _holidayHomes = new();
+    private List<AccommodationType> _campingPitches = new();
     private string? _error;
     private bool _loaded;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Http.GetAsync<List<AccommodationDto>>("accommodations");
-        if (!response.Succeeded || response.Value is null)
+        var response = await SearchService.GetTypesAsync();
+        if (!response.Succeeded || response.Value == null)
         {
             _error = string.IsNullOrWhiteSpace(response.Message) ? "onbekende fout." : response.Message;
             return;
         }
 
-        var types = response.Value
-            .GroupBy(accommodation => accommodation.TypeSlug)
-            .Select(CreateType)
-            .ToList();
-
+        var types = response.Value.Select(type => type.ToAccommodationType()).ToList();
         _holidayHomes = types.Where(type => type.Category == AccommodationCategory.HolidayHome).ToList();
         _campingPitches = types.Where(type => type.Category == AccommodationCategory.CampingPitch).ToList();
         _loaded = true;
-    }
-
-    private static AccommodationType CreateType(IGrouping<string, AccommodationDto> group)
-    {
-        var first = group.First();
-        var maxPersons = group.Max(accommodation => accommodation.MaxPersons);
-        var category = Enum.Parse<AccommodationCategory>(first.Category, ignoreCase: true);
-
-        return new AccommodationType(
-            Slug: first.TypeSlug,
-            Name: first.Type,
-            Category: category,
-            Tagline: $"Voor maximaal {maxPersons} personen",
-            Description: string.Empty,
-            Persons: maxPersons.ToString(),
-            UnitCount: group.Count(),
-            KeyFacts: [],
-            Amenities: [],
-            PartialAmenities: [],
-            Zones: []);
     }
 }

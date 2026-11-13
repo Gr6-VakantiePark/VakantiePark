@@ -35,6 +35,23 @@ namespace VakantiePark.Infrastructure.Repositories
                 .ThenBy(t => t.Name)
                 .ToListAsync();
 
+        public Task<List<AccommodationType>> GetTypesWithAccommodationsAsync() =>
+            context.AccommodationTypes
+                .AsNoTracking()
+                .Include(t => t.Accommodations)
+                .OrderBy(t => t.Category)
+                .ThenBy(t => t.Name)
+                .ToListAsync();
+
+        public Task<AccommodationType?> GetTypeBySlugAsync(string slug)
+        {
+            var normalized = slug.Trim().ToLowerInvariant();
+            return context.AccommodationTypes
+                .AsNoTracking()
+                .Include(t => t.Accommodations).ThenInclude(a => a.Amenities)
+                .FirstOrDefaultAsync(t => t.Slug == normalized);
+        }
+
         public Task<List<Amenity>> GetAmenitiesAsync() =>
             context.Amenities
                 .AsNoTracking()

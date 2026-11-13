@@ -54,6 +54,46 @@ namespace VakantiePark.Application.Services
             return dto;
         }
 
+        public async Task<List<AccommodationTypeSummaryDto>> GetTypesAsync()
+        {
+            var types = await repository.GetTypesWithAccommodationsAsync();
+            return types
+                .Select(t => t.ToSummaryDto())
+                .OrderBy(t => t.MinPersons)
+                .ThenByDescending(t => t.UnitCount)
+                .ThenBy(t => t.Name)
+                .ToList();
+        }
+
+        public async Task<AccommodationTypeDetailDto> GetTypeBySlugAsync(string slug)
+        {
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                throw new ArgumentException("De slug van het accommodatietype ontbreekt.");
+            }
+
+            var type = await repository.GetTypeBySlugAsync(slug.Trim());
+            if (type == null)
+            {
+                throw new KeyNotFoundException($"Accommodatietype '{slug.Trim()}' is niet gevonden.");
+            }
+
+            return type.ToDetailDto();
+        }
+
+        public async Task<List<ZoneDto>> GetZonesAsync()
+        {
+            var types = await repository.GetTypesWithAccommodationsAsync();
+            return types
+                .GroupBy(t => t.Category)
+                .OrderBy(g => g.Key)
+                .SelectMany(g => g
+                    .SelectMany(t => t.Accommodations)
+                    .ToZoneDtos(g.Key.ToString())
+                    .OrderBy(z => z.Name))
+                .ToList();
+        }
+
         public async Task<SearchOptionsDto> GetSearchOptionsAsync()
         {
             var types = await repository.GetTypesAsync();
