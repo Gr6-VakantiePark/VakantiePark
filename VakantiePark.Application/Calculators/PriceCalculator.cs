@@ -17,31 +17,6 @@ namespace VakantiePark.Application.Calculators
         {
             var nights = departure.DayNumber - arrival.DayNumber;
 
-            if (nights < 1)
-            {
-                throw new ArgumentException("Een verblijf duurt minimaal 1 nacht.", nameof(departure));
-            }
-
-            if (persons < 1)
-            {
-                throw new ArgumentException("Er moet minimaal 1 persoon meegaan.", nameof(persons));
-            }
-
-            if (youngChildren < 0)
-            {
-                throw new ArgumentException("Het aantal kleine kinderen kan niet negatief zijn.", nameof(youngChildren));
-            }
-
-            if (youngChildren >= persons)
-            {
-                throw new ArgumentException($"Er moet minimaal 1 persoon van {settings.TouristTaxMinimumAge} jaar of ouder meegaan.", nameof(youngChildren));
-            }
-
-            if (pets < 0)
-            {
-                throw new ArgumentException("Het aantal huisdieren kan niet negatief zijn.", nameof(pets));
-            }
-
             if (type.PricePerNight <= 0m)
             {
                 throw new ArgumentException("Voor dit type is nog geen prijs per nacht bekend.", nameof(type));
@@ -68,8 +43,6 @@ namespace VakantiePark.Application.Calculators
             }
 
             var weekendNights = CountWeekendNights(arrival, nights);
-            var taxedPersons = persons - youngChildren;
-            var includesCleaningFee = type.Category == AccommodationCategory.HolidayHome;
 
             var stay = type.PricePerNight * nights;
             var weekendSurcharge = Math.Round(
@@ -77,8 +50,8 @@ namespace VakantiePark.Application.Calculators
                 2,
                 MidpointRounding.AwayFromZero);
             var petFee = settings.PetFeePerNight * pets * nights;
-            var cleaningFee = includesCleaningFee ? settings.CleaningFee : 0m;
-            var touristTax = settings.TouristTaxPerPersonPerNight * taxedPersons * nights;
+            var cleaningFee = type.Category == AccommodationCategory.HolidayHome ? settings.CleaningFee : 0m;
+            var touristTax = settings.TouristTaxPerPersonPerNight * (persons - youngChildren) * nights;
 
             return new PriceDto
             {
@@ -92,11 +65,9 @@ namespace VakantiePark.Application.Calculators
                 Pets = pets,
                 PetFeePerNight = settings.PetFeePerNight,
                 PetFee = petFee,
-                IncludesCleaningFee = includesCleaningFee,
                 CleaningFee = cleaningFee,
                 YoungChildren = youngChildren,
                 TouristTaxMinimumAge = settings.TouristTaxMinimumAge,
-                TaxedPersons = taxedPersons,
                 TouristTaxPerPersonPerNight = settings.TouristTaxPerPersonPerNight,
                 TouristTax = touristTax,
                 Total = stay + weekendSurcharge + petFee + cleaningFee + touristTax,
