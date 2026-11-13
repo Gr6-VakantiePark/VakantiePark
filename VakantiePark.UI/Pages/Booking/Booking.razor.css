@@ -6,6 +6,10 @@
   max-width: 40rem;
 }
 
+.booking-overview .booking-message {
+  margin-top: 1.5rem;
+}
+
 .booking-actions {
   display: flex;
   flex-wrap: wrap;

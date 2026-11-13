@@ -73,7 +73,7 @@ namespace VakantiePark.Application.Extensions
                 throw new ArgumentException($"De achternaam mag maximaal {FieldLimits.LastNameMaxLength} tekens hebben.");
         }
 
-        private static bool IsValidEmail(string email) =>
+        internal static bool IsValidEmail(string email) =>
             MailAddress.TryCreate(email, out var address) && address.Address == email;
     }
 }

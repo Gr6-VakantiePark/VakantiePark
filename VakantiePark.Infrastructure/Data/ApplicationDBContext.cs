@@ -13,6 +13,7 @@ namespace VakantiePark.Infrastructure.Data
         public DbSet<PhotoFile> PhotoFiles => Set<PhotoFile>();
         public DbSet<Reservation> Reservations => Set<Reservation>();
         public DbSet<UnrentablePeriod> UnrentablePeriods => Set<UnrentablePeriod>();
+        public DbSet<Guest> Guests => Set<Guest>();
         public DbSet<ParkSettings> ParkSettings => Set<ParkSettings>();
         public DbSet<OpeningHour> OpeningHours => Set<OpeningHour>();
         public DbSet<PoolBasin> PoolBasins => Set<PoolBasin>();

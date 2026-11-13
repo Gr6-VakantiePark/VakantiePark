@@ -35,13 +35,15 @@
         <dl>
             <div><dt>Naam</dt><dd>@Guest.Name</dd></div>
             <div><dt>E-mailadres</dt><dd>@Guest.Email</dd></div>
-            <div><dt>Telefoon</dt><dd>@Guest.Phone</dd></div>
-            <div><dt>Adres</dt><dd>@Guest.Street<br>@Guest.PostalCode @Guest.City</dd></div>
+            @if (!string.IsNullOrWhiteSpace(Guest.PhoneNumber))
+            {
+                <div><dt>Telefoon</dt><dd>@Guest.PhoneNumber</dd></div>
+            }
         </dl>
     }
 
     <h3>Prijs</h3>
-    <PriceBreakdown Price="Accommodation.Price" />
+    <PriceBreakdown Price="Price ?? Accommodation.Price" />
 </aside>
 
 @code {
@@ -52,7 +54,10 @@
     public AccommodationDetailDto Accommodation { get; set; } = default!;
 
     [Parameter]
-    public BookingDetails? Guest { get; set; }
+    public GuestDto? Guest { get; set; }
+
+    [Parameter]
+    public PriceDto? Price { get; set; }
 
     [Parameter]
     public string Title { get; set; } = "Je verblijf";
