@@ -23,6 +23,23 @@ namespace VakantiePark.API.Controllers
         public Task<IActionResult> GetZoekOpties() =>
             this.RunAsync(() => service.GetSearchOptionsAsync());
 
+        [HttpGet("types")]
+        [ProducesResponseType<ApiResponse<List<AccommodationTypeSummaryDto>>>(StatusCodes.Status200OK)]
+        public Task<IActionResult> GetTypes() =>
+            this.RunAsync(() => service.GetTypesAsync());
+
+        [HttpGet("types/{slug}")]
+        [ProducesResponseType<ApiResponse<AccommodationTypeDetailDto>>(StatusCodes.Status200OK)]
+        [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status404NotFound)]
+        public Task<IActionResult> GetTypeBySlug(string slug) =>
+            this.RunAsync(() => service.GetTypeBySlugAsync(slug));
+
+        [HttpGet("zones")]
+        [ProducesResponseType<ApiResponse<List<ZoneDto>>>(StatusCodes.Status200OK)]
+        public Task<IActionResult> GetZones() =>
+            this.RunAsync(() => service.GetZonesAsync());
+
         [HttpGet("search")]
         [ProducesResponseType<ApiResponse<PaginatedResult<AccommodationDetailDto>>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ApiResponse<PaginatedResult<AccommodationDetailDto>>>(StatusCodes.Status400BadRequest)]

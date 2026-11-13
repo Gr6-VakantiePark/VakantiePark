@@ -12,6 +12,8 @@ namespace VakantiePark.Domain.Entities
 
         public AccommodationCategory Category { get; set; }
 
+        public string? Tagline { get; set; }
+
         public string? Description { get; set; }
 
         public decimal PricePerNight { get; set; }

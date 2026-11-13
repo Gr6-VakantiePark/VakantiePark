@@ -1,3 +1,4 @@
+using VakantiePark.Application.Extensions.Photos;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Photos;
@@ -14,12 +15,7 @@ namespace VakantiePark.Application.Services
             var photo = await repository.GetWithFileAsync(id)
                 ?? throw new KeyNotFoundException($"Afbeelding met id {id} is niet gevonden.");
 
-            return new PhotoFileDto
-            {
-                FileName = photo.FileName,
-                ContentType = photo.ContentType,
-                Data = photo.File.Data,
-            };
+            return photo.ToFileDto();
         }
     }
 }

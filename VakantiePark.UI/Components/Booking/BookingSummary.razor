@@ -1,4 +1,4 @@
-@using VakantiePark.Shared.DTOs.Reservations
+@inject IParkService ParkService
 @namespace VakantiePark.UI.Components
 
 <aside class="sidebar-card booking-summary" aria-labelledby="@HeadingId">
@@ -8,8 +8,14 @@
     <dl>
         <div><dt>Accommodatie</dt><dd>@Accommodation.Name</dd></div>
         <div><dt>Type</dt><dd>@Accommodation.Type</dd></div>
-        <div><dt>Aankomst</dt><dd>@Formatting.Date(Request.ArrivalDate)<br>vanaf @BookingRules.ArrivalTime</dd></div>
-        <div><dt>Vertrek</dt><dd>@Formatting.Date(Request.DepartureDate)<br>uiterlijk @BookingRules.DepartureTime</dd></div>
+        <div><dt>Aankomst</dt><dd>@Formatting.Date(Request.ArrivalDate)@if (_park != null)
+            {
+                <br>@($"vanaf {_park.ArrivalTime}")
+            }</dd></div>
+        <div><dt>Vertrek</dt><dd>@Formatting.Date(Request.DepartureDate)@if (_park != null)
+            {
+                <br>@($"uiterlijk {_park.DepartureTime}")
+            }</dd></div>
         <div><dt>Nachten</dt><dd>@Request.Nights</dd></div>
     </dl>
 
@@ -58,4 +64,15 @@
 
     [Parameter]
     public string HeadingId { get; set; } = "heading-summary";
+
+    private ParkInfoDto? _park;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await ParkService.GetInfoAsync();
+        if (response.Succeeded)
+        {
+            _park = response.Value;
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using VakantiePark.Application.Interfaces;
+﻿using VakantiePark.Application.Extensions.Availability;
+using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
 using VakantiePark.Domain.Interfaces;
 using VakantiePark.Shared.DTOs.Reservations;
@@ -11,14 +12,7 @@ namespace VakantiePark.Application.Services
     {
         public async Task<bool> CheckForPeriodAvailability(ReservationAvailabilityRequest request)
         {
-            if (request is null)
-                throw new ArgumentNullException("Zoekcriteria zijn verplicht.");
-
-            if (request.StartTime <= DateTime.UtcNow.AddHours(5))
-                throw new ArgumentException("ongeldige start- en/of einddatum");
-
-            if (request.StartTime >= request.EndTime)
-                throw new ArgumentException("De startdatum moet voor de einddatum liggen.");
+            request.Validate();
 
             Accommodation? accommodation = await accommodationRepository.GetAsync(request.AccommodationId);
 

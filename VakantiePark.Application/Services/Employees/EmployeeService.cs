@@ -36,18 +36,7 @@ namespace VakantiePark.Application.Services
 
             var permissions = await FindPermissionsAsync(request.Permissions);
 
-            var employee = new Employee
-            {
-                Id = Guid.NewGuid(),
-                Email = email,
-                PasswordHash = passwordHasher.Hash(request.Password),
-                FirstName = request.FirstName.Trim(),
-                LastName = request.LastName.Trim(),
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                IsOwner = request.IsOwner,
-                Permissions = permissions,
-            };
+            var employee = request.ToEntity(email, passwordHasher.Hash(request.Password), permissions);
 
             employees.Add(employee);
             await employees.SaveChangesAsync();

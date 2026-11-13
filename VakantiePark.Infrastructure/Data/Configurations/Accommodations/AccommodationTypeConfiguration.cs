@@ -19,6 +19,7 @@ namespace VakantiePark.Infrastructure.Data.Configurations
 
             builder.Property(t => t.Category).IsRequired().HasConversion<string>().HasMaxLength(20);
 
+            builder.Property(t => t.Tagline).HasMaxLength(200);
             builder.Property(t => t.Description).HasMaxLength(2000);
             builder.Property(t => t.PricePerNight).HasPrecision(10, 2);
 

@@ -1,13 +1,22 @@
 @page "/accommodaties/{Slug}"
+@inject ISearchService SearchService
 @namespace VakantiePark.UI.Pages
 
-@* TODO: The accommodation type comes from the static ParkData class for now. Load it from VakantiePark.API once its endpoints exist. *@
+@if (_isLoading)
+{
+    <PageTitle>Accommodatie laden | Vakantiepark D’r op Uut</PageTitle>
 
-@if (_type is null)
+    <section class="section">
+        <div class="container">
+            <LoadingIndicator Text="Accommodatie laden…" />
+        </div>
+    </section>
+}
+else if (_type is null)
 {
     <PageTitle>Accommodatie niet gevonden | Vakantiepark D’r op Uut</PageTitle>
 
-    <PageHeader Title="Accommodatie niet gevonden" Intro="Dit type accommodatie bestaat niet (meer)." Crumbs="_crumbs" />
+    <PageHeader Title="Accommodatie niet gevonden" Intro="@(_errorMessage ?? "Dit type accommodatie bestaat niet (meer).")" Crumbs="_crumbs" />
 
     <section class="section" aria-labelledby="heading-next">
         <div class="container">
@@ -46,18 +55,41 @@ else
 
     private AccommodationType? _type;
     private IReadOnlyList<GalleryImage> _images = [];
+    private string? _errorMessage;
+    private bool _isLoading = true;
 
     [Parameter]
     public string Slug { get; set; } = string.Empty;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        _type = ParkData.GetBySlug(Slug);
-        _images = _type is null
-            ? []
-            : Enumerable.Range(1, 4)
+        _isLoading = true;
+        _type = null;
+        _images = [];
+        _errorMessage = null;
+
+        try
+        {
+            var response = await SearchService.GetTypeAsync(Slug);
+            if (!response.Succeeded || response.Value == null)
+            {
+                _errorMessage = string.IsNullOrWhiteSpace(response.Message) ? null : response.Message;
+                return;
+            }
+
+            _type = response.Value.ToAccommodationType();
+            _images = Enumerable.Range(1, 4)
                 .Select(number => new GalleryImage($"img/photos/{_type.Slug}-{number}.jpg", ImageAlt(_type, number)))
                 .ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Fout bij laden: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     private static string ImageAlt(AccommodationType type, int number) =>

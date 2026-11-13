@@ -1,4 +1,5 @@
 @page "/zwembad"
+@inject IParkService ParkService
 @namespace VakantiePark.UI.Pages
 
 <PageTitle>Zwembad | Vakantiepark D’r op Uut</PageTitle>
@@ -14,18 +15,32 @@
     <div class="container two-columns">
         <div>
             <h2>Openingstijden</h2>
-            <dl class="hours">
-                <div><dt>Maandag tot en met vrijdag</dt><dd>09:00 – 21:00</dd></div>
-                <div><dt>Zaterdag en zondag</dt><dd>08:00 – 21:00</dd></div>
-                <div><dt>Banenzwemmen</dt><dd>Dagelijks 08:00 – 10:00</dd></div>
-                <div><dt>Buitenbad</dt><dd>Mei tot en met september</dd></div>
-            </dl>
+            @if (_park != null)
+            {
+                <dl class="hours">
+                    @foreach (var hour in _park.PoolHours)
+                    {
+                        <div><dt>@hour.Label</dt><dd>@hour.Value</dd></div>
+                    }
+                </dl>
+            }
+            else if (_error != null)
+            {
+                <p class="search-message" role="alert">De openingstijden konden niet worden geladen: @_error</p>
+            }
+            else
+            {
+                <LoadingIndicator Text="Openingstijden laden…" />
+            }
             <p>Toegang is gratis voor gasten van het park. Neem je parkpas mee naar de ingang.</p>
         </div>
         <div>
             <h2>Goed om te weten</h2>
             <CheckList Items="_goodToKnow" />
-            <p>Wil je dichtbij logeren? 61 accommodaties liggen dicht bij het zwembad. Je kunt hierop filteren bij <a href="zoek-en-boek">zoek en boek</a>.</p>
+            @if (_park != null && _park.AccommodationsNearPool > 0)
+            {
+                <p>Wil je dichtbij logeren? @_park.AccommodationsNearPool accommodaties liggen dicht bij het zwembad. Je kunt hierop filteren bij <a href="zoek-en-boek">zoek en boek</a>.</p>
+            }
         </div>
     </div>
 </section>
@@ -35,28 +50,23 @@
         <div class="section__header">
             <h2 id="heading-pools">De baden</h2>
         </div>
-        <ul class="pools">
-            <li class="pool">
-                <h3>Wedstrijdbad</h3>
-                <p>Voor banenzwemmen en vrij zwemmen.</p>
-                <p class="pool__size">25 meter, 1,20 tot 2,00 meter diep</p>
-            </li>
-            <li class="pool">
-                <h3>Recreatiebad</h3>
-                <p>Met golfslag, bubbelbank en een glijbaan van 60 meter.</p>
-                <p class="pool__size">0,90 tot 1,30 meter diep</p>
-            </li>
-            <li class="pool">
-                <h3>Peuterbad</h3>
-                <p>Warm, ondiep water met een kleine glijbaan en fonteintjes.</p>
-                <p class="pool__size">0,20 tot 0,40 meter diep</p>
-            </li>
-            <li class="pool">
-                <h3>Buitenbad</h3>
-                <p>Verwarmd buitenbad met ligweide, open in de zomer.</p>
-                <p class="pool__size">0,80 tot 1,40 meter diep</p>
-            </li>
-        </ul>
+        @if (_park != null)
+        {
+            <ul class="pools">
+                @foreach (var basin in _park.PoolBasins)
+                {
+                    <li class="pool" @key="basin.Name">
+                        <h3>@basin.Name</h3>
+                        <p>@basin.Description</p>
+                        <p class="pool__size">@basin.Size</p>
+                    </li>
+                }
+            </ul>
+        }
+        else if (_error == null)
+        {
+            <LoadingIndicator Text="Baden laden…" />
+        }
     </div>
 </section>
 
@@ -76,4 +86,20 @@
         new("Het zwembad is rolstoeltoegankelijk, met een tillift bij het wedstrijdbad"),
         new("Huisdieren mogen niet in het zwembad")
     ];
+
+    private ParkInfoDto? _park;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await ParkService.GetInfoAsync();
+        if (response.Succeeded && response.Value != null)
+        {
+            _park = response.Value;
+        }
+        else
+        {
+            _error = string.IsNullOrWhiteSpace(response.Message) ? "onbekende fout." : response.Message;
+        }
+    }
 }

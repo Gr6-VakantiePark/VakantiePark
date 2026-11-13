@@ -1,5 +1,6 @@
 @page "/boeken/bevestiging"
 @inject BookingState BookingState
+@inject IParkService ParkService
 @namespace VakantiePark.UI.Pages
 
 <PageTitle>Boeking ontvangen | Vakantiepark D’r op Uut</PageTitle>
@@ -18,7 +19,14 @@
                     <h2>Bedankt, @booking.Booking.Guest.Name</h2>
                     <p class="lead">Je boeking voor @booking.Accommodation.Name is ontvangen.</p>
                     <p>Je boekingsnummer is <strong>@booking.Booking.BookingNumber</strong>. Houd dit nummer bij de hand als je contact opneemt met het park.</p>
-                    <p>Je bent welkom vanaf @BookingRules.ArrivalTime op @Formatting.Date(booking.Request.ArrivalDate). Op @Formatting.Date(booking.Request.DepartureDate) vertrek je uiterlijk om @BookingRules.DepartureTime.</p>
+                    @if (_park != null)
+                    {
+                        <p>Je bent welkom vanaf @_park.ArrivalTime op @Formatting.Date(booking.Request.ArrivalDate). Op @Formatting.Date(booking.Request.DepartureDate) vertrek je uiterlijk om @_park.DepartureTime.</p>
+                    }
+                    else
+                    {
+                        <p>Je bent welkom op @Formatting.Date(booking.Request.ArrivalDate). Op @Formatting.Date(booking.Request.DepartureDate) vertrek je weer.</p>
+                    }
                     <p>Heb je een vraag over je boeking? Neem dan <a href="contact">contact op met de receptie</a>.</p>
                     <a class="button button--outline" href="">Terug naar home</a>
                 </div>
@@ -38,4 +46,15 @@
 
 @code {
     private static readonly IReadOnlyList<Breadcrumb> _crumbs = [new("Zoek en boek", "zoek-en-boek")];
+
+    private ParkInfoDto? _park;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await ParkService.GetInfoAsync();
+        if (response.Succeeded)
+        {
+            _park = response.Value;
+        }
+    }
 }

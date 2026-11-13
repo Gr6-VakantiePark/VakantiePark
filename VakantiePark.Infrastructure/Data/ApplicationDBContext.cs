@@ -15,6 +15,8 @@ namespace VakantiePark.Infrastructure.Data
         public DbSet<UnrentablePeriod> UnrentablePeriods => Set<UnrentablePeriod>();
         public DbSet<Guest> Guests => Set<Guest>();
         public DbSet<ParkSettings> ParkSettings => Set<ParkSettings>();
+        public DbSet<OpeningHour> OpeningHours => Set<OpeningHour>();
+        public DbSet<PoolBasin> PoolBasins => Set<PoolBasin>();
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<Permission> Permissions => Set<Permission>();
 
@@ -31,6 +33,7 @@ namespace VakantiePark.Infrastructure.Data
             {
                 context.UseAccommodationSeeder();
                 context.UsePriceSeeder();
+                context.UseParkInfoSeeder();
                 context.UsePermissionSeeder();
                 context.UseEmployeeSeeder();
             });
@@ -39,6 +42,7 @@ namespace VakantiePark.Infrastructure.Data
             {
                 context.UseAccommodationSeeder();
                 context.UsePriceSeeder();
+                context.UseParkInfoSeeder();
                 context.UsePermissionSeeder();
                 context.UseEmployeeSeeder();
                 return Task.CompletedTask;

@@ -1,4 +1,5 @@
 @page "/contact"
+@inject IParkService ParkService
 
 <PageTitle>Contact | Vakantiepark D’r op Uut</PageTitle>
 <HeadContent>
@@ -46,12 +47,36 @@
         </div>
         <address class="contact-details">
             <h2>Receptie</h2>
-            <dl>
-                <div><dt>Adres</dt><dd>Parkweg 1<br>1234 AB Voorbeeldstad</dd></div>
-                <div><dt>Telefoon</dt><dd><a href="tel:+31000000000">000 - 000 00 00</a></dd></div>
-                <div><dt>E-mail</dt><dd><a href="mailto:info@dropuut.example">info@dropuut.example</a></dd></div>
-                <div><dt>Open</dt><dd>Dagelijks 08:30 – 18:00<br>Vrijdag tot 20:00</dd></div>
-            </dl>
+            @if (_park != null)
+            {
+                <dl>
+                    <div><dt>Adres</dt><dd>@_park.Street<br>@_park.PostalCode @_park.City</dd></div>
+                    <div><dt>Telefoon</dt><dd><a href="@Formatting.PhoneLink(_park.PhoneNumber)">@_park.PhoneNumber</a></dd></div>
+                    <div><dt>E-mail</dt><dd><a href="mailto:@_park.Email">@_park.Email</a></dd></div>
+                    <div>
+                        <dt>Open</dt>
+                        <dd>
+                            @for (var i = 0; i < _park.ReceptionHours.Count; i++)
+                            {
+                                var hour = _park.ReceptionHours[i];
+                                if (i > 0)
+                                {
+                                    <br>
+                                }
+                                @($"{hour.Label} {hour.Value}")
+                            }
+                        </dd>
+                    </div>
+                </dl>
+            }
+            else if (_parkError != null)
+            {
+                <p class="search-message" role="alert">De contactgegevens konden niet worden geladen: @_parkError</p>
+            }
+            else
+            {
+                <LoadingIndicator Text="Contactgegevens laden…" />
+            }
             <p class="contact-details__note">Na sluitingstijd en bij nood bel je het noodnummer dat je bij aankomst krijgt.</p>
         </address>
     </div>
@@ -67,6 +92,21 @@
     ];
 
     private ContactMessage _message = new();
+    private ParkInfoDto? _park;
+    private string? _parkError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await ParkService.GetInfoAsync();
+        if (response.Succeeded && response.Value != null)
+        {
+            _park = response.Value;
+        }
+        else
+        {
+            _parkError = string.IsNullOrWhiteSpace(response.Message) ? "onbekende fout." : response.Message;
+        }
+    }
 
     private void Send()
     {

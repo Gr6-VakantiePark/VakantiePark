@@ -11,6 +11,12 @@ namespace VakantiePark.Application.Interfaces
 
         Task<SearchOptionsDto> GetSearchOptionsAsync();
 
+        Task<List<AccommodationTypeSummaryDto>> GetTypesAsync();
+
+        Task<AccommodationTypeDetailDto> GetTypeBySlugAsync(string slug);
+
+        Task<List<ZoneDto>> GetZonesAsync();
+
         Task<PaginatedResult<AccommodationDetailDto>> SearchAsync(AccommodationSearchCriteria criteria);
     }
 }

@@ -20,6 +20,8 @@ namespace VakantiePark.Infrastructure.Data.Seeders
 
             if (!context.Set<Photo>().Any())
                 SeedPhotos(context, Read<Dictionary<string, List<string>>>("photos.json"));
+
+            FillTypeTexts(context);
         }
 
         private static T Read<T>(string fileName) =>
@@ -43,6 +45,8 @@ namespace VakantiePark.Infrastructure.Data.Seeders
                     Name = type.Name,
                     Slug = slug,
                     Category = ParseCategory(type.Value.GetProperty("category").GetString()),
+                    Tagline = ReadOptional(type.Value, "tagline"),
+                    Description = ReadOptional(type.Value, "description"),
                     PricePerNight = 0m,
                 };
                 context.Add(created);
@@ -51,6 +55,34 @@ namespace VakantiePark.Infrastructure.Data.Seeders
 
             return types;
         }
+
+        private static void FillTypeTexts(DbContext context)
+        {
+            var types = context.Set<AccommodationType>()
+                .Where(t => t.Tagline == null || t.Description == null)
+                .ToList();
+            if (types.Count == 0)
+            {
+                return;
+            }
+
+            using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(SeedFolder, "types.json")));
+            foreach (var type in types)
+            {
+                if (!doc.RootElement.TryGetProperty(type.Name, out var seed))
+                {
+                    continue;
+                }
+
+                type.Tagline ??= ReadOptional(seed, "tagline");
+                type.Description ??= ReadOptional(seed, "description");
+            }
+
+            context.SaveChanges();
+        }
+
+        private static string? ReadOptional(JsonElement element, string propertyName) =>
+            element.TryGetProperty(propertyName, out var value) ? value.GetString() : null;
 
         private static Dictionary<string, Amenity> SeedAmenities(
             DbContext context,
