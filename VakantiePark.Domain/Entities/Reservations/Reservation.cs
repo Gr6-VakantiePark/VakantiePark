@@ -6,6 +6,7 @@ namespace VakantiePark.Domain.Entities
     public class Reservation
     {
         public Guid Id { get; set; }
+        public int BookingSequence { get; set; }
         public string BookingNumber { get; set; } = string.Empty;
         public Guid AccommodationId { get; set; }
         public Accommodation Accommodation { get; set; } = default!;

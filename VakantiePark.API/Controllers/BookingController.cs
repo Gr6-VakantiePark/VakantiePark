@@ -8,7 +8,7 @@ namespace VakantiePark.API.Controllers
 {
     [ApiController]
     [AllowAnonymous]
-    [Route("[controller]")]
+    [Route("boekingen")]
     public class BookingController(IBookingService bookingService) : ControllerBase
     {
         [HttpPost]

@@ -20,6 +20,9 @@ namespace VakantiePark.Infrastructure.Data.Configurations
             builder.Property(r => r.Status).IsRequired();
             builder.Property(r => r.AccommodationId).IsRequired();
 
+            builder.Property(r => r.BookingSequence).IsRequired();
+            builder.HasIndex(r => r.BookingSequence).IsUnique();
+
             builder.Property(r => r.BookingNumber).IsRequired().HasMaxLength(20);
             builder.HasIndex(r => r.BookingNumber).IsUnique();
 

@@ -47,24 +47,9 @@
                             <ValidationMessage For="() => _details.Email" />
                         </div>
                         <div class="field">
-                            <label for="phone">Telefoonnummer</label>
+                            <label for="phone">Telefoonnummer <span class="field__hint">Niet verplicht</span></label>
                             <InputText id="phone" type="tel" @bind-Value="_details.Phone" autocomplete="tel" maxlength="@BookingDetails.PhoneMaxLength" />
                             <ValidationMessage For="() => _details.Phone" />
-                        </div>
-                        <div class="field">
-                            <label for="street">Straat en huisnummer</label>
-                            <InputText id="street" @bind-Value="_details.Street" autocomplete="street-address" maxlength="@BookingDetails.StreetMaxLength" />
-                            <ValidationMessage For="() => _details.Street" />
-                        </div>
-                        <div class="field">
-                            <label for="postal-code">Postcode</label>
-                            <InputText id="postal-code" @bind-Value="_details.PostalCode" autocomplete="postal-code" maxlength="@BookingDetails.PostalCodeMaxLength" />
-                            <ValidationMessage For="() => _details.PostalCode" />
-                        </div>
-                        <div class="field">
-                            <label for="city">Woonplaats</label>
-                            <InputText id="city" @bind-Value="_details.City" autocomplete="address-level2" maxlength="@BookingDetails.CityMaxLength" />
-                            <ValidationMessage For="() => _details.City" />
                         </div>
                         <div><button class="button" type="submit">Naar overzicht</button></div>
                     </EditForm>
@@ -76,10 +61,17 @@
         {
             <div class="booking-overview">
                 <p class="lead">Controleer je gegevens. Klopt alles? Bevestig dan je boeking.</p>
-                <BookingSummary Request="_request" Accommodation="_accommodation" Guest="_details" Title="Overzicht van je boeking" />
+                <BookingSummary Request="_request" Accommodation="_accommodation" Guest="_details.ToGuestDto()" Title="Overzicht van je boeking" />
+                @if (_submitError is not null)
+                {
+                    <div class="booking-message" role="alert">
+                        <h2>Je boeking is niet gelukt</h2>
+                        <p>@_submitError</p>
+                    </div>
+                }
                 <div class="booking-actions">
-                    <button class="button button--outline" type="button" @onclick="EditDetails">Gegevens aanpassen</button>
-                    <button class="button" type="button" @onclick="Confirm">Boeking bevestigen</button>
+                    <button class="button button--outline" type="button" disabled="@_submitting" @onclick="EditDetails">Gegevens aanpassen</button>
+                    <button class="button" type="button" disabled="@_submitting" @onclick="ConfirmAsync">@(_submitting ? "Bezig met boeken…" : "Boeking bevestigen")</button>
                 </div>
             </div>
         }
@@ -100,6 +92,8 @@
     private string? _error;
     private BookingDetails _details = new();
     private BookingStep _step = BookingStep.Details;
+    private bool _submitting;
+    private string? _submitError;
 
     [SupplyParameterFromQuery(Name = BookingQuery.Accommodation)]
     public string? AccommodationValue { get; set; }
@@ -147,20 +141,62 @@
         }
 
         _error = BookingQuery.CheckAgainst(request!, response.Value);
-        if (_error is null)
-            _accommodation = response.Value;
-    }
-
-    private void ShowSummary() => _step = BookingStep.Summary;
-
-    private void EditDetails() => _step = BookingStep.Details;
-
-    private void Confirm()
-    {
-        if (_request is null || _accommodation is null)
+        if (_error is not null)
             return;
 
-        BookingState.Confirm(_request, _accommodation, _details);
-        Navigation.NavigateTo("boeken/bevestiging");
+        var availability = await BookingService.CheckAvailabilityAsync(request!);
+        if (!availability.Succeeded)
+        {
+            _error = string.IsNullOrWhiteSpace(availability.Message) ? "Dit verblijf is niet beschikbaar in deze periode." : availability.Message;
+            return;
+        }
+
+        _accommodation = response.Value;
+    }
+
+    private void ShowSummary()
+    {
+        _submitError = null;
+        _step = BookingStep.Summary;
+    }
+
+    private void EditDetails()
+    {
+        _submitError = null;
+        _step = BookingStep.Details;
+    }
+
+    private async Task ConfirmAsync()
+    {
+        if (_request is null || _accommodation is null || _submitting)
+            return;
+
+        if (_accommodation.Price is not { } price)
+        {
+            _submitError = "De prijs van dit verblijf is nog niet bekend. Neem contact op met de receptie.";
+            return;
+        }
+
+        _submitting = true;
+        _submitError = null;
+
+        var response = await BookingService.CreateAsync(_request, _details.ToGuestDto(), price.Total);
+        if (response.Succeeded && response.Value is not null)
+        {
+            BookingState.Confirm(response.Value, _request, _accommodation);
+            Navigation.NavigateTo("boeken/bevestiging");
+            return;
+        }
+
+        _submitError = string.IsNullOrWhiteSpace(response.Message) ? "Je boeking kon niet worden opgeslagen. Probeer het opnieuw." : response.Message;
+        await RefreshStayAsync();
+        _submitting = false;
+    }
+
+    private async Task RefreshStayAsync()
+    {
+        var stay = await BookingService.GetStayAsync(_request!);
+        if (stay.Succeeded && stay.Value is not null)
+            _accommodation = stay.Value;
     }
 }

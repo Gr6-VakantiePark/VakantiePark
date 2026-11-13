@@ -1,4 +1,6 @@
 @using VakantiePark.Shared.DTOs.Accommodations
+@using VakantiePark.Shared.DTOs.Prices
+@using VakantiePark.Shared.DTOs.Reservations
 @using VakantiePark.UI.Models
 @namespace VakantiePark.UI.Components
 
@@ -26,13 +28,15 @@
         <dl>
             <div><dt>Naam</dt><dd>@Guest.Name</dd></div>
             <div><dt>E-mailadres</dt><dd>@Guest.Email</dd></div>
-            <div><dt>Telefoon</dt><dd>@Guest.Phone</dd></div>
-            <div><dt>Adres</dt><dd>@Guest.Street<br>@Guest.PostalCode @Guest.City</dd></div>
+            @if (!string.IsNullOrWhiteSpace(Guest.PhoneNumber))
+            {
+                <div><dt>Telefoon</dt><dd>@Guest.PhoneNumber</dd></div>
+            }
         </dl>
     }
 
     <h3>Prijs</h3>
-    @if (Accommodation.Price is { } price)
+    @if ((Price ?? Accommodation.Price) is { } price)
     {
         <dl>
             <div><dt>Verblijf (@price.Nights × @Formatting.Euro(price.PricePerNight))</dt><dd>@Formatting.Euro(price.Stay)</dd></div>
@@ -55,7 +59,10 @@
     public AccommodationDetailDto Accommodation { get; set; } = default!;
 
     [Parameter]
-    public BookingDetails? Guest { get; set; }
+    public GuestDto? Guest { get; set; }
+
+    [Parameter]
+    public PriceDto? Price { get; set; }
 
     [Parameter]
     public string Title { get; set; } = "Je verblijf";

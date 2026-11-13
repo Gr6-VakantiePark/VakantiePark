@@ -8,6 +8,8 @@ namespace VakantiePark.Domain.Interfaces
     {
         Task<List<Reservation>> GetActiveAndFutureReservationsForAccomodation(ReservationAvailabilityRequest request);
 
-        Task<bool> BookingNumberExistsAsync(string bookingNumber);
+        Task<int?> GetHighestBookingSequenceAsync();
+
+        Task<Reservation?> GetByBookingNumberAsync(string bookingNumber);
     }
 }

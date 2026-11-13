@@ -377,6 +377,9 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("BookingSequence")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -404,6 +407,9 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.HasIndex("AccommodationId");
 
                     b.HasIndex("BookingNumber")
+                        .IsUnique();
+
+                    b.HasIndex("BookingSequence")
                         .IsUnique();
 
                     b.HasIndex("GuestId");
