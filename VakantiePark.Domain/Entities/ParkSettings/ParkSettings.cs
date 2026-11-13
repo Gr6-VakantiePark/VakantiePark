@@ -19,5 +19,15 @@ namespace VakantiePark.Domain.Entities
         public TimeOnly DepartureTime { get; set; }
 
         public int MinimumNightsHighSeason { get; set; }
+
+        public string Street { get; set; } = string.Empty;
+
+        public string PostalCode { get; set; } = string.Empty;
+
+        public string City { get; set; } = string.Empty;
+
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public string Email { get; set; } = string.Empty;
     }
 }

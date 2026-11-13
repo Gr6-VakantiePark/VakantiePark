@@ -18,6 +18,8 @@ namespace VakantiePark.Domain.Interfaces
 
         Task<List<Amenity>> GetAmenitiesAsync();
 
+        Task<int> CountWithAmenityAsync(string amenityCode);
+
         Task<Dictionary<Guid, List<AccommodationCategory>>> GetAmenityCategoriesAsync();
 
         Task<(int MaxPersons, int MaxPets)> GetMaximumsAsync();

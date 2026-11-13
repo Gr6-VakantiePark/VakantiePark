@@ -1,0 +1,23 @@
+{
+  "contact": {
+    "street": "Parkweg 1",
+    "postalCode": "1234 AB",
+    "city": "Voorbeeldstad",
+    "phoneNumber": "000 - 000 00 00",
+    "email": "info@dropuut.example"
+  },
+  "openingHours": [
+    { "facility": "Reception", "label": "Dagelijks", "value": "08:30 – 18:00", "showOnHome": false },
+    { "facility": "Reception", "label": "Vrijdag", "value": "tot 20:00", "showOnHome": false },
+    { "facility": "Pool", "label": "Maandag tot en met vrijdag", "value": "09:00 – 21:00", "showOnHome": true },
+    { "facility": "Pool", "label": "Zaterdag en zondag", "value": "08:00 – 21:00", "showOnHome": true },
+    { "facility": "Pool", "label": "Banenzwemmen", "value": "Dagelijks 08:00 – 10:00", "showOnHome": false },
+    { "facility": "Pool", "label": "Buitenbad", "value": "Mei tot en met september", "showOnHome": true }
+  ],
+  "poolBasins": [
+    { "name": "Wedstrijdbad", "description": "Voor banenzwemmen en vrij zwemmen.", "size": "25 meter, 1,20 tot 2,00 meter diep" },
+    { "name": "Recreatiebad", "description": "Met golfslag, bubbelbank en een glijbaan van 60 meter.", "size": "0,90 tot 1,30 meter diep" },
+    { "name": "Peuterbad", "description": "Warm, ondiep water met een kleine glijbaan en fonteintjes.", "size": "0,20 tot 0,40 meter diep" },
+    { "name": "Buitenbad", "description": "Verwarmd buitenbad met ligweide, open in de zomer.", "size": "0,80 tot 1,40 meter diep" }
+  ]
+}

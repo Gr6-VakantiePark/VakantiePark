@@ -13,6 +13,8 @@ namespace VakantiePark.Infrastructure.Data.Seeders
         public static Guid Photo(string typeSlug, string fileName) => For("photo", $"{typeSlug}/{fileName}");
         public static Guid Permission(string code) => For("permission", code);
         public static Guid Employee(string email) => For("employee", email);
+        public static Guid OpeningHour(string facility, string label) => For("opening-hour", $"{facility}/{label}");
+        public static Guid PoolBasin(string name) => For("pool-basin", name);
 
         public static Guid For(string kind, string key)
         {

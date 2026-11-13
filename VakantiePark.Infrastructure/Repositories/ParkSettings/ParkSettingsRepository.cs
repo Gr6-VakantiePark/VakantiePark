@@ -12,5 +12,17 @@ namespace VakantiePark.Infrastructure.Repositories
                 .AsNoTracking()
                 .OrderBy(i => i.Id)
                 .FirstOrDefaultAsync();
+
+        public Task<List<OpeningHour>> GetOpeningHoursAsync() =>
+            context.OpeningHours
+                .AsNoTracking()
+                .OrderBy(o => o.SortOrder)
+                .ToListAsync();
+
+        public Task<List<PoolBasin>> GetPoolBasinsAsync() =>
+            context.PoolBasins
+                .AsNoTracking()
+                .OrderBy(p => p.SortOrder)
+                .ToListAsync();
     }
 }

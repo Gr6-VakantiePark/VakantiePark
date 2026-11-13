@@ -57,12 +57,7 @@ namespace VakantiePark.Application.Services
         public async Task<List<AccommodationTypeSummaryDto>> GetTypesAsync()
         {
             var types = await repository.GetTypesWithAccommodationsAsync();
-            return types
-                .Select(t => t.ToSummaryDto())
-                .OrderBy(t => t.MinPersons)
-                .ThenByDescending(t => t.UnitCount)
-                .ThenBy(t => t.Name)
-                .ToList();
+            return types.ToSummaryDtos();
         }
 
         public async Task<AccommodationTypeDetailDto> GetTypeBySlugAsync(string slug)
@@ -84,14 +79,7 @@ namespace VakantiePark.Application.Services
         public async Task<List<ZoneDto>> GetZonesAsync()
         {
             var types = await repository.GetTypesWithAccommodationsAsync();
-            return types
-                .GroupBy(t => t.Category)
-                .OrderBy(g => g.Key)
-                .SelectMany(g => g
-                    .SelectMany(t => t.Accommodations)
-                    .ToZoneDtos(g.Key.ToString())
-                    .OrderBy(z => z.Name))
-                .ToList();
+            return types.ToParkZoneDtos();
         }
 
         public async Task<SearchOptionsDto> GetSearchOptionsAsync()
@@ -102,26 +90,7 @@ namespace VakantiePark.Application.Services
             var (maxPersons, maxPets) = await repository.GetMaximumsAsync();
             var settings = await settingsRepository.GetAsync();
 
-            return new SearchOptionsDto
-            {
-                Categories = types.Select(t => t.Category).Distinct().Order().Select(c => c.ToString()).ToList(),
-                Types = types
-                    .Select(t => new AccommodationTypeDto { Name = t.Name, Slug = t.Slug, Category = t.Category.ToString() })
-                    .ToList(),
-                Amenities = amenities
-                    .Where(v => categoriesPerAmenity.ContainsKey(v.Id))
-                    .Select(v => new AmenityOptionDto
-                    {
-                        Id = v.Id,
-                        Code = v.Code,
-                        Name = v.Name,
-                        Categories = categoriesPerAmenity[v.Id].Select(c => c.ToString()).ToList(),
-                    })
-                    .ToList(),
-                MaxPersons = maxPersons,
-                MaxPets = maxPets,
-                TouristTaxMinimumAge = settings?.TouristTaxMinimumAge ?? SearchOptionsDto.DefaultTouristTaxMinimumAge,
-            };
+            return types.ToSearchOptionsDto(amenities, categoriesPerAmenity, maxPersons, maxPets, settings);
         }
 
         public async Task<PaginatedResult<AccommodationDetailDto>> SearchAsync(AccommodationSearchCriteria criteria)

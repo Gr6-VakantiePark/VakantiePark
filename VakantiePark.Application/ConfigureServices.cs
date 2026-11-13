@@ -19,6 +19,7 @@ namespace VakantiePark.Application
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IAvailabilityService, AvailabilityService>();
+            services.AddScoped<IParkService, ParkService>();
 
             return services;
         }

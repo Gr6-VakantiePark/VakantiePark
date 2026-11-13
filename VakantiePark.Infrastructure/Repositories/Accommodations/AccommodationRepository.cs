@@ -52,6 +52,9 @@ namespace VakantiePark.Infrastructure.Repositories
                 .FirstOrDefaultAsync(t => t.Slug == normalized);
         }
 
+        public Task<int> CountWithAmenityAsync(string amenityCode) =>
+            context.Accommodations.CountAsync(a => a.Amenities.Any(v => v.Code == amenityCode));
+
         public Task<List<Amenity>> GetAmenitiesAsync() =>
             context.Amenities
                 .AsNoTracking()

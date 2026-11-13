@@ -1,4 +1,5 @@
 using VakantiePark.Domain.Entities;
+using VakantiePark.Domain.Enums;
 using VakantiePark.Shared.DTOs.Accommodations;
 
 namespace VakantiePark.Application.Extensions.Accommodations
@@ -48,6 +49,51 @@ namespace VakantiePark.Application.Extensions.Accommodations
                 .OrderBy(v => v.Name)
                 .Select(v => new AmenityDto { Id = v.Id, Code = v.Code, Name = v.Name })
                 .ToList(),
+        };
+
+        public static List<AccommodationTypeSummaryDto> ToSummaryDtos(this IEnumerable<AccommodationType> types) =>
+            types
+                .Select(t => t.ToSummaryDto())
+                .OrderBy(t => t.MinPersons)
+                .ThenByDescending(t => t.UnitCount)
+                .ThenBy(t => t.Name)
+                .ToList();
+
+        public static List<ZoneDto> ToParkZoneDtos(this IEnumerable<AccommodationType> types) =>
+            types
+                .GroupBy(t => t.Category)
+                .OrderBy(g => g.Key)
+                .SelectMany(g => g
+                    .SelectMany(t => t.Accommodations)
+                    .ToZoneDtos(g.Key.ToString())
+                    .OrderBy(z => z.Name))
+                .ToList();
+
+        public static SearchOptionsDto ToSearchOptionsDto(
+            this List<AccommodationType> types,
+            List<Amenity> amenities,
+            Dictionary<Guid, List<AccommodationCategory>> categoriesPerAmenity,
+            int maxPersons,
+            int maxPets,
+            ParkSettings? settings) => new()
+        {
+            Categories = types.Select(t => t.Category).Distinct().Order().Select(c => c.ToString()).ToList(),
+            Types = types
+                .Select(t => new AccommodationTypeDto { Name = t.Name, Slug = t.Slug, Category = t.Category.ToString() })
+                .ToList(),
+            Amenities = amenities
+                .Where(v => categoriesPerAmenity.ContainsKey(v.Id))
+                .Select(v => new AmenityOptionDto
+                {
+                    Id = v.Id,
+                    Code = v.Code,
+                    Name = v.Name,
+                    Categories = categoriesPerAmenity[v.Id].Select(c => c.ToString()).ToList(),
+                })
+                .ToList(),
+            MaxPersons = maxPersons,
+            MaxPets = maxPets,
+            TouristTaxMinimumAge = settings?.TouristTaxMinimumAge ?? SearchOptionsDto.DefaultTouristTaxMinimumAge,
         };
 
         public static AccommodationTypeSummaryDto ToSummaryDto(this AccommodationType type)

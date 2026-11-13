@@ -29,6 +29,7 @@ namespace VakantiePark.UI
             builder.Services.AddScoped<IHttpService, HttpService>();
             builder.Services.AddScoped<ISearchService, ApiSearchService>();
             builder.Services.AddScoped<IBookingService, ApiBookingService>();
+            builder.Services.AddScoped<IParkService, ApiParkService>();
             builder.Services.AddScoped<BookingState>();
             builder.Services.AddScoped<IAccountService, ApiAccountService>();
             builder.Services.AddTransient<AuthHandler>();

@@ -19,6 +19,11 @@ namespace VakantiePark.Infrastructure.Data.Configurations
             builder.Property(i => i.ArrivalTime).IsRequired();
             builder.Property(i => i.DepartureTime).IsRequired();
             builder.Property(i => i.MinimumNightsHighSeason).IsRequired();
+            builder.Property(i => i.Street).IsRequired().HasMaxLength(100);
+            builder.Property(i => i.PostalCode).IsRequired().HasMaxLength(10);
+            builder.Property(i => i.City).IsRequired().HasMaxLength(100);
+            builder.Property(i => i.PhoneNumber).IsRequired().HasMaxLength(20);
+            builder.Property(i => i.Email).IsRequired().HasMaxLength(254);
         }
     }
 }

@@ -1,5 +1,6 @@
 @page "/"
 @inject ISearchService SearchService
+@inject IParkService ParkService
 
 <PageTitle>Home | Vakantiepark D’r op Uut</PageTitle>
 <HeadContent>
@@ -10,7 +11,13 @@
     <div class="container hero__grid">
         <div>
             <h1>Tussen bos, heide en water</h1>
-            <p class="hero__intro">150 vakantiehuizen en 50 kampeerplaatsen, verdeeld over 9 zones. Met een overdekt zwembad midden in het park.</p>
+            <p class="hero__intro">
+                @if (!_isLoading && _error == null)
+                {
+                    @($"{_holidayHomes.Sum(type => type.UnitCount)} vakantiehuizen en {_campingPitches.Sum(type => type.UnitCount)} kampeerplaatsen, verdeeld over {_zones.Count} zones. ")
+                }
+                Met een overdekt zwembad midden in het park.
+            </p>
             <div class="hero__actions">
                 <a class="button" href="zoek-en-boek">Zoek en boek</a>
                 <a class="button button--outline" href="accommodaties">Bekijk accommodaties</a>
@@ -43,7 +50,7 @@ else
         <div class="container">
             <div class="section__header">
                 <h2 id="heading-houses">Vakantiehuizen</h2>
-                <p>Van een huis voor vier tot een bosvilla voor tien.</p>
+                <p>@PersonsRange(_holidayHomesDto)</p>
             </div>
             <TypeCardList Types="_holidayHomes" />
         </div>
@@ -53,7 +60,7 @@ else
         <div class="container">
             <div class="section__header">
                 <h2 id="heading-camping">Kamperen</h2>
-                <p>Met tent, caravan of camper.</p>
+                <p>Met tent, caravan of camper. @PersonsRange(_campingPitchesDto)</p>
             </div>
             <TypeCardList Types="_campingPitches" />
         </div>
@@ -91,8 +98,13 @@ else
                 <a class="button" href="zwembad">Naar het zwembad</a>
             </div>
             <dl>
-                <div><dt>Dagelijks</dt><dd>09:00 – 21:00</dd></div>
-                <div><dt>Buitenbad</dt><dd>Mei tot en met september</dd></div>
+                @if (_park != null)
+                {
+                    @foreach (var hour in _park.PoolHours.Where(hour => hour.ShowOnHome))
+                    {
+                        <div><dt>@hour.Label</dt><dd>@hour.Value</dd></div>
+                    }
+                }
                 <div><dt>Toegang</dt><dd>Gratis voor gasten</dd></div>
             </dl>
         </div>
@@ -103,11 +115,20 @@ else
     private List<AccommodationType> _holidayHomes = new();
     private List<AccommodationType> _campingPitches = new();
     private List<ZoneDto> _zones = new();
+    private List<AccommodationTypeSummaryDto> _holidayHomesDto = new();
+    private List<AccommodationTypeSummaryDto> _campingPitchesDto = new();
+    private ParkInfoDto? _park;
     private string? _error;
     private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        var parkResponse = await ParkService.GetInfoAsync();
+        if (parkResponse.Succeeded)
+        {
+            _park = parkResponse.Value;
+        }
+
         try
         {
             var typesResponse = await SearchService.GetTypesAsync();
@@ -124,6 +145,13 @@ else
                 return;
             }
 
+            _holidayHomesDto = typesResponse.Value
+                .Where(type => AccommodationTypeMappings.ParseCategory(type.Category) == AccommodationCategory.HolidayHome)
+                .ToList();
+            _campingPitchesDto = typesResponse.Value
+                .Where(type => AccommodationTypeMappings.ParseCategory(type.Category) == AccommodationCategory.CampingPitch)
+                .ToList();
+
             var types = typesResponse.Value.Select(type => type.ToAccommodationType()).ToList();
             _holidayHomes = types.Where(type => type.Category == AccommodationCategory.HolidayHome).ToList();
             _campingPitches = types.Where(type => type.Category == AccommodationCategory.CampingPitch).ToList();
@@ -137,5 +165,15 @@ else
         {
             _isLoading = false;
         }
+    }
+
+    private static string PersonsRange(List<AccommodationTypeSummaryDto> types)
+    {
+        if (types.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return $"Voor {types.Min(type => type.MinPersons)} tot {types.Max(type => type.MaxPersons)} personen.";
     }
 }

@@ -37,12 +37,7 @@ namespace VakantiePark.Application.Services
 
             var (token, expiresAt) = tokenService.CreateToken(employee);
 
-            return new LoginResponseDto
-            {
-                Token = token,
-                ExpiresAt = expiresAt,
-                Employee = employee.ToDto(),
-            };
+            return employee.ToLoginResponse(token, expiresAt);
         }
     }
 }

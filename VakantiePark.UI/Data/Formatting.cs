@@ -11,4 +11,7 @@ public static class Formatting
     public static string Date(DateOnly date) => date.ToString("dddd d MMMM yyyy", Dutch);
 
     public static string Iso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    public static string PhoneLink(string phoneNumber) =>
+        $"tel:{new string(phoneNumber.Where(c => char.IsDigit(c) || c == '+').ToArray())}";
 }

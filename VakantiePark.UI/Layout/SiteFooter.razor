@@ -1,3 +1,5 @@
+@inject IParkService ParkService
+
 <footer class="site-footer">
     <div class="container site-footer__grid">
         <div>
@@ -21,8 +23,11 @@
         <div>
             <h2>Contact</h2>
             <ul>
-                <li><a href="tel:+31000000000">000 - 000 00 00</a></li>
-                <li><a href="mailto:info@dropuut.example">info@dropuut.example</a></li>
+                @if (_park != null)
+                {
+                    <li><a href="@Formatting.PhoneLink(_park.PhoneNumber)">@_park.PhoneNumber</a></li>
+                    <li><a href="mailto:@_park.Email">@_park.Email</a></li>
+                }
                 <li><a href="contact">Contactformulier</a></li>
                 <li><a href="beheer/inloggen">Inloggen voor medewerkers</a></li>
             </ul>
@@ -32,3 +37,16 @@
         <div class="container">Vakantiepark D’r op Uut. Voorbeeldtemplate voor onderwijsdoeleinden.</div>
     </div>
 </footer>
+
+@code {
+    private ParkInfoDto? _park;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await ParkService.GetInfoAsync();
+        if (response.Succeeded)
+        {
+            _park = response.Value;
+        }
+    }
+}

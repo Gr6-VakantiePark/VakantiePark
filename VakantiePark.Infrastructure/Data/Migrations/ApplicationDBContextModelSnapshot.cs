@@ -237,6 +237,38 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("Employees", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.OpeningHour", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Facility")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("ShowOnHome")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OpeningHours", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.ParkSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -246,6 +278,11 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Property<TimeOnly>("ArrivalTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("CleaningFee")
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
@@ -253,11 +290,31 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Property<TimeOnly>("DepartureTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("MinimumNightsHighSeason")
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("PetFeePerNight")
                         .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TouristTaxMinimumAge")
@@ -341,6 +398,35 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.HasKey("PhotoId");
 
                     b.ToTable("PhotoFiles", (string)null);
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.PoolBasin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PoolBasins", (string)null);
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.Reservation", b =>
