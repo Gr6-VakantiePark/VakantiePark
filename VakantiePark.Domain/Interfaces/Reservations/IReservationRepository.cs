@@ -6,5 +6,9 @@ namespace VakantiePark.Domain.Interfaces
     public interface IReservationRepository
     {
         Task<List<Reservation>> GetActiveAndFutureReservationsForAccomodation(ReservationAvailabilityRequest request);
+
+        Task<int?> GetHighestBookingSequenceAsync();
+
+        Task<Reservation?> GetByBookingNumberAsync(string bookingNumber);
     }
 }

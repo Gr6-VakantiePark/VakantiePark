@@ -233,6 +233,31 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.ToTable("Employees", (string)null);
                 });
 
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Guest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Guests", (string)null);
+                });
+
             modelBuilder.Entity("VakantiePark.Domain.Entities.ParkSettings", b =>
                 {
                     b.Property<Guid>("Id")
@@ -348,7 +373,21 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Property<Guid>("AccommodationId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("BookingNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BookingSequence")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GuestId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("NumberOfGuests")
@@ -360,9 +399,21 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccommodationId");
+
+                    b.HasIndex("BookingNumber")
+                        .IsUnique();
+
+                    b.HasIndex("BookingSequence")
+                        .IsUnique();
+
+                    b.HasIndex("GuestId");
 
                     b.ToTable("Reservations", (string)null);
                 });
@@ -464,7 +515,15 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("VakantiePark.Domain.Entities.Guest", "Guest")
+                        .WithMany("Reservations")
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Accommodation");
+
+                    b.Navigation("Guest");
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.UnrentablePeriod", b =>
@@ -483,6 +542,11 @@ namespace VakantiePark.Infrastructure.Data.Migrations
                     b.Navigation("Accommodations");
 
                     b.Navigation("Photos");
+                });
+
+            modelBuilder.Entity("VakantiePark.Domain.Entities.Guest", b =>
+                {
+                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("VakantiePark.Domain.Entities.Photo", b =>
