@@ -4,7 +4,6 @@ using VakantiePark.Shared.Common;
 using VakantiePark.Shared.Common.Pagination;
 using VakantiePark.Shared.DTOs.Accommodations;
 using VakantiePark.Shared.DTOs.Auth;
-using VakantiePark.Shared.DTOs.Prices;
 
 namespace VakantiePark.UnitTests.Validation
 {
@@ -19,7 +18,7 @@ namespace VakantiePark.UnitTests.Validation
             Password = "Zomer2027!Vakantie",
             FirstName = "Sanne",
             LastName = "de Vries",
-            Roles = ["reception"],
+            Permissions = ["guests.view"],
         };
 
         private static AccommodationSearchCriteria CreateCriteria() => new()
@@ -76,10 +75,67 @@ namespace VakantiePark.UnitTests.Validation
         }
 
         [Fact]
-        public void Validate_CreateEmployeeWithoutRoles_ThrowsArgumentException()
+        public void Validate_CreateEmployeeWithoutPermissions_DoesNotThrow()
         {
             var request = CreateEmployee();
-            request.Roles = [];
+            request.Permissions = [];
+
+            var exception = Record.Exception(() => request.Validate());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void Validate_CreateEmployeeWithEmptyPermission_ThrowsArgumentException()
+        {
+            var request = CreateEmployee();
+            request.Permissions = [" "];
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void Validate_NullUpdatePermissions_ThrowsArgumentException()
+        {
+            UpdateEmployeePermissionsDto? request = null;
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void Validate_UpdatePermissionsWithTooLongCode_ThrowsArgumentException()
+        {
+            var request = new UpdateEmployeePermissionsDto { Permissions = [new string('a', FieldLimits.PermissionCodeMaxLength + 1)] };
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Theory]
+        [InlineData("", "Sanne", "de Vries")]
+        [InlineData("geen-e-mailadres", "Sanne", "de Vries")]
+        [InlineData("nieuw@example.com", " ", "de Vries")]
+        [InlineData("nieuw@example.com", "Sanne", "")]
+        public void Validate_InvalidUpdateEmployee_ThrowsArgumentException(string email, string firstName, string lastName)
+        {
+            var request = new UpdateEmployeeDto { Email = email, FirstName = firstName, LastName = lastName };
+
+            Assert.Throws<ArgumentException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void Validate_ValidUpdateEmployee_DoesNotThrow()
+        {
+            var request = new UpdateEmployeeDto { Email = "nieuw@example.com", FirstName = "Sanne", LastName = "de Vries" };
+
+            var exception = Record.Exception(() => request.Validate());
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void Validate_UpdateEmployeeNameTooLong_ThrowsArgumentException()
+        {
+            var request = new UpdateEmployeeDto { Email = "nieuw@example.com", FirstName = new string('a', FieldLimits.FirstNameMaxLength + 1), LastName = "de Vries" };
 
             Assert.Throws<ArgumentException>(() => request.Validate());
         }
@@ -153,18 +209,34 @@ namespace VakantiePark.UnitTests.Validation
             Assert.Throws<ArgumentException>(() => criteria.Validate());
         }
 
-        [Fact]
-        public void Validate_PriceRequestTypeTooLong_ThrowsArgumentException()
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(2)]
+        public void Validate_InvalidYoungChildren_ThrowsArgumentException(int youngChildren)
         {
-            var request = new PriceRequestDto
-            {
-                Type = new string('a', FieldLimits.SlugMaxLength + 1),
-                Arrival = Arrival,
-                Departure = Departure,
-                Persons = 2,
-            };
+            var criteria = CreateCriteria();
+            criteria.YoungChildren = youngChildren;
 
-            Assert.Throws<ArgumentException>(() => request.Validate());
+            Assert.Throws<ArgumentException>(() => criteria.Validate());
+        }
+
+        [Fact]
+        public void Validate_YoungChildrenWithOlderPerson_DoesNotThrow()
+        {
+            var criteria = CreateCriteria();
+            criteria.YoungChildren = 1;
+
+            var exception = Record.Exception(() => criteria.Validate());
+
+            Assert.Null(exception);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(FieldLimits.MaxPets + 1)]
+        public void ValidateStay_InvalidPets_ThrowsArgumentException(int pets)
+        {
+            Assert.Throws<ArgumentException>(() => AccommodationValidation.ValidateStay(Arrival, Departure, 2, 0, pets));
         }
 
         [Fact]

@@ -1,8 +1,5 @@
 @page "/beheer/medewerkers"
-@attribute [Authorize(Policy = VakantiePark.Shared.Common.Permissions.ManageEmployees)]
-@using System.Globalization
-@using VakantiePark.Shared.DTOs.Auth
-@using VakantiePark.UI.Interfaces
+@attribute [Authorize(Policy = Permissions.Owner)]
 @inject IAccountService AccountService
 
 <PageTitle>Medewerkers | Vakantiepark D’r op Uut</PageTitle>
@@ -32,31 +29,149 @@
         }
         else
         {
+            @if (_message is not null)
+            {
+                <p class="employees__message" role="status">@_message</p>
+            }
+
+            @if (_editing is not null)
+            {
+                <div class="employees__editor">
+                    <h3 id="heading-edit-employee" tabindex="-1" @ref="_editorHeading">@_editing.FirstName @_editing.LastName bewerken</h3>
+
+                    <EditForm class="form" Model="_form" OnValidSubmit="SaveAsync" FormName="edit-employee">
+                        <DataAnnotationsValidator />
+                        <div class="field">
+                            <label for="first-name">Voornaam</label>
+                            <InputText id="first-name" @bind-Value="_form.FirstName" autocomplete="off" maxlength="@FieldLimits.FirstNameMaxLength" />
+                            <ValidationMessage For="() => _form.FirstName" />
+                        </div>
+                        <div class="field">
+                            <label for="last-name">Achternaam</label>
+                            <InputText id="last-name" @bind-Value="_form.LastName" autocomplete="off" maxlength="@FieldLimits.LastNameMaxLength" />
+                            <ValidationMessage For="() => _form.LastName" />
+                        </div>
+                        <div class="field">
+                            <label for="email">E-mailadres</label>
+                            <InputText id="email" type="email" @bind-Value="_form.Email" autocomplete="off" maxlength="@FieldLimits.EmailMaxLength" />
+                            <ValidationMessage For="() => _form.Email" />
+                        </div>
+
+                        @if (_editError is not null)
+                        {
+                            <p class="employees__error" role="alert">@_editError</p>
+                        }
+
+                        <div class="employees__buttons">
+                            <button class="button" type="submit" disabled="@_busy">
+                                <i class="bi bi-check-lg" aria-hidden="true"></i> @(_busy ? "Bezig met opslaan…" : "Opslaan")
+                            </button>
+                            <button class="button button--outline" type="button" @onclick="CloseEditor" disabled="@_busy">Annuleren</button>
+                        </div>
+                    </EditForm>
+
+                    <fieldset class="field employees__rights">
+                        <legend>Rechten</legend>
+                        <div class="employees__checks">
+                            <label class="employees__check" for="right-owner">
+                                <input id="right-owner" type="checkbox" checked="@_rightsOwner" disabled="@(_busy || _editing.Id == _currentEmployeeId)"
+                                       @onchange="e => _rightsOwner = e.Value is true" />
+                                <span>Eigenaar <span class="field__hint">Mag alles, ook medewerkers en hun rechten beheren</span></span>
+                            </label>
+                            @foreach (var permission in _permissions)
+                            {
+                                <label class="employees__check" for="@($"right-{permission.Code.Replace('.', '-')}")">
+                                    <input id="@($"right-{permission.Code.Replace('.', '-')}")" type="checkbox"
+                                           checked="@(_rightsOwner || _rights.Contains(permission.Code))" disabled="@(_busy || _rightsOwner)"
+                                           @onchange="e => ToggleRight(permission.Code, e.Value is true)" />
+                                    <span>@permission.Name</span>
+                                </label>
+                            }
+                        </div>
+                        @if (_editing.Id == _currentEmployeeId)
+                        {
+                            <p class="note">Je kunt je eigen eigenaarsrechten niet afnemen.</p>
+                        }
+                        <div>
+                            <button class="button button--outline" type="button" @onclick="SavePermissionsAsync" disabled="@_busy">
+                                <i class="bi bi-shield-check" aria-hidden="true"></i> Rechten opslaan
+                            </button>
+                        </div>
+                    </fieldset>
+
+                    <div class="employees__status">
+                        <h4>Status: @(_editing.IsActive ? "actief" : "uitgeschakeld")</h4>
+                        @if (_editing.Id == _currentEmployeeId)
+                        {
+                            <p class="note">Je kunt je eigen account niet uitschakelen.</p>
+                        }
+                        else if (!_editing.IsActive)
+                        {
+                            <p class="note">Deze medewerker kan niet inloggen.</p>
+                            <button class="button button--outline" type="button" @onclick="() => SetActiveAsync(true)" disabled="@_busy">
+                                <i class="bi bi-person-check" aria-hidden="true"></i> Inschakelen
+                            </button>
+                        }
+                        else if (_confirmDeactivate)
+                        {
+                            <p class="employees__confirm" role="alert">Weet je het zeker? @_editing.FirstName kan daarna niet meer inloggen.</p>
+                            <div class="employees__buttons">
+                                <button class="button" type="button" @onclick="() => SetActiveAsync(false)" disabled="@_busy">Ja, uitschakelen</button>
+                                <button class="button button--outline" type="button" @onclick="() => _confirmDeactivate = false" disabled="@_busy">Nee</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="button button--outline" type="button" @onclick="() => _confirmDeactivate = true" disabled="@_busy">
+                                <i class="bi bi-person-x" aria-hidden="true"></i> Uitschakelen
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
                             <th scope="col">Naam</th>
                             <th scope="col">E-mailadres</th>
-                            <th scope="col">Rollen</th>
+                            <th scope="col">Rechten</th>
                             <th scope="col">Status</th>
                             <th scope="col">Laatst ingelogd</th>
+                            <th scope="col"><span class="visually-hidden">Acties</span></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var employee in _employees)
                         {
-                            <tr @key="employee.Id">
+                            <tr @key="employee.Id" class="@(employee.IsActive ? null : "employees__row--inactive")">
                                 <td>@employee.FirstName @employee.LastName</td>
                                 <td>@employee.Email</td>
                                 <td>
-                                    @foreach (var role in employee.RoleNames)
+                                    @if (employee.IsOwner)
                                     {
-                                        <span class="tag employees__role">@role</span>
+                                        <span class="tag employees__role">Eigenaar</span>
+                                    }
+                                    else if (employee.PermissionNames.Count == 0)
+                                    {
+                                        <span class="note">Geen</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var name in employee.PermissionNames)
+                                        {
+                                            <span class="tag employees__role">@name</span>
+                                        }
                                     }
                                 </td>
                                 <td>@(employee.IsActive ? "Actief" : "Uitgeschakeld")</td>
                                 <td>@FormatLastLogin(employee.LastLoginAt)</td>
+                                <td>
+                                    <button class="button button--outline employees__edit" type="button" @onclick="() => OpenEditor(employee)" aria-label="@($"{employee.FirstName} {employee.LastName} bewerken")">
+                                        <i class="bi bi-pencil" aria-hidden="true"></i> Bewerken
+                                    </button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -67,11 +182,22 @@
 </section>
 
 @code {
-    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
     private static readonly IReadOnlyList<Breadcrumb> _crumbs = [new("Beheer", "beheer")];
 
     private List<EmployeeDto>? _employees;
     private string? _error;
+    private string? _message;
+    private EmployeeDto? _editing;
+    private EmployeeForm _form = new();
+    private string? _editError;
+    private bool _busy;
+    private bool _confirmDeactivate;
+    private Guid _currentEmployeeId;
+    private ElementReference _editorHeading;
+    private bool _focusEditor;
+    private List<PermissionDto> _permissions = [];
+    private bool _rightsOwner;
+    private HashSet<string> _rights = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,8 +206,146 @@
             _employees = response.Value;
         else
             _error = string.IsNullOrWhiteSpace(response.Message) ? "De medewerkers konden niet worden geladen." : response.Message;
+
+        var current = await AccountService.GetCurrentEmployeeAsync();
+        if (current.Succeeded && current.Value is not null)
+            _currentEmployeeId = current.Value.Id;
+
+        var permissions = await AccountService.GetPermissionsAsync();
+        if (permissions.Succeeded && permissions.Value is not null)
+            _permissions = permissions.Value;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusEditor && _editing is not null)
+        {
+            _focusEditor = false;
+            await _editorHeading.FocusAsync();
+        }
+    }
+
+    private void OpenEditor(EmployeeDto employee)
+    {
+        _editing = employee;
+        _form = new EmployeeForm { FirstName = employee.FirstName, LastName = employee.LastName, Email = employee.Email };
+        _rightsOwner = employee.IsOwner;
+        _rights = employee.Permissions.ToHashSet();
+        _editError = null;
+        _message = null;
+        _confirmDeactivate = false;
+        _focusEditor = true;
+    }
+
+    private void CloseEditor()
+    {
+        _editing = null;
+        _editError = null;
+        _confirmDeactivate = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null)
+            return;
+
+        _busy = true;
+        _editError = null;
+
+        var response = await AccountService.UpdateEmployeeAsync(_editing.Id, new UpdateEmployeeDto
+        {
+            FirstName = _form.FirstName,
+            LastName = _form.LastName,
+            Email = _form.Email,
+        });
+
+        _busy = false;
+
+        if (response.Succeeded && response.Value is not null)
+        {
+            Replace(response.Value);
+            _message = string.IsNullOrWhiteSpace(response.Message) ? "Medewerker is gewijzigd." : response.Message;
+            CloseEditor();
+        }
+        else
+        {
+            _editError = string.IsNullOrWhiteSpace(response.Message) ? "De medewerker kon niet worden opgeslagen." : response.Message;
+        }
+    }
+
+    private async Task SetActiveAsync(bool isActive)
+    {
+        if (_editing is null)
+            return;
+
+        _busy = true;
+        _editError = null;
+
+        var response = await AccountService.SetEmployeeActiveAsync(_editing.Id, isActive);
+
+        _busy = false;
+        _confirmDeactivate = false;
+
+        if (response.Succeeded && response.Value is not null)
+        {
+            Replace(response.Value);
+            _editing = response.Value;
+            _message = response.Message;
+        }
+        else
+        {
+            _editError = string.IsNullOrWhiteSpace(response.Message) ? "De status kon niet worden gewijzigd." : response.Message;
+        }
+    }
+
+    private void ToggleRight(string code, bool granted)
+    {
+        if (granted)
+            _rights.Add(code);
+        else
+            _rights.Remove(code);
+    }
+
+    private async Task SavePermissionsAsync()
+    {
+        if (_editing is null)
+            return;
+
+        _busy = true;
+        _editError = null;
+
+        var response = await AccountService.UpdateEmployeePermissionsAsync(_editing.Id, new UpdateEmployeePermissionsDto
+        {
+            IsOwner = _rightsOwner,
+            Permissions = _rights.ToList(),
+        });
+
+        _busy = false;
+
+        if (response.Succeeded && response.Value is not null)
+        {
+            Replace(response.Value);
+            _editing = response.Value;
+            _rightsOwner = response.Value.IsOwner;
+            _rights = response.Value.Permissions.ToHashSet();
+            _message = string.IsNullOrWhiteSpace(response.Message) ? "Rechten zijn opgeslagen." : response.Message;
+        }
+        else
+        {
+            _editError = string.IsNullOrWhiteSpace(response.Message) ? "De rechten konden niet worden opgeslagen." : response.Message;
+        }
+    }
+
+    private void Replace(EmployeeDto updated)
+    {
+        if (_employees is null)
+            return;
+
+        int index = _employees.FindIndex(e => e.Id == updated.Id);
+        if (index >= 0)
+            _employees[index] = updated;
     }
 
     private static string FormatLastLogin(DateTime? lastLogin) =>
-        lastLogin is null ? "Nog nooit" : lastLogin.Value.ToLocalTime().ToString("d MMMM yyyy, HH:mm", Dutch);
+        lastLogin is null ? "Nog nooit" : lastLogin.Value.ToLocalTime().ToString("d MMMM yyyy, HH:mm", Formatting.Dutch);
 }

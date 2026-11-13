@@ -1,5 +1,4 @@
 using VakantiePark.Application.Calculators;
-using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Extensions.Accommodations;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;
@@ -18,27 +17,40 @@ namespace VakantiePark.Application.Services
             return accommodations.Select(a => a.ToDto()).ToList();
         }
 
-        public async Task<AccommodationDetailDto> GetByIdAsync(Guid id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null)
+        public async Task<AccommodationDetailDto> GetByIdAsync(Guid id, DateOnly? arrival = null, DateOnly? departure = null, int? persons = null, int youngChildren = 0, int pets = 0)
         {
             if (id == Guid.Empty)
+            {
                 throw new ArgumentException("Het id van de accommodatie ontbreekt.");
+            }
 
-            bool hasStay = arrival is not null || departure is not null || persons is not null;
+            var hasStay = arrival is not null || departure is not null || persons is not null;
             if (hasStay)
-                AccommodationValidation.ValidateStay(arrival, departure, persons);
+            {
+                AccommodationValidation.ValidateStay(arrival, departure, persons, youngChildren, pets);
+            }
 
             var accommodation = await repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Accommodatie met id {id} is niet gevonden.");
 
             var dto = accommodation.ToDetailDto();
             if (!hasStay)
+            {
                 return dto;
+            }
 
             if (persons > accommodation.MaxPersons)
+            {
                 throw new ArgumentException($"{accommodation.Name} is geschikt voor maximaal {accommodation.MaxPersons} personen.");
+            }
+
+            if (pets > accommodation.MaxPets)
+            {
+                throw new ArgumentException($"In {accommodation.Name} mogen maximaal {accommodation.MaxPets} huisdieren mee.");
+            }
 
             var settings = await settingsRepository.GetAsync();
-            dto.Price = PriceFor(accommodation, arrival!.Value, departure!.Value, persons!.Value, settings);
+            dto.Price = PriceFor(accommodation, arrival!.Value, departure!.Value, persons!.Value, youngChildren, pets, settings);
             return dto;
         }
 
@@ -48,6 +60,7 @@ namespace VakantiePark.Application.Services
             var amenities = await repository.GetAmenitiesAsync();
             var categoriesPerAmenity = await repository.GetAmenityCategoriesAsync();
             var (maxPersons, maxPets) = await repository.GetMaximumsAsync();
+            var settings = await settingsRepository.GetAsync();
 
             return new SearchOptionsDto
             {
@@ -67,6 +80,7 @@ namespace VakantiePark.Application.Services
                     .ToList(),
                 MaxPersons = maxPersons,
                 MaxPets = maxPets,
+                TouristTaxMinimumAge = settings?.TouristTaxMinimumAge ?? SearchOptionsDto.DefaultTouristTaxMinimumAge,
             };
         }
 
@@ -82,7 +96,7 @@ namespace VakantiePark.Application.Services
                 Items = accommodations.Select(a =>
                 {
                     var dto = a.ToDetailDto();
-                    dto.Price = PriceFor(a, criteria.Arrival, criteria.Departure, criteria.Persons, settings);
+                    dto.Price = PriceFor(a, criteria.Arrival, criteria.Departure, criteria.Persons, criteria.YoungChildren, criteria.Pets, settings);
                     return dto;
                 }).ToList(),
                 TotalCount = totalCount,
@@ -91,17 +105,21 @@ namespace VakantiePark.Application.Services
             };
         }
 
-        private static PriceDto? PriceFor(Accommodation accommodation, DateOnly arrival, DateOnly departure, int persons, ParkSettings? settings)
+        private static PriceDto? PriceFor(Accommodation accommodation, DateOnly arrival, DateOnly departure, int persons, int youngChildren, int pets, ParkSettings? settings)
         {
             if (settings is null || accommodation.AccommodationType.PricePerNight <= 0m)
+            {
                 return null;
+            }
 
             return PriceCalculator.Calculate(
-                accommodation.AccommodationType.PricePerNight,
-                departure.DayNumber - arrival.DayNumber,
+                accommodation.AccommodationType,
+                arrival,
+                departure,
                 persons,
-                settings.CleaningFee,
-                settings.TouristTaxPerPersonPerNight);
+                youngChildren,
+                pets,
+                settings);
         }
     }
 }

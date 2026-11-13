@@ -1,8 +1,4 @@
 @page "/boeken"
-@using VakantiePark.Shared.DTOs.Accommodations
-@using VakantiePark.UI.Interfaces
-@using VakantiePark.UI.Models
-@using VakantiePark.UI.Services
 @inject IBookingService BookingService
 @inject BookingState BookingState
 @inject NavigationManager Navigation
@@ -107,6 +103,9 @@
     [SupplyParameterFromQuery(Name = BookingQuery.Persons)]
     public string? PersonsValue { get; set; }
 
+    [SupplyParameterFromQuery(Name = BookingQuery.YoungChildren)]
+    public string? YoungChildrenValue { get; set; }
+
     [SupplyParameterFromQuery(Name = BookingQuery.Pets)]
     public string? PetsValue { get; set; }
 
@@ -117,7 +116,7 @@
     protected override async Task OnParametersSetAsync()
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        if (!BookingQuery.TryParse(AccommodationValue, ArrivalValue, DepartureValue, PersonsValue, PetsValue, today, out var request, out var error))
+        if (!BookingQuery.TryParse(AccommodationValue, ArrivalValue, DepartureValue, PersonsValue, YoungChildrenValue, PetsValue, today, out var request, out var error))
         {
             _request = null;
             _accommodation = null;

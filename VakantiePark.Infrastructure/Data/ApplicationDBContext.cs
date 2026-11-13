@@ -16,7 +16,6 @@ namespace VakantiePark.Infrastructure.Data
         public DbSet<Guest> Guests => Set<Guest>();
         public DbSet<ParkSettings> ParkSettings => Set<ParkSettings>();
         public DbSet<Employee> Employees => Set<Employee>();
-        public DbSet<Role> Roles => Set<Role>();
         public DbSet<Permission> Permissions => Set<Permission>();
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -32,7 +31,7 @@ namespace VakantiePark.Infrastructure.Data
             {
                 context.UseAccommodationSeeder();
                 context.UsePriceSeeder();
-                context.UseRoleSeeder();
+                context.UsePermissionSeeder();
                 context.UseEmployeeSeeder();
             });
 
@@ -40,7 +39,7 @@ namespace VakantiePark.Infrastructure.Data
             {
                 context.UseAccommodationSeeder();
                 context.UsePriceSeeder();
-                context.UseRoleSeeder();
+                context.UsePermissionSeeder();
                 context.UseEmployeeSeeder();
                 return Task.CompletedTask;
             });

@@ -37,3 +37,85 @@ tbody tr:last-child td {
 .employees__role {
   margin: 0 0.3rem 0.3rem 0;
 }
+
+.employees__message {
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--forest);
+  font-weight: 700;
+}
+
+.employees__editor {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.employees__editor h3,
+.employees__status h4 {
+  margin: 0;
+}
+
+.employees__status {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.employees__status h4 {
+  font-size: var(--text-base);
+}
+
+.employees__status p {
+  margin: 0;
+}
+
+.employees__confirm {
+  font-weight: 700;
+}
+
+.employees__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.employees__edit {
+  padding: 0.35rem 0.9rem;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.employees__row--inactive td {
+  color: var(--ink-soft);
+}
+
+.employees__rights {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin: 0;
+  padding: 1.25rem 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.employees__checks {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.employees__check {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-weight: 400;
+}
+
+.employees__check input {
+  margin-top: 0.3rem;
+}

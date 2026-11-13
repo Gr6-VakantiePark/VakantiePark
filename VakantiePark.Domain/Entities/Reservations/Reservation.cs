@@ -1,5 +1,4 @@
-﻿using System;
-using VakantiePark.Domain.Enums;
+﻿using VakantiePark.Domain.Enums;
 
 namespace VakantiePark.Domain.Entities
 {

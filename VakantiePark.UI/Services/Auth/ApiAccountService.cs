@@ -24,5 +24,17 @@ namespace VakantiePark.UI.Services
 
         public Task<ApiResponse<List<EmployeeDto>>> GetEmployeesAsync() =>
             http.GetAsync<List<EmployeeDto>>("admin/employees");
+
+        public Task<ApiResponse<EmployeeDto>> UpdateEmployeeAsync(Guid id, UpdateEmployeeDto request) =>
+            http.PutAsync<EmployeeDto, UpdateEmployeeDto>($"admin/employees/{id}", request);
+
+        public Task<ApiResponse<EmployeeDto>> SetEmployeeActiveAsync(Guid id, bool isActive) =>
+            http.PutAsync<EmployeeDto, SetEmployeeActiveDto>($"admin/employees/{id}/active", new SetEmployeeActiveDto { IsActive = isActive });
+
+        public Task<ApiResponse<List<PermissionDto>>> GetPermissionsAsync() =>
+            http.GetAsync<List<PermissionDto>>("admin/employees/permissions");
+
+        public Task<ApiResponse<EmployeeDto>> UpdateEmployeePermissionsAsync(Guid id, UpdateEmployeePermissionsDto request) =>
+            http.PutAsync<EmployeeDto, UpdateEmployeePermissionsDto>($"admin/employees/{id}/permissions", request);
     }
 }

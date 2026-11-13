@@ -34,14 +34,17 @@ namespace VakantiePark.Application.Services.Booking
                 var settings = await settingsRepository.GetAsync()
                     ?? throw new KeyNotFoundException("De parkinstellingen zijn niet gevonden.");
 
-                int nights = DateOnly.FromDateTime(request.EndDate).DayNumber - DateOnly.FromDateTime(request.StartDate).DayNumber;
+                if (request.Pets > accommodation.MaxPets)
+                    throw new ArgumentException($"In {accommodation.Name} mogen maximaal {accommodation.MaxPets} huisdieren mee.");
 
                 var price = PriceCalculator.Calculate(
-                    accommodation.AccommodationType.PricePerNight,
-                    nights,
+                    accommodation.AccommodationType,
+                    DateOnly.FromDateTime(request.StartDate),
+                    DateOnly.FromDateTime(request.EndDate),
                     request.NumberOfGuests,
-                    settings.CleaningFee,
-                    settings.TouristTaxPerPersonPerNight);
+                    request.YoungChildren,
+                    request.Pets,
+                    settings);
 
                 if (price.Total != request.ExpectedTotalPrice)
                     throw new ArgumentException(PriceChanged);

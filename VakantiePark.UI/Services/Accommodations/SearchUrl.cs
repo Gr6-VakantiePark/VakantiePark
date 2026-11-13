@@ -37,20 +37,39 @@ public static class SearchUrl
             $"personen={criteria.Persons}",
         };
 
+        if (criteria.YoungChildren > 0)
+        {
+            parts.Add($"kleine-kinderen={criteria.YoungChildren}");
+        }
+
         if (Enum.TryParse<AccommodationCategory>(criteria.Category, ignoreCase: true, out var category))
+        {
             parts.Add($"soort={CategorySlugs[category]}");
+        }
         if (!string.IsNullOrWhiteSpace(criteria.Type))
+        {
             parts.Add($"type={Uri.EscapeDataString(criteria.Type)}");
+        }
         if (criteria.Pets > 0)
+        {
             parts.Add($"huisdieren={criteria.Pets}");
+        }
         if (!string.IsNullOrWhiteSpace(criteria.Amenities))
+        {
             parts.Add($"voorzieningen={Uri.EscapeDataString(criteria.Amenities)}");
+        }
         if (criteria.OrderBy != AccommodationSearchCriteria.DefaultOrderBy)
+        {
             parts.Add($"sorteren={OrderBySlugs[criteria.OrderBy]}");
+        }
         if (criteria.OrderType != AccommodationSearchCriteria.DefaultOrderType)
+        {
             parts.Add($"volgorde={OrderTypeSlugs[criteria.OrderType]}");
+        }
         if (criteria.PageNumber > 1)
+        {
             parts.Add($"pagina={criteria.PageNumber}");
+        }
 
         return $"{Page}?{string.Join("&", parts)}";
     }

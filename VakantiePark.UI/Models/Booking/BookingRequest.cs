@@ -5,6 +5,7 @@ public sealed record BookingRequest(
     DateOnly ArrivalDate,
     DateOnly DepartureDate,
     int Persons,
+    int YoungChildren,
     int Pets)
 {
     public int Nights => DepartureDate.DayNumber - ArrivalDate.DayNumber;

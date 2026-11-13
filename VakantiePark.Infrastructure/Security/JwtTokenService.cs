@@ -29,8 +29,7 @@ namespace VakantiePark.Infrastructure.Security
                 new(JwtRegisteredClaimNames.GivenName, employee.FirstName),
                 new(JwtRegisteredClaimNames.FamilyName, employee.LastName),
             };
-            claims.AddRange(employee.Roles.Select(role => new Claim("role", role.Code)));
-            claims.AddRange(employee.Permissions.Select(permission => new Claim(Permissions.ClaimType, permission.Code)));
+            claims.AddRange(EmployeeClaims.For(employee));
 
             var descriptor = new SecurityTokenDescriptor
             {

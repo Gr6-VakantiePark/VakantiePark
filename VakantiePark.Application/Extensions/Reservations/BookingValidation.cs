@@ -1,3 +1,4 @@
+using VakantiePark.Application.Extensions.Accommodations;
 using VakantiePark.Shared.Common;
 using VakantiePark.Shared.DTOs.Reservations;
 
@@ -9,6 +10,14 @@ namespace VakantiePark.Application.Extensions
         {
             if (request is null)
                 throw new ArgumentException("De gegevens van de boeking ontbreken.");
+
+            AccommodationValidation.ValidateStay(
+                DateOnly.FromDateTime(request.StartDate),
+                DateOnly.FromDateTime(request.EndDate),
+                request.NumberOfGuests,
+                request.YoungChildren,
+                request.Pets);
+
             if (request.Guest is null)
                 throw new ArgumentException("De gegevens van de gast ontbreken.");
 

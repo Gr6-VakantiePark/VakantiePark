@@ -12,6 +12,8 @@ namespace VakantiePark.UnitTests.Services
     {
         private const decimal ExpectedTotal = 390m;
         private static readonly Guid AccommodationId = Guid.NewGuid();
+        private static readonly DateTime Monday = new(2030, 3, 4, 15, 0, 0);
+        private static readonly DateTime Friday = new(2030, 3, 8, 15, 0, 0);
 
         private readonly Mock<IAvailabilityService> _availabilityService = new();
         private readonly Mock<IAccommodationRepository> _accommodationRepository = new();
@@ -41,23 +43,32 @@ namespace VakantiePark.UnitTests.Services
                     Id = AccommodationId,
                     Name = "Berk 4 01",
                     MaxPersons = 4,
-                    AccommodationType = new AccommodationType { PricePerNight = 100m },
+                    MaxPets = 1,
+                    AccommodationType = new AccommodationType { PricePerNight = 100m, Category = AccommodationCategory.HolidayHome },
                 });
             _settingsRepository.Setup(r => r.GetAsync())
-                .ReturnsAsync(new ParkSettings { CleaningFee = 75m, TouristTaxPerPersonPerNight = 2.50m });
+                .ReturnsAsync(new ParkSettings
+                {
+                    CleaningFee = 75m,
+                    TouristTaxPerPersonPerNight = 2.50m,
+                    WeekendSurchargePercentage = 10m,
+                    PetFeePerNight = 5m,
+                });
             _reservationRepository.Setup(r => r.GetHighestBookingSequenceAsync())
                 .ReturnsAsync((int?)null);
         }
 
-        private static CreateBookingDto CreateRequest(decimal expectedTotal = ExpectedTotal, bool hasPaid = true, string email = "gast@example.com")
+        private static CreateBookingDto CreateRequest(decimal expectedTotal = ExpectedTotal, bool hasPaid = true, string email = "gast@example.com", DateTime? start = null, int youngChildren = 0, int pets = 0)
         {
-            DateTime start = DateTime.UtcNow.Date.AddDays(30).AddHours(15);
+            DateTime arrival = start ?? Monday;
             return new CreateBookingDto
             {
                 AccommodationId = AccommodationId,
-                StartDate = start,
-                EndDate = start.AddDays(3).AddHours(-5),
+                StartDate = arrival,
+                EndDate = arrival.AddDays(3).AddHours(-5),
                 NumberOfGuests = 2,
+                YoungChildren = youngChildren,
+                Pets = pets,
                 ExpectedTotalPrice = expectedTotal,
                 HasPaid = hasPaid,
                 Guest = new GuestDto { Name = "Gast", Email = email },
@@ -151,6 +162,34 @@ namespace VakantiePark.UnitTests.Services
 
             Assert.Equal(BookingService.PriceChanged, exception.Message);
             _reservations.Verify(r => r.Add(It.IsAny<Reservation>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CreateAsync_WeekendYoungChildAndPet_UsesSamePriceRulesAsBookingPage()
+        {
+            var booking = await _sut.CreateAsync(CreateRequest(expectedTotal: 417.50m, start: Friday, youngChildren: 1, pets: 1));
+
+            Assert.Equal(2, booking.Price.WeekendNights);
+            Assert.Equal(20m, booking.Price.WeekendSurcharge);
+            Assert.Equal(15m, booking.Price.PetFee);
+            Assert.Equal(7.50m, booking.Price.TouristTax);
+            Assert.Equal(417.50m, booking.Price.Total);
+        }
+
+        [Fact]
+        public async Task CreateAsync_MorePetsThanAllowed_ThrowsArgumentExceptionAndSavesNothing()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateAsync(CreateRequest(pets: 2)));
+
+            _reservations.Verify(r => r.Add(It.IsAny<Reservation>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CreateAsync_MoreYoungChildrenThanPersons_ThrowsArgumentExceptionBeforeTransaction()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateAsync(CreateRequest(youngChildren: 3)));
+
+            _transactions.Verify(t => t.InTransactionAsync(It.IsAny<Func<Task<BookingDto>>>()), Times.Never);
         }
 
         [Fact]

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System.ComponentModel.Design;
 using VakantiePark.Shared.Common;
 using VakantiePark.UI.Authentication;
 using VakantiePark.UI.Interfaces;
@@ -21,6 +20,7 @@ namespace VakantiePark.UI
             {
                 foreach (string permission in Permissions.All)
                     options.AddPolicy(permission, policy => policy.RequireClaim(Permissions.ClaimType, permission));
+                options.AddPolicy(Permissions.Owner, policy => policy.RequireClaim(Permissions.OwnerClaimType, "true"));
             });
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<SessionStorageService>();

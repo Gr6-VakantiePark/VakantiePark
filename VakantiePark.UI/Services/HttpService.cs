@@ -54,36 +54,6 @@ namespace VakantiePark.UI.Services
 			}
 		}
 
-		public async Task<ApiResponse<TResponse>> DeleteAsync<TResponse>(string url)
-		{
-			try
-			{
-				var response = await _httpClient.DeleteAsync(url);
-				return await ReadAnswer<TResponse>(response);
-			}
-			catch (Exception)
-			{
-				return ApiResponse<TResponse>.Fail(Error);
-			}
-		}
-
-		public async Task<ApiResponse<byte[]>> GetFileAsync(string url)
-		{
-			try
-			{
-				var response = await _httpClient.GetAsync(url);
-				if (response.IsSuccessStatusCode && response.Content.Headers.ContentType?.MediaType != "application/json")
-					return ApiResponse<byte[]>.Ok(await response.Content.ReadAsByteArrayAsync());
-
-				var answer = await ReadAnswer<object>(response);
-				return ApiResponse<byte[]>.Fail(answer.Message ?? Error);
-			}
-			catch (Exception)
-			{
-				return ApiResponse<byte[]>.Fail(Error);
-			}
-		}
-
 		private static async Task<ApiResponse<TResponse>> ReadAnswer<TResponse>(HttpResponseMessage response)
 		{
 			try

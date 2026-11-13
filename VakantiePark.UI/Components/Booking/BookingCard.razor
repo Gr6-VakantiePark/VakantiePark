@@ -1,7 +1,3 @@
-@using System.Globalization
-@using VakantiePark.Shared.DTOs.Accommodations
-@using VakantiePark.UI.Interfaces
-@using VakantiePark.UI.Models
 @inject ISearchService SearchService
 @inject NavigationManager Navigation
 @namespace VakantiePark.UI.Components
@@ -25,18 +21,23 @@
         <DataAnnotationsValidator />
         <div class="field">
             <label for="book-arrival">Aankomst</label>
-            <InputDate id="book-arrival" @bind-Value="_choice.Arrival" min="@ToIso(_today)" />
+            <InputDate id="book-arrival" @bind-Value="_choice.Arrival" min="@Formatting.Iso(_today)" />
             <ValidationMessage For="() => _choice.Arrival" />
         </div>
         <div class="field">
             <label for="book-departure">Vertrek</label>
-            <InputDate id="book-departure" @bind-Value="_choice.Departure" min="@ToIso((_choice.Arrival ?? _today).AddDays(1))" />
+            <InputDate id="book-departure" @bind-Value="_choice.Departure" min="@Formatting.Iso((_choice.Arrival ?? _today).AddDays(1))" />
             <ValidationMessage For="() => _choice.Departure" />
         </div>
         <div class="field">
             <label for="book-persons">Personen</label>
             <InputNumber id="book-persons" @bind-Value="_choice.Persons" min="1" />
             <ValidationMessage For="() => _choice.Persons" />
+        </div>
+        <div class="field">
+            <label for="book-young-children">Waarvan onder @_touristTaxMinimumAge jaar</label>
+            <InputNumber id="book-young-children" @bind-Value="_choice.YoungChildren" min="0" />
+            <ValidationMessage For="() => _choice.YoungChildren" />
         </div>
         <div class="field">
             <label for="book-pets">Huisdieren</label>
@@ -57,11 +58,21 @@
     private readonly StayChoice _choice = new();
     private string? _message;
     private bool _busy;
+    private int _touristTaxMinimumAge = SearchOptionsDto.DefaultTouristTaxMinimumAge;
 
     [Parameter, EditorRequired]
     public AccommodationType Type { get; set; } = default!;
 
     private bool IsHolidayHome => Type.Category == AccommodationCategory.HolidayHome;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await SearchService.GetSearchOptionsAsync();
+        if (response.Succeeded && response.Value is not null)
+        {
+            _touristTaxMinimumAge = response.Value.TouristTaxMinimumAge;
+        }
+    }
 
     private async Task BookAsync()
     {
@@ -82,11 +93,18 @@
             return;
         }
 
+        if (_choice.YoungChildren >= _choice.Persons)
+        {
+            _message = $"Er moet minimaal 1 persoon van {_touristTaxMinimumAge} jaar of ouder meegaan.";
+            return;
+        }
+
         var criteria = new AccommodationSearchCriteria
         {
             Arrival = arrival,
             Departure = departure,
             Persons = _choice.Persons,
+            YoungChildren = _choice.YoungChildren,
             Pets = _choice.Pets,
             Type = Type.Slug,
             PageSize = 1,
@@ -112,6 +130,4 @@
 
         Navigation.NavigateTo(BookingQuery.For(accommodation.Id, criteria));
     }
-
-    private static string ToIso(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 }

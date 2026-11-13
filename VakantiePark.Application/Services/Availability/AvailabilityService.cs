@@ -14,13 +14,11 @@ namespace VakantiePark.Application.Services
             if (request is null)
                 throw new ArgumentNullException("Zoekcriteria zijn verplicht.");
 
-            //deze waardes zijn gegokt wordt gevraagd in klant interview
             if (request.StartTime <= DateTime.UtcNow.AddHours(5))
                 throw new ArgumentException("ongeldige start- en/of einddatum");
 
             if (request.StartTime >= request.EndTime)
                 throw new ArgumentException("De startdatum moet voor de einddatum liggen.");
-
 
             Accommodation? accommodation = await accommodationRepository.GetAsync(request.AccommodationId);
 

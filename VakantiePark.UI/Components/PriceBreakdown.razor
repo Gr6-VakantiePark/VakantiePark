@@ -1,0 +1,38 @@
+@if (Price is { } price)
+{
+    <dl class="price-breakdown">
+        <div><dt>Verblijf (@price.Nights × @Formatting.Euro(price.PricePerNight))</dt><dd>@Formatting.Euro(price.Stay)</dd></div>
+        @if (price.WeekendNights > 0)
+        {
+            <div><dt>Weekendtoeslag (@price.WeekendSurchargePercentage.ToString("0.##")% × @NightsLabel(price.WeekendNights))</dt><dd>@Formatting.Euro(price.WeekendSurcharge)</dd></div>
+        }
+        @if (price.Pets > 0)
+        {
+            <div><dt>Huisdieren (@price.Pets × @NightsLabel(price.Nights) × @Formatting.Euro(price.PetFeePerNight))</dt><dd>@Formatting.Euro(price.PetFee)</dd></div>
+        }
+        @if (price.CleaningFee > 0m)
+        {
+            <div><dt>Eindschoonmaak</dt><dd>@Formatting.Euro(price.CleaningFee)</dd></div>
+        }
+        <div><dt>Toeristenbelasting (@(price.Persons - price.YoungChildren) pers. × @NightsLabel(price.Nights) × @Formatting.Euro(price.TouristTaxPerPersonPerNight))</dt><dd>@Formatting.Euro(price.TouristTax)</dd></div>
+        @if (price.YoungChildren > 0)
+        {
+            <div class="price-breakdown__note"><dt>@price.YoungChildren @(price.YoungChildren == 1 ? "kind" : "kinderen") onder @price.TouristTaxMinimumAge jaar, geen toeristenbelasting</dt><dd>@Formatting.Euro(0m)</dd></div>
+        }
+        <div class="price-breakdown__total"><dt>Totaal</dt><dd>@Formatting.Euro(price.Total)</dd></div>
+    </dl>
+}
+else
+{
+    <p class="sidebar-card__note">De prijs voor dit verblijf volgt. Neem bij vragen contact op met de receptie.</p>
+}
+
+@code {
+    [Parameter]
+    public PriceDto? Price { get; set; }
+
+    private static string NightsLabel(int nights)
+    {
+        return nights == 1 ? "1 nacht" : $"{nights} nachten";
+    }
+}

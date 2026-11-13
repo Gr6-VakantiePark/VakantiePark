@@ -1,12 +1,4 @@
 @page "/zoek-en-boek"
-@using System.ComponentModel.DataAnnotations
-@using System.Globalization
-@using System.Reflection
-@using VakantiePark.Shared.Common.Pagination
-@using VakantiePark.Shared.DTOs.Accommodations
-@using VakantiePark.UI.Interfaces
-@using VakantiePark.UI.Models
-@using VakantiePark.UI.Services
 @inject ISearchService SearchService
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -49,7 +41,7 @@
             <div class="section__header">
                 <h2 id="heading-results">Resultaten</h2>
                 <p>
-                    @FormatDate(_criteria.Arrival) – @FormatDate(_criteria.Departure),
+                    @Formatting.Date(_criteria.Arrival) – @Formatting.Date(_criteria.Departure),
                     @_criteria.Nights @(_criteria.Nights == 1 ? "nacht" : "nachten"),
                     @_criteria.Persons @(_criteria.Persons == 1 ? "persoon" : "personen")
                 </p>
@@ -80,7 +72,7 @@
                 <div class="empty-state" role="status">
                     <h3>Geen verblijven beschikbaar</h3>
                     <p>
-                        Er is geen verblijf vrij van @FormatDate(_criteria.Arrival) tot @FormatDate(_criteria.Departure)
+                        Er is geen verblijf vrij van @Formatting.Date(_criteria.Arrival) tot @Formatting.Date(_criteria.Departure)
                         voor @_criteria.Persons @(_criteria.Persons == 1 ? "persoon" : "personen")@(_criteria.HasFilters ? " met de gekozen filters" : string.Empty).
                         Probeer andere data, minder personen of minder filters.
                     </p>
@@ -137,12 +129,12 @@
 }
 
 @code {
-    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
     private static readonly OrderType[] SortDirections = [OrderType.Ascending, OrderType.Descending];
 
     [SupplyParameterFromQuery(Name = "aankomst")] public string? ArrivalValue { get; set; }
     [SupplyParameterFromQuery(Name = "vertrek")] public string? DepartureValue { get; set; }
     [SupplyParameterFromQuery(Name = "personen")] public int? PersonsValue { get; set; }
+    [SupplyParameterFromQuery(Name = "kleine-kinderen")] public int? YoungChildrenValue { get; set; }
     [SupplyParameterFromQuery(Name = "soort")] public string? CategoryValue { get; set; }
     [SupplyParameterFromQuery(Name = "type")] public string? TypeSlug { get; set; }
     [SupplyParameterFromQuery(Name = "huisdieren")] public int? PetsValue { get; set; }
@@ -194,31 +186,55 @@
         var criteria = new AccommodationSearchCriteria();
 
         if (!DateOnly.TryParseExact(ArrivalValue, "yyyy-MM-dd", out var arrival))
+        {
             _errors.Add("Kies een geldige aankomstdatum.");
+        }
         else if (arrival < DateOnly.FromDateTime(DateTime.Today))
+        {
             _errors.Add("De aankomstdatum mag niet in het verleden liggen.");
+        }
         criteria.Arrival = arrival;
 
         if (!DateOnly.TryParseExact(DepartureValue, "yyyy-MM-dd", out var departure))
+        {
             _errors.Add("Kies een geldige vertrekdatum.");
+        }
         criteria.Departure = departure;
 
         if (arrival != default && departure != default && departure <= arrival)
+        {
             _errors.Add("De vertrekdatum moet na de aankomstdatum liggen.");
+        }
 
         if (PersonsValue is null or < 1)
+        {
             _errors.Add("Kies minimaal 1 persoon.");
+        }
         criteria.Persons = PersonsValue ?? 0;
 
+        if (YoungChildrenValue is < 0)
+        {
+            _errors.Add("Het aantal kinderen kan niet negatief zijn.");
+        }
+        else if (YoungChildrenValue >= criteria.Persons && criteria.Persons > 0)
+        {
+            _errors.Add("Er moet minimaal 1 persoon meegaan die geen klein kind is.");
+        }
+        criteria.YoungChildren = YoungChildrenValue ?? 0;
+
         if (PetsValue is < 0)
+        {
             _errors.Add("Het aantal huisdieren kan niet negatief zijn.");
+        }
         criteria.Pets = PetsValue ?? 0;
 
         if (!string.IsNullOrWhiteSpace(CategoryValue))
         {
             criteria.Category = SearchUrl.CategoryFromSlug(CategoryValue);
             if (criteria.Category is null)
+            {
                 _errors.Add($"Onbekende soort verblijf ‘{CategoryValue}’.");
+            }
         }
 
         criteria.Type = string.IsNullOrWhiteSpace(TypeSlug) ? null : TypeSlug;
@@ -227,21 +243,31 @@
         if (OrderByValue is not null)
         {
             if (SearchUrl.OrderByFromSlug(OrderByValue) is { } orderBy)
+            {
                 criteria.OrderBy = orderBy;
+            }
             else
+            {
                 _errors.Add($"Op ‘{OrderByValue}’ kan niet gesorteerd worden.");
+            }
         }
 
         if (OrderTypeValue is not null)
         {
             if (SearchUrl.OrderTypeFromSlug(OrderTypeValue) is { } orderType)
+            {
                 criteria.OrderType = orderType;
+            }
             else
+            {
                 _errors.Add($"Onbekende sorteervolgorde ‘{OrderTypeValue}’.");
+            }
         }
 
         if (PageValue is < 1)
+        {
             _errors.Add("Het paginanummer moet minimaal 1 zijn.");
+        }
         criteria.PageNumber = PageValue ?? 1;
 
         return criteria;
@@ -276,7 +302,6 @@
         }
     }
 
-    private static string FormatDate(DateOnly date) => date.ToString("dddd d MMMM yyyy", Dutch);
 
     private string? PhotoUrl(string? path) =>
         string.IsNullOrWhiteSpace(path) || Http.BaseAddress is null ? null : new Uri(Http.BaseAddress, path).ToString();

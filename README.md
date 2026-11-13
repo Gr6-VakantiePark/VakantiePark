@@ -16,11 +16,11 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 
 ## Prices (US08)
 
-- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
-- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and gives every type with price 0 a **temporary example price** per night. Replace these with the real amounts from the client.
-- `PriceCalculator` (Application) calculates: nights × price per night + cleaning fee + tourist tax (all persons × nights × tax).
-- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}`. Without those three query values the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
-- `GET /accommodations/price?type={slug}&arrival=&departure=&persons=` returns the breakdown for a type. Invalid input gives 400, an unknown type or accommodation 404.
+- Park-wide settings live in the `ParkSettings` table: cleaning fee, tourist tax per person per night, tourist tax minimum age, weekend surcharge percentage, pet fee per night, arrival time, departure time and minimum nights in the high season. Each accommodation type has its own `PricePerNight`.
+- `PriceSeeder` fills the settings (cleaning fee € 75, tourist tax € 2,50 from 3 years, weekend surcharge 10%, € 10 per pet per night, arrival 15:00, departure 10:00, minimum 7 nights in the high season) and sets the prices per night agreed with the client (Berk 4 € 100, Berk 6 € 125, Beuk 8 € 175, Bosvilla 10 € 250, Eik 6 € 175, Eik 6 luxe € 200, Wilg € 100). Existing databases still on the old example prices are updated at start-up. Camping pitches keep their example prices until the client confirms them.
+- `PriceCalculator` (Application) calculates: nights × price per night + weekend surcharge (percentage of the price per night for every Friday and Saturday night) + pets × nights × pet fee + cleaning fee (holiday homes only) + tourist tax ((persons − young children) × nights × tax).
+- `persons` is the total group including young children, so young children count towards the maximum number of persons. `youngChildren` is the number of those under the tourist tax minimum age; at least one person must be older.
+- The price breakdown (`PriceDto`) is part of every result of `GET /accommodations/search` and of `GET /accommodations/{id}?arrival=yyyy-MM-dd&departure=yyyy-MM-dd&persons={n}&youngChildren={n}&pets={n}`. Without arrival, departure and persons the detail endpoint returns no price. `Price` is `null` when a type has no price yet.
 
 ## Booking (US09)
 
@@ -29,10 +29,20 @@ Styling rules for the UI are in [STYLEGUIDE.md](STYLEGUIDE.md).
 3. The summary step shows the stay, the party, the guest and the price breakdown, with “Gegevens aanpassen” and “Boeking bevestigen”.
 4. `/boeken/bevestiging` shows the confirmed booking. The booking is kept in the browser session (`BookingState`) only; saving it in the API comes with US11.
 
+## Employees and rights (US41, US38)
+
+- There are no roles. Each employee is either an **owner** (`IsOwner`) or has their own set of rights (`EmployeePermissions`). The rights are seeded from `Data/Seed/permissions.json`: guests view/manage, reservations, accommodations and pool capacity. An owner may do everything, including managing employees.
+- Only owners can open `/beheer/medewerkers` and use `/admin/employees` (policy `Permissions.Owner`). **Bewerken** opens a form to change name and email, a **Rechten** section with a checkbox per right plus **Eigenaar**, and the status (**Uitschakelen** after a confirmation, or **Inschakelen**).
+- Endpoints: `PUT /admin/employees/{id}` (name and email, the email must stay unique), `PUT /admin/employees/{id}/active` (`{ "isActive": false }`), `GET /admin/employees/permissions` (all rights) and `PUT /admin/employees/{id}/permissions` (`{ "isOwner": false, "permissions": ["guests.view"] }`). `POST /admin/employees` takes `isOwner` and `permissions` instead of roles.
+- Every new endpoint must be `[AllowAnonymous]` or have `[Authorize(Policy = Permissions.X)]` (a right or `Permissions.Owner`); admin endpoints can never be public. Every page under `/beheer` (except the dashboard and the login page) needs `@attribute [Authorize(Policy = Permissions.X)]`, and the UI hides functions an employee has no right to. `AuthorizationRulesTests` fails the build when one of these is missing. Which right each feature needs is written in its user story.
+- Rights are checked against the database on every request, so a change works straight away, even for tokens that were already handed out. The UI shows the new rights after logging in again.
+- A switched-off employee can't log in, and tokens they already have stop working on the next request. Nobody can switch off their own account or take away their own owner rights.
+- Seed accounts: `beheerder@dropuut.example` is an owner, `receptie@dropuut.example` has guests and reservations, `zwembad@dropuut.example` has pool capacity. The `PermissionsPerEmployee` migration converts existing databases: rights from the old roles move to the employees, administrators become owners and the role tables are removed.
+
 ## API conventions
 
 - Every endpoint returns `ApiResponse<T>`. Services throw `ArgumentException` (400), `KeyNotFoundException` (404) or `UnauthorizedAccessException` (401); controllers wrap the call with `RunAsync`.
-- Each request DTO has a `Validate()` extension in `Application/Extensions` (`AuthValidation`, `AccommodationValidation`, `PriceValidation`) that the service calls first. Lengths and limits come from `Shared/Common/FieldLimits.cs`, which the UI also uses for `maxlength`.
+- Each request DTO has a `Validate()` extension in `Application/Extensions` (`AuthValidation`, `AccommodationValidation`) that the service calls first. Lengths and limits come from `Shared/Common/FieldLimits.cs`, which the UI also uses for `maxlength`.
 - Unexpected errors are logged by `GlobalExceptionHandler` and return a generic 500 message.
 - Rate limiting: 50 requests per minute per logged-in employee, otherwise per IP address. Photos are excluded. Over the limit the API returns 429 with an `ApiResponse`.
 - JSON (API and UI) uses `JsonDefaults.Options`: camelCase, enums as text, `null` values left out and `DateTime` always as UTC (`yyyy-MM-ddTHH:mm:ss.fffZ`).
@@ -79,5 +89,5 @@ GitHub Actions post to the G6 Vakantiepark Discord server. Each workflow uses it
 
 Scheduled and `workflow_run` workflows only run from the default branch (`master`).
 
-The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line; it is set to `2026-12-11`. The optional `BURNDOWN_START_DATE` changes where the chart starts (default: the first issue).
+The burndown chart counts the hours from the `Uren` table in each issue body. User stories with sub-issues are skipped, so only their tasks count (no double hours). An issue counts as done on the day it is closed. The Actions variable `BURNDOWN_END_DATE` (Settings → Secrets and variables → Actions → Variables, format `YYYY-MM-DD`) is the last coding day and draws the ideal line, which runs from the current total scope at the start date to 0 on that day and only goes down on weekdays (Saturday and Sunday are flat); it is set to `2026-12-11`. `BURNDOWN_START_DATE` is the first day of the chart and is set to `2026-11-11`; without it the chart starts at the first issue.
 

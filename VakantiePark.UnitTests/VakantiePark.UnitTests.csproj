@@ -16,16 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VakantiePark.Application\VakantiePark.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VakantiePark.Application\VakantiePark.Application.csproj" />
     <ProjectReference Include="..\VakantiePark.Domain\VakantiePark.Domain.csproj" />
     <ProjectReference Include="..\VakantiePark.Infrastructure\VakantiePark.Infrastructure.csproj" />
+    <ProjectReference Include="..\VakantiePark.API\VakantiePark.API.csproj" />
   </ItemGroup>
 
 </Project>

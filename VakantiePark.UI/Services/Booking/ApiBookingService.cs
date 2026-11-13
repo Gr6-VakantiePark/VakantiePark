@@ -15,7 +15,9 @@ namespace VakantiePark.UI.Services
                 $"accommodations/{request.AccommodationId}" +
                 $"?arrival={request.ArrivalDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" +
                 $"&departure={request.DepartureDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" +
-                $"&persons={request.Persons}");
+                $"&persons={request.Persons}" +
+                $"&youngChildren={request.YoungChildren}" +
+                $"&pets={request.Pets}");
 
         public Task<ApiResponse<bool>> CheckAvailabilityAsync(BookingRequest request) =>
             http.GetAsync<bool>(
@@ -32,6 +34,8 @@ namespace VakantiePark.UI.Services
                 StartDate = BookingRules.ArrivalOn(request.ArrivalDate),
                 EndDate = BookingRules.DepartureOn(request.DepartureDate),
                 NumberOfGuests = request.Persons,
+                YoungChildren = request.YoungChildren,
+                Pets = request.Pets,
                 ExpectedTotalPrice = expectedTotalPrice,
                 HasPaid = false,
                 Guest = guest,

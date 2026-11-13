@@ -18,32 +18,12 @@ namespace VakantiePark.Infrastructure.Data.Configurations
             builder.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             builder.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             builder.Property(e => e.IsActive).HasDefaultValue(true);
+            builder.Property(e => e.IsOwner).HasDefaultValue(false);
             builder.Property(e => e.CreatedAt).IsRequired();
 
-            builder.Ignore(e => e.Permissions);
-
-            builder.HasMany(e => e.Roles)
-                .WithMany(r => r.Employees)
-                .UsingEntity(j => j.ToTable("EmployeeRoles"));
-        }
-    }
-
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
-    {
-        public void Configure(EntityTypeBuilder<Role> builder)
-        {
-            builder.ToTable("Roles");
-            builder.HasKey(r => r.Id);
-
-            builder.Property(r => r.Code).IsRequired().HasMaxLength(50);
-            builder.HasIndex(r => r.Code).IsUnique();
-
-            builder.Property(r => r.Name).IsRequired().HasMaxLength(100);
-            builder.Property(r => r.Description).HasMaxLength(500);
-
-            builder.HasMany(r => r.Permissions)
-                .WithMany(p => p.Roles)
-                .UsingEntity(j => j.ToTable("RolePermissions"));
+            builder.HasMany(e => e.Permissions)
+                .WithMany(p => p.Employees)
+                .UsingEntity(j => j.ToTable("EmployeePermissions"));
         }
     }
 
