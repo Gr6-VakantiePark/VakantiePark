@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace VakantiePark.Domain.Enums
+﻿namespace VakantiePark.Domain.Enums
 {
     public enum ReservationStatus
     {

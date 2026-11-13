@@ -1,5 +1,4 @@
 using VakantiePark.Application.Calculators;
-using VakantiePark.Application.Extensions;
 using VakantiePark.Application.Extensions.Accommodations;
 using VakantiePark.Application.Interfaces;
 using VakantiePark.Domain.Entities;

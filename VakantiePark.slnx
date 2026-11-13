@@ -11,7 +11,7 @@
     <Project Path="VakantiePark.UI/VakantiePark.UI.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
-    <File Path="ci-build-test.yml" />
+    <File Path=".github/workflows/ci-build-test.yml" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="VakantiePark.UnitTests/VakantiePark.UnitTests.csproj" />

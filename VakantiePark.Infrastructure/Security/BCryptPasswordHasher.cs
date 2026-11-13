@@ -4,7 +4,7 @@ namespace VakantiePark.Infrastructure.Security
 {
     public class BCryptPasswordHasher : IPasswordHasher
     {
-        private const int WorkFactor = 12;
+        public const int WorkFactor = 12;
 
         public string Hash(string password)
         {

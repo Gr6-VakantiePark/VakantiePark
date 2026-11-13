@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using VakantiePark.Shared.Common;
 
 namespace VakantiePark.UI.Models;
 
 public sealed class BookingDetails
 {
     public const int NameMaxLength = 100;
-    public const int EmailMaxLength = 254;
+    public const int EmailMaxLength = FieldLimits.EmailMaxLength;
     public const int PhoneMaxLength = 20;
     public const int StreetMaxLength = 100;
     public const int PostalCodeMaxLength = 10;

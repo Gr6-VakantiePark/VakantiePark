@@ -18,15 +18,8 @@ namespace VakantiePark.API.Controllers
         [ProducesResponseType<ApiResponse<object>>(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(Guid id)
         {
-            try
-            {
-                var photo = await service.GetFileAsync(id);
-                return File(photo.Data, photo.ContentType);
-            }
-            catch (KeyNotFoundException exception)
-            {
-                return NotFound(ApiResponse<object>.Fail(exception.Message));
-            }
+            var photo = await service.GetFileAsync(id);
+            return File(photo.Data, photo.ContentType);
         }
     }
 }
